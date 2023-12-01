@@ -35,7 +35,13 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^20.0.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
+    "@screeps/backend": "3.2.3",
+    "@screeps/common": "2.15.4",
+    "@screeps/driver": "5.2.1",
     "@screeps/engine": "4.2.16",
+    "@screeps/launcher": "4.1.0",
+    "@screeps/pathfinding": "0.4.17",
+    "@screeps/storage": "5.1.1",
     "@types/chai": "^4.1.6",
     "@types/lodash": "3.10.2",
     "@types/mocha": "^5.2.5",
