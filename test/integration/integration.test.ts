@@ -13,6 +13,7 @@ describe("main", () => {
     await helper.player.console(`Memory.foo = 'bar'`);
     await helper.server.tick();
     const memory = JSON.parse(await helper.player.memory);
+    console.log(memory)
     assert.equal(memory.foo, 'bar');
   });
 });

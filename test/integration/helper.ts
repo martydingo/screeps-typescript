@@ -35,6 +35,10 @@ class IntegrationTestHelper {
     };
     this._player = await this._server.world.addBot({ username: 'player', room: 'W0N1', x: 15, y: 15, modules });
 
+    this._player.on('console', (logs: any, results: any, userid: any, username: any) => {
+      //@ts-ignore
+      _.each(logs, line => console.log(`[console|${username}]`, line));
+    });
     // Start server
     await this._server.start();
   }
