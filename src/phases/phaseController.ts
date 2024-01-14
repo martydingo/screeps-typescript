@@ -1,5 +1,6 @@
 import { monitorPhase } from "./monitorPhase/monitorPhase";
 import { log } from "../lib/utils/log";
+import { analysisPhase } from "./analysisPhase/analysisPhase";
 
 export class PhaseController {
     constructor() {
@@ -9,5 +10,6 @@ export class PhaseController {
     private runPhases() {
         log.debug("Running Phases")
         monitorPhase()
+        analysisPhase()
     }
 }

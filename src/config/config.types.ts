@@ -1,8 +1,8 @@
 export {};
 
-declare global {
-    type Configuration = {
-        rooms: RoomConfiguration
-        logging: LogConfiguration
-    }
+export type Configuration = {
+    bots: BotConfiguration
+    rooms: RoomConfiguration
+    logging: LogConfiguration
 }
+
