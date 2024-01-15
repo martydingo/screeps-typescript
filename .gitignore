@@ -90,3 +90,8 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
+
+*.pem
+*.cer
+*.crt
+*.sh

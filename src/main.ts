@@ -5,7 +5,7 @@ import { log } from "lib/utils/log";
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = () => {
-  console.log(`Current game tick is ${Game.time}`);
+  log.info(`Current game tick is ${Game.time}`);
   log.debug("Starting Phase Controller")
   new PhaseController()
   // Automatically delete memory of missing creeps

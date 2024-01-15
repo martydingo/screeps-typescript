@@ -3,7 +3,7 @@ import { log } from "lib/utils/log"
 
 function buildSourceAnalysisMemory(roomName: string) {
     log.debug(`Building Source Analysis Memory for ${roomName}`)
-    if(Memory.rooms[roomName].analysis.sources === undefined) {
+    if (Memory.rooms[roomName].analysis.sources === undefined) {
         Memory.rooms[roomName].analysis.sources = {} as SourceAnalysisData
     }
 }
@@ -23,16 +23,27 @@ function createSourceBotJobs(roomName: string) {
     Object.entries(Memory.rooms[roomName].analysis.sources).forEach(([sourceId, sourceData]) => {
         if (sourceData.assignedBot === null) {
             const sourceBot = new SourceBot(sourceId as Id<Source>)
-            Memory.analysis.queues.spawn[sourceBot.name] = {
-                name: sourceBot.name,
-                room: roomName,
-                priority: sourceBot.priority,
-                parts: sourceBot.parts[Game.rooms[roomName].controller!.level],
-                memory: sourceBot.memory,
+            if (!Memory.analysis.queues.spawn[sourceBot.name]) {
+                Memory.analysis.queues.spawn[sourceBot.name] = {
+                    name: sourceBot.name,
+                    room: roomName,
+                    priority: sourceBot.priority,
+                    parts: sourceBot.parts[Game.rooms[roomName].controller!.level],
+                    memory: sourceBot.memory,
+                    status: "new"
+                }
             }
+        }
+    })
+}
 
-            }
-        })
+function assignSourceBotJobs(roomName: string){
+    Object.entries(Memory.rooms[roomName].monitoring.structures.sources).forEach(([sourceId, sourceData]) => {
+        const sourceBot = new SourceBot(sourceId as Id<Source>)
+        if(Game.creeps[sourceBot.name]){
+            Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>].assignedBot = Game.creeps[sourceBot.name].name
+        }
+    })
 }
 
 export function analyseSources(roomName: string) {
@@ -40,4 +51,5 @@ export function analyseSources(roomName: string) {
     buildSourceAnalysisMemory(roomName)
     buildSourceAnalysisEntryMemory(roomName)
     createSourceBotJobs(roomName)
+    assignSourceBotJobs(roomName)
 }

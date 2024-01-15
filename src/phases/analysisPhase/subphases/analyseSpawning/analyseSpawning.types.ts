@@ -6,6 +6,7 @@ declare global {
         priority: number
         parts: BodyPartConstant[]
         memory: BotMemory
+        status: string
     }
 
     type SpawnQueueData = {

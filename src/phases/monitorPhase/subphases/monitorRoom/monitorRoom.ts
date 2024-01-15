@@ -16,7 +16,6 @@ function buildRoomMonitorMemory(roomName: string) {
     if (!Memory.rooms[roomName].monitoring) {
         Memory.rooms[roomName].monitoring = {} as RoomMonitorData
     }
-    log.debug(Memory.rooms[roomName])
 }
 
 export function monitorRoom(roomName: string) {
