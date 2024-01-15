@@ -5,7 +5,6 @@ declare global {
         sourceId: Id<Source>
     }
     interface SourceBotMemory extends BotMemory {
-        role: "sourceBot"
         params: SourceBotParams
     }
 }

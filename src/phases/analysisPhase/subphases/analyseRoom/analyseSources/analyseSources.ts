@@ -1,3 +1,4 @@
+import { SourceBot } from "lib/utils/classes/bots/SourceBot/SourceBot"
 import { log } from "lib/utils/log"
 
 function buildSourceAnalysisMemory(roomName: string) {
@@ -17,8 +18,26 @@ function buildSourceAnalysisEntryMemory(roomName: string) {
         }
     })
 }
+
+function createSourceBotJobs(roomName: string) {
+    Object.entries(Memory.rooms[roomName].analysis.sources).forEach(([sourceId, sourceData]) => {
+        if (sourceData.assignedBot === null) {
+            const sourceBot = new SourceBot(sourceId as Id<Source>)
+            Memory.analysis.queues.spawn[sourceBot.name] = {
+                name: sourceBot.name,
+                room: roomName,
+                priority: sourceBot.priority,
+                parts: sourceBot.parts[Game.rooms[roomName].controller!.level],
+                memory: sourceBot.memory,
+            }
+
+            }
+        })
+}
+
 export function analyseSources(roomName: string) {
     log.debug(`Analysing sources in room ${roomName}`)
     buildSourceAnalysisMemory(roomName)
     buildSourceAnalysisEntryMemory(roomName)
+    createSourceBotJobs(roomName)
 }

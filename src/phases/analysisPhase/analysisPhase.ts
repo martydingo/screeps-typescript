@@ -21,9 +21,9 @@ export function analysisPhase() {
 
     analyseSpawning()
 
-
     const roomsToAnalyse = config.rooms.activeRooms
     roomsToAnalyse.forEach(roomName => {
         analyseRoom(roomName)
     })
+
 }

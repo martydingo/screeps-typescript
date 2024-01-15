@@ -1,6 +1,4 @@
-import { BotParts } from "../botConfig.types"
+import { GenericBotConfiguration } from "../botConfig.types"
 
-export type SourceBotConfiguration = {
-    parts: BotParts
-}
+export interface SourceBotConfiguration extends GenericBotConfiguration {  }
 

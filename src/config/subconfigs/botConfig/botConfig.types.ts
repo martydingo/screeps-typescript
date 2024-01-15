@@ -7,3 +7,9 @@ export type BotParts = {
 export type BotConfiguration = {
     sourceBots: SourceBotConfiguration
 }
+
+export interface GenericBotConfiguration {
+    role: string
+    parts: { [key: number]: BodyPartConstant[] }
+    priority: number
+}
