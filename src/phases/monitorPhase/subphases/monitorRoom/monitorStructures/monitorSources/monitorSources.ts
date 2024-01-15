@@ -12,13 +12,13 @@ export function monitorSources(roomName: string){
     buildSourceMonitorMemory(roomName)
     const room = Game.rooms[roomName]
     const sources = room.find(FIND_SOURCES)
-    Object.entries(sources).forEach(([sourceId, source]) => {
-        log.debug(`Monitoring source ${sourceId} in ${roomName}`)
+    Object.values(sources).forEach((source) => {
+        log.debug(`Monitoring source ${source.id} in ${roomName}`)
         const sourceMonitorEntry: SourceMonitorEntry = {
             energy: source.energy,
             energyCapacity: source.energyCapacity,
             regenTime: source.ticksToRegeneration
         }
-        Memory.rooms[roomName].monitoring.structures.sources[sourceId as Id<Source>] = sourceMonitorEntry
+        Memory.rooms[roomName].monitoring.structures.sources[source.id] = sourceMonitorEntry
     })
 }
