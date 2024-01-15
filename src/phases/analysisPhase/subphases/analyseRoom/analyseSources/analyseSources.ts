@@ -9,6 +9,7 @@ function buildSourceAnalysisMemory(roomName: string) {
 function buildSourceAnalysisEntryMemory(roomName: string) {
     log.debug(`Building Source Analysis Entry Memory for ${roomName}`)
     Object.entries(Memory.rooms[roomName].monitoring.structures.sources).forEach(([sourceId, sourceData]) => {
+        log.debug(`Analysing source ${sourceId} in room ${roomName}`)
         if (!Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>]) {
             Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>] = {
                 assignedBot: null

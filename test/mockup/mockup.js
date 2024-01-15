@@ -20,6 +20,7 @@
         await server.world.setTerrain('W0N1', terrain);
         await server.world.addRoomObject('W0N1', 'controller', 10, 10, { level: 0 });
         await server.world.addRoomObject('W0N1', 'source', 10, 40, { energy: 1000, energyCapacity: 1000, ticksToRegeneration: 300 });
+        await server.world.addRoomObject('W0N1', 'source', 8, 40, { energy: 1000, energyCapacity: 1000, ticksToRegeneration: 300 });
         await server.world.addRoomObject('W0N1', 'mineral', 40, 40, { mineralType: 'H', density: 3, mineralAmount: 3000 });
 
         // Add a bot in W0N1
