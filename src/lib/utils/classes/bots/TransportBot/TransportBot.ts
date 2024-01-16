@@ -8,17 +8,27 @@ export class TransportBot extends Bot {
     public priority: number = transportBotConfig.priority;
     public role: string = transportBotConfig.role;
     public name: string
-    constructor(sourceId: Id<Source>) {
+    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | null, dropOff?: Id<Structure> | null }) {
         super();
         this.memory = {
             role: transportBotConfig.role,
             params: {
-                sourceId: sourceId
-            }
+                pickup: params.pickup && params.pickup || null,
+                dropOff: params.dropOff && params.dropOff|| null,
+            },
+            room: roomName
         }
-        this.name = `sB-${sourceId}`
+        this.name = `tB-${roomName}`
+
+        if(params.pickup){
+            this.name = `${this.name}-${params.pickup}`
+        }
+        if(params.dropOff){
+            this.name = `${this.name}-${params.dropOff}`
+        }
     }
     public runBot(bot: Creep): void {
+        console.log(JSON.stringify(bot, null, 2))
         if (!bot.memory.status) {
             if (bot.spawning) {
                 bot.memory.status = "spawning"
@@ -34,18 +44,20 @@ export class TransportBot extends Bot {
 
         switch (bot.memory.status) {
             case "pickingUp":
-                this.harvestSource(bot)
+                console.log("pickingUp-TB")
+                if(bot.memory.params.pickup != null){
+                    //
+                } else {
+                    console.log("pickingUp-TB-DroppedResource")
+                    this.pickupEnergy(bot)
+                }
                 break;
-            case "depositing":
-                const transportBots = Object.values(Game.creeps).filter(transportBot => transportBot.memory.role == "transportBot")
-                if (transportBots.length == 0) {
-                    const spawnsInRoom = Object.values(Game.spawns).filter(spawn => spawn.room.name == bot.room.name)
-                    if (spawnsInRoom.length == 1) {
-                        const transferResult = bot.transfer(spawnsInRoom[0], RESOURCE_ENERGY)
-                        if (transferResult == ERR_NOT_IN_RANGE) {
-                            bot.moveTo(spawnsInRoom[0])
-                        }
-                    }
+                case "depositing":
+                console.log("depositing-TB")
+                if(bot.memory.params.dropOff != null){
+                    //
+                } else {
+                    this.fillSpawn(bot)
                 }
                 break;
             default:

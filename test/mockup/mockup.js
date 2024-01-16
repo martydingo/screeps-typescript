@@ -36,7 +36,7 @@
 
         // Start server and run several ticks
         await server.start();
-        for (let i = 0; i < 100; i += 1) {
+        for (let i = 0; i < 400; i += 1) {
             console.log('[tick]', await server.world.gameTime);
             await server.tick();
             _.each(await bot.newNotifications, ({ message }) => console.log('[notification]', message));

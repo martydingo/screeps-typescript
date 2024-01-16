@@ -2,7 +2,7 @@ import { SourceBotConfiguration } from "./sourceBotConfig.types";
 export const sourceBotConfig: SourceBotConfiguration = {
     role: "sourceBot",
     parts: {
-        1: [WORK, CARRY, MOVE],
+        1: [WORK, WORK, CARRY, MOVE],
         2: [WORK, WORK, CARRY, MOVE],
         3: [WORK, WORK, CARRY, MOVE],
         4: [WORK, WORK, CARRY, MOVE],

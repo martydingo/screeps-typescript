@@ -8,17 +8,21 @@ export class SourceBot extends Bot {
     public priority: number = sourceBotConfig.priority;
     public role: string = sourceBotConfig.role;
     public name: string
-    constructor(sourceId: Id<Source>) {
+    public room: string
+    constructor(sourceId: Id<Source>, room: string) {
         super();
         this.memory = {
             role: sourceBotConfig.role,
+            room: room,
             params: {
                 sourceId: sourceId
             }
         }
         this.name = `sB-${sourceId}`
+        this.room = room
     }
     public runBot(bot: Creep): void {
+
         if (!bot.memory.status) {
             if (bot.spawning) {
                 bot.memory.status = "spawning"
@@ -29,7 +33,28 @@ export class SourceBot extends Bot {
             bot.memory.status = "harvesting"
         }
         else {
-            bot.memory.status = "depositing"
+            if (Object.values(Game.creeps).filter((otherSourceBot) => otherSourceBot.memory.role === "sourceBot" &&
+                otherSourceBot.memory.room === bot.memory.room).length >= Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.sources).length) {
+                    if(Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null).length > 0){
+                        bot.drop(RESOURCE_ENERGY)
+                    } else {
+                        let spawnsFull: boolean[] = []
+                        Object.values(Game.spawns).filter(spawn => spawn.room.name == bot.room.name).forEach((spawn) => {
+                            if(spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0){
+                                spawnsFull.push(false)
+                            } else {
+                                spawnsFull.push(true)
+                            }
+                        })
+                        if(spawnsFull.includes(false)){
+                            bot.memory.status = "depositing"
+                        } else {
+                            bot.drop(RESOURCE_ENERGY)
+                        }
+                    }
+            } else {
+                bot.memory.status = "depositing"
+            }
         }
 
         switch (bot.memory.status) {
@@ -39,13 +64,7 @@ export class SourceBot extends Bot {
             case "depositing":
                 const transportBots = Object.values(Game.creeps).filter(transportBot => transportBot.memory.role == "transportBot")
                 if (transportBots.length == 0) {
-                    const spawnsInRoom = Object.values(Game.spawns).filter(spawn => spawn.room.name == bot.room.name)
-                    if (spawnsInRoom.length == 1) {
-                        const transferResult = bot.transfer(spawnsInRoom[0], RESOURCE_ENERGY)
-                        if (transferResult == ERR_NOT_IN_RANGE) {
-                            bot.moveTo(spawnsInRoom[0])
-                        }
-                    }
+                    this.fillSpawn(bot)
                 }
                 break;
             default:

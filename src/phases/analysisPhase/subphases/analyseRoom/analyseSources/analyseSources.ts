@@ -22,7 +22,7 @@ function buildSourceAnalysisEntryMemory(roomName: string) {
 function createSourceBotJobs(roomName: string) {
     Object.entries(Memory.rooms[roomName].analysis.sources).forEach(([sourceId, sourceData]) => {
         if (sourceData.assignedBot === null) {
-            const sourceBot = new SourceBot(sourceId as Id<Source>)
+            const sourceBot = new SourceBot(sourceId as Id<Source>, roomName)
             if (!Memory.analysis.queues.spawn[sourceBot.name]) {
                 Memory.analysis.queues.spawn[sourceBot.name] = {
                     name: sourceBot.name,
@@ -38,8 +38,8 @@ function createSourceBotJobs(roomName: string) {
 }
 
 function assignSourceBotJobs(roomName: string){
-    Object.entries(Memory.rooms[roomName].monitoring.structures.sources).forEach(([sourceId, sourceData]) => {
-        const sourceBot = new SourceBot(sourceId as Id<Source>)
+    Object.keys(Memory.rooms[roomName].monitoring.structures.sources).forEach((sourceId) => {
+        const sourceBot = new SourceBot(sourceId as Id<Source>, roomName)
         if(Game.creeps[sourceBot.name]){
             Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>].assignedBot = Game.creeps[sourceBot.name].name
         }
