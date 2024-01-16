@@ -28,7 +28,6 @@ export class UpgradeBot extends Bot {
         }
     }
     public runBot(bot: Creep): void {
-        console.log(JSON.stringify(bot, null, 2))
         if (!bot.memory.status) {
             if (bot.spawning) {
                 bot.memory.status = "spawning"
@@ -44,7 +43,6 @@ export class UpgradeBot extends Bot {
 
         switch (bot.memory.status) {
             case "pickingUp":
-                console.log("pickingUp-TB")
                 if(bot.memory.params.pickup != null){
                     //
                 } else {
@@ -53,7 +51,6 @@ export class UpgradeBot extends Bot {
                 }
                 break;
                 case "droppingOff":
-                console.log("depositing-TB")
                 if(bot.memory.params.dropOff != null){
                     //
                 } else {

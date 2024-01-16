@@ -28,7 +28,6 @@ export class Bot {
     public pickupEnergy(bot: Creep) {
         const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceA.amount - droppedResourceB.amount)
         this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
-        console.log(Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>))
     }
 
     public fillSpawn(bot: Creep) {

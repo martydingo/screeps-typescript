@@ -41,7 +41,10 @@ function assignSourceBotJobs(roomName: string){
     Object.keys(Memory.rooms[roomName].monitoring.structures.sources).forEach((sourceId) => {
         const sourceBot = new SourceBot(sourceId as Id<Source>, roomName)
         if(Game.creeps[sourceBot.name]){
-            Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>].assignedBot = Game.creeps[sourceBot.name].name
+            Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>].assignedBot = sourceBot.name
+            delete Memory.analysis.queues.spawn[sourceBot.name]
+        } else {
+            Memory.rooms[roomName].analysis.sources[sourceId as Id<Source>].assignedBot = null
         }
     })
 }
