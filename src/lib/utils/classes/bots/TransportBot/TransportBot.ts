@@ -1,17 +1,17 @@
-import { sourceBotConfig } from "config/subconfigs/botConfig/sourceBotConfig/sourceBotConfig";
+import { transportBotConfig } from "config/subconfigs/botConfig/transportBotConfig/transportBotConfig";
 import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
 import { Bot } from "../Bot";
 
-export class SourceBot extends Bot {
-    public memory: SourceBotMemory;
-    public parts: BotParts = sourceBotConfig.parts;
-    public priority: number = sourceBotConfig.priority;
-    public role: string = sourceBotConfig.role;
+export class TransportBot extends Bot {
+    public memory: TransportBotMemory;
+    public parts: BotParts = transportBotConfig.parts;
+    public priority: number = transportBotConfig.priority;
+    public role: string = transportBotConfig.role;
     public name: string
     constructor(sourceId: Id<Source>) {
         super();
         this.memory = {
-            role: sourceBotConfig.role,
+            role: transportBotConfig.role,
             params: {
                 sourceId: sourceId
             }
@@ -25,15 +25,15 @@ export class SourceBot extends Bot {
                 return
             }
         }
-        if (bot.store.getFreeCapacity() > 0 || bot.getActiveBodyparts(CARRY) == 0) {
-            bot.memory.status = "harvesting"
+        if (bot.store.getFreeCapacity() > 0) {
+            bot.memory.status = "pickingUp"
         }
         else {
-            bot.memory.status = "depositing"
+            bot.memory.status = "droppingOff"
         }
 
         switch (bot.memory.status) {
-            case "harvesting":
+            case "pickingUp":
                 this.harvestSource(bot)
                 break;
             case "depositing":
