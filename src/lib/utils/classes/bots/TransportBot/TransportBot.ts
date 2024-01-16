@@ -52,7 +52,7 @@ export class TransportBot extends Bot {
                     this.pickupEnergy(bot)
                 }
                 break;
-                case "depositing":
+                case "droppingOff":
                 console.log("depositing-TB")
                 if(bot.memory.params.dropOff != null){
                     //

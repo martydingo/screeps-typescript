@@ -33,8 +33,7 @@ export class SourceBot extends Bot {
             bot.memory.status = "harvesting"
         }
         else {
-            if (Object.values(Game.creeps).filter((otherSourceBot) => otherSourceBot.memory.role === "sourceBot" &&
-                otherSourceBot.memory.room === bot.memory.room).length >= Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.sources).length) {
+
                     if(Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null).length > 0){
                         bot.drop(RESOURCE_ENERGY)
                     } else {
@@ -52,9 +51,7 @@ export class SourceBot extends Bot {
                             bot.drop(RESOURCE_ENERGY)
                         }
                     }
-            } else {
-                bot.memory.status = "depositing"
-            }
+
         }
 
         switch (bot.memory.status) {
