@@ -2,18 +2,16 @@ import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
 import { Bot } from "../Bot";
 import { config } from "config/config";
 
-
-
-export class TransportBot extends Bot {
-    public memory: TransportBotMemory;
-    public parts: BotParts = config.bots.transportBots.parts;
-    public priority: number = config.bots.transportBots.priority;
-    public role: string = config.bots.transportBots.role;
+export class UpgradeBot extends Bot {
+    public memory: UpgradeBotMemory;
+    public parts: BotParts = config.bots.upgradeBots.parts;
+    public priority: number = config.bots.upgradeBots.priority;
+    public role: string = config.bots.upgradeBots.role;
     public name: string
     constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | null, dropOff?: Id<Structure> | null }) {
         super();
         this.memory = {
-            role: config.bots.transportBots.role,
+            role: config.bots.upgradeBots.role,
             params: {
                 pickup: params.pickup && params.pickup || null,
                 dropOff: params.dropOff && params.dropOff|| null,
