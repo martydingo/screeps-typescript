@@ -36,10 +36,10 @@ export class UpgradeBot extends Bot {
                 return
             }
         }
-        if (bot.store.getFreeCapacity() > 0) {
+        if (bot.store.getFreeCapacity() === bot.store.getCapacity()) {
             bot.memory.status = "pickingUp"
         }
-        else {
+        else if (bot.store.getFreeCapacity() === 0){
             bot.memory.status = "upgrading"
         }
 

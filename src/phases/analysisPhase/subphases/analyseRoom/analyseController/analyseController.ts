@@ -16,7 +16,7 @@ function createUpgradeBotJob(roomName: string) {
                 name: upgradeBot.name,
                 room: roomName,
                 priority: upgradeBot.priority,
-                parts: upgradeBot.parts[Game.rooms[roomName].controller!.level],
+                parts: upgradeBot.parts[Game.rooms[roomName].energyCapacityAvailable],
                 memory: upgradeBot.memory,
                 status: "new"
             }

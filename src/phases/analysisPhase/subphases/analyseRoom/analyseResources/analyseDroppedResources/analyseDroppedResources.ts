@@ -5,7 +5,7 @@ function createTransportBotJobs(roomName: string){
         Memory.analysis.queues.spawn[transportBot.name] = {
             name: transportBot.name,
             room: roomName,
-            parts: transportBot.parts[Game.rooms[roomName].controller!.level],
+            parts: transportBot.parts[Game.rooms[roomName].energyCapacityAvailable],
             priority: transportBot.priority,
             memory: transportBot.memory,
             status: "new"

@@ -1,6 +1,7 @@
 import { monitorSources } from "./monitorSources/monitorSources"
 import { log } from "../../../../../lib/utils/log";
 import { monitorController } from "./monitorControllers/monitorControllers";
+import { monitorExtensions } from "./monitorExtensions/monitorExtensions";
 
 function buildStructureMonitorMemory(roomName: string) {
     log.debug(`Building structure monitor memory for ${roomName}`)
@@ -15,4 +16,5 @@ export function monitorStructures(roomName: string){
     buildStructureMonitorMemory(roomName)
     monitorSources(roomName)
     monitorController(roomName)
+    monitorExtensions(roomName)
 }

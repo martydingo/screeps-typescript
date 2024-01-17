@@ -26,14 +26,16 @@ export class Bot {
 
     }
     public pickupEnergy(bot: Creep) {
-        const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceA.amount - droppedResourceB.amount)
-        this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+        const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceA.amount + droppedResourceB.amount)
+        if(droppedEnergy[0]){
+            this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+        }
     }
 
     public fillSpawn(bot: Creep) {
         const spawnsInRoom = Object.values(Game.spawns)
             .filter(spawn => spawn.room.name == bot.memory.room && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
-            .sort((spawnA, spawnB) => spawnA.store[RESOURCE_ENERGY] - spawnB.store[RESOURCE_ENERGY])
+            .sort((spawnA, spawnB) => (spawnA.store[RESOURCE_ENERGY] / spawnA.store.getCapacity(RESOURCE_ENERGY)) - (spawnB.store[RESOURCE_ENERGY] / spawnB.store.getCapacity(RESOURCE_ENERGY)))
         if (spawnsInRoom.length > 0) {
             const transferResult = bot.transfer(spawnsInRoom[0], RESOURCE_ENERGY)
             if (transferResult == ERR_NOT_IN_RANGE) {
@@ -44,6 +46,30 @@ export class Bot {
             } else if (transferResult !== OK) {
                 log.info(`${bot.name} suffered ${transferResult} while transferring into ${spawnsInRoom[0]}`)
             }
+        } else {
+
+            const extensionsInRoom: StructureExtension[] = []
+            Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.extensions).forEach((extensionId) => {
+                extensionsInRoom.push(Game.getObjectById(extensionId as Id<StructureExtension>)!)
+            })
+            const extensionToFill = extensionsInRoom
+            .filter((extension) => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0 )
+            .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])[0]
+            const transferResult = bot.transfer(extensionToFill, RESOURCE_ENERGY)
+            if (transferResult == ERR_NOT_IN_RANGE) {
+                const moveResult = bot.moveTo(extensionToFill)
+                if (moveResult !== OK) {
+                    log.info(`${bot.name} suffered ${moveResult} while moving`)
+                }
+            }
+        }
+    }
+
+    public recycleBot(bot: Creep){
+        const roomSpawn = Object.values(Game.spawns).filter((spawn) => spawn.pos.roomName === bot.memory.room)[0]
+        const recycleResult = roomSpawn.recycleCreep(bot)
+        if(recycleResult === ERR_NOT_IN_RANGE){
+            bot.moveTo(roomSpawn)
         }
     }
 }

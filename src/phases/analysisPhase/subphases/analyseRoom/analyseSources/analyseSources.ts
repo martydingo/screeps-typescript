@@ -28,7 +28,7 @@ function createSourceBotJobs(roomName: string) {
                     name: sourceBot.name,
                     room: roomName,
                     priority: sourceBot.priority,
-                    parts: sourceBot.parts[Game.rooms[roomName].controller!.level],
+                    parts: sourceBot.parts[Game.rooms[roomName].energyCapacityAvailable],
                     memory: sourceBot.memory,
                     status: "new"
                 }

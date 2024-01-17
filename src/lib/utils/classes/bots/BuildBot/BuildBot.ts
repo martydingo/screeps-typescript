@@ -1,0 +1,65 @@
+import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
+import { Bot } from "../Bot";
+import { config } from "config/config";
+
+export class BuildBot extends Bot {
+    public memory: BuildBotMemory;
+    public parts: BotParts = config.bots.buildBots.parts;
+    public priority: number = config.bots.buildBots.priority;
+    public role: string = config.bots.buildBots.role;
+    public name: string
+    constructor(roomName: string, index: number) {
+        super();
+        this.memory = {
+            role: config.bots.buildBots.role,
+            params: {},
+            room: roomName
+        }
+        this.name = `bB-${roomName}-${index}`
+    }
+    private buildConstructionSite(bot: Creep): void {
+        const constructionSiteEntries = Object.entries(Memory.rooms[bot.memory.room].monitoring.construction)
+        .sort(([, constructionSiteA], [, constructionSiteB]) => (constructionSiteA.progress / constructionSiteA.progressTotal) + (constructionSiteB.progress / constructionSiteB.progressTotal))[0]
+        if(constructionSiteEntries){
+            const constructionSiteId = constructionSiteEntries[0][0] as Id<ConstructionSite>
+            if(constructionSiteId){
+                const constructionSite = Game.getObjectById(constructionSiteId)
+                if (constructionSite) {
+                    const buildResult = bot.build(constructionSite)
+                    if (buildResult == ERR_NOT_IN_RANGE) {
+                        bot.moveTo(constructionSite)
+                    }
+                }
+            }
+        } else {
+            this.recycleBot(bot)
+        }
+    }
+
+    public runBot(bot: Creep): void {
+        if (!bot.memory.status) {
+            if (bot.spawning) {
+                bot.memory.status = "spawning"
+                return
+            }
+        }
+        if (bot.store.getFreeCapacity() === bot.store.getCapacity()) {
+            bot.memory.status = "pickingUp"
+        }
+        else if (bot.store.getFreeCapacity() === 0){
+            bot.memory.status = "building"
+        }
+
+        switch (bot.memory.status) {
+            case "pickingUp":
+                this.pickupEnergy(bot)
+                break;
+            case "building":
+                this.buildConstructionSite(bot)
+                break;
+            default:
+                break;
+        }
+
+    }
+}

@@ -1,6 +1,6 @@
-import { upgradeBotConfiguration } from "./upgradeBotConfig.types";
-export const upgradeBotConfig: upgradeBotConfiguration = {
-    role: "upgradeBot",
+import { buildBotConfiguration } from "./buildBotConfig.types";
+export const buildBotConfig: buildBotConfiguration = {
+    role: "buildBot",
     parts: {
         300: [WORK, WORK, CARRY, MOVE],
         350: [WORK, WORK, CARRY, MOVE, MOVE],
@@ -9,5 +9,5 @@ export const upgradeBotConfig: upgradeBotConfiguration = {
         500: [WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
         550: [WORK, WORK, WORK, CARRY, MOVE, MOVE, MOVE, MOVE],
     },
-    priority: 3
+    priority: 4
 }

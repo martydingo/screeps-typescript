@@ -32,32 +32,37 @@ export class SourceBot extends Bot {
             bot.memory.status = "harvesting"
         }
         else {
-            if (Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null).length > 0) {
-                bot.drop(RESOURCE_ENERGY)
-            } else {
-                let spawnsFull: boolean[] = []
-                Object.values(Game.spawns).filter(spawn => spawn.room.name == bot.room.name).forEach((spawn) => {
-                    if (spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
-                        spawnsFull.push(false)
-                    } else {
-                        spawnsFull.push(true)
-                    }
-                })
-                if (spawnsFull.includes(false)) {
-                    bot.memory.status = "depositing"
-                } else {
-                    bot.drop(RESOURCE_ENERGY)
-                }
-            }
+            bot.memory.status = "depositing"
+
+
+                // let spawnsFull: boolean[] = []
+                // Object.values(Game.spawns).filter(spawn => spawn.room.name == bot.room.name).forEach((spawn) => {
+                //     if (spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                //         spawnsFull.push(false)
+                //     } else {
+                //         spawnsFull.push(true)
+                //     }
+                // })
+                // if (spawnsFull.includes(false)) {
+                //     bot.memory.status = "depositing"
+                // } else {
+                //     bot.drop(RESOURCE_ENERGY)
+                // }
+
         }
         switch (bot.memory.status) {
             case "harvesting":
                 this.harvestSource(bot)
+                if(Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null).length > 0){
+                    bot.drop(RESOURCE_ENERGY)
+                }
                 break;
             case "depositing":
                 const transportBots = Object.values(Game.creeps).filter(transportBot => transportBot.memory.role == "transportBot")
                 if (transportBots.length == 0) {
                     this.fillSpawn(bot)
+                } else {
+                    bot.drop(RESOURCE_ENERGY)
                 }
                 break;
             default:
