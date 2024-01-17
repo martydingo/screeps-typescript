@@ -5,5 +5,7 @@ declare global {
         sources: SourceMonitorData
         controller: ControllerMonitorData
         extensions: ExtensionMonitorData
+        towers: TowerMonitorData
+        storage: StorageMonitorData
     }
 }

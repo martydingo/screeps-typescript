@@ -23,7 +23,17 @@ export class Bot {
         } else if (pickupResult !== OK) {
             log.info(`${bot.name} suffered ${pickupResult} while picking up`)
         }
-
+    }
+    public dropOffResource(bot: Creep, structure: Structure<StructureConstant>, resource: ResourceConstant) {
+        const transferResult = bot.transfer(structure, resource)
+        if (transferResult === ERR_NOT_IN_RANGE) {
+            const moveResult = bot.moveTo(structure)
+            if (moveResult !== OK) {
+                log.info(`${bot.name} suffered ${moveResult} while moving`)
+            }
+        } else if (transferResult !== OK) {
+            log.info(`${bot.name} suffered ${transferResult} while dropping ${resource} off at ${structure}`)
+        }
     }
     public pickupEnergy(bot: Creep) {
         const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceA.amount + droppedResourceB.amount)
@@ -37,15 +47,7 @@ export class Bot {
             .filter(spawn => spawn.room.name == bot.memory.room && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
             .sort((spawnA, spawnB) => (spawnA.store[RESOURCE_ENERGY] / spawnA.store.getCapacity(RESOURCE_ENERGY)) - (spawnB.store[RESOURCE_ENERGY] / spawnB.store.getCapacity(RESOURCE_ENERGY)))
         if (spawnsInRoom.length > 0) {
-            const transferResult = bot.transfer(spawnsInRoom[0], RESOURCE_ENERGY)
-            if (transferResult == ERR_NOT_IN_RANGE) {
-                const moveResult = bot.moveTo(spawnsInRoom[0])
-                if (moveResult !== OK) {
-                    log.info(`${bot.name} suffered ${moveResult} while moving`)
-                }
-            } else if (transferResult !== OK) {
-                log.info(`${bot.name} suffered ${transferResult} while transferring into ${spawnsInRoom[0]}`)
-            }
+            this.dropOffResource(bot, spawnsInRoom[0], RESOURCE_ENERGY)
         } else {
 
             const extensionsInRoom: StructureExtension[] = []
@@ -55,12 +57,9 @@ export class Bot {
             const extensionToFill = extensionsInRoom
             .filter((extension) => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0 )
             .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])[0]
-            const transferResult = bot.transfer(extensionToFill, RESOURCE_ENERGY)
-            if (transferResult == ERR_NOT_IN_RANGE) {
-                const moveResult = bot.moveTo(extensionToFill)
-                if (moveResult !== OK) {
-                    log.info(`${bot.name} suffered ${moveResult} while moving`)
-                }
+
+            if(extensionToFill){
+                this.dropOffResource(bot, extensionToFill, RESOURCE_ENERGY)
             }
         }
     }
