@@ -5,6 +5,7 @@ declare global {
         structures: StructureMonitorData;
         resources: ResourceMonitorData;
         construction: ConstructionMonitorData;
+        hostiles: HostileMonitorData;
     }
 
     interface RoomMemory {

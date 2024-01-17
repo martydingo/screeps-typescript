@@ -7,5 +7,7 @@ declare global {
         extensions: ExtensionMonitorData
         towers: TowerMonitorData
         storage: StorageMonitorData
+        roads: RoadMonitorData
+        containers: ContainerMonitorData
     }
 }
