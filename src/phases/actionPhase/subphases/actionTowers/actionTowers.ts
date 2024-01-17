@@ -31,4 +31,9 @@ export function actionTowers(roomName: string) {
             }
         })
     }
+
+    const roadsInDisrepair: StructureRoad[] = []
+    const containersInDisrepair: StructureContainer[] = []
+
+    const structuresInDisrepair = [...roadsInDisrepair, ...containersInDisrepair]
 }
