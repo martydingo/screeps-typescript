@@ -34,6 +34,12 @@ export function actionTowers(roomName: string) {
 
     const roadsInDisrepair: StructureRoad[] = []
     const containersInDisrepair: StructureContainer[] = []
-
     const structuresInDisrepair = [...roadsInDisrepair, ...containersInDisrepair]
+
+    if(structuresInDisrepair.length > 0){
+        towers.forEach(tower => {
+            const target = structuresInDisrepair.sort((structureA, structureB) => (structureA.hits / structureA.hitsMax) - (structureB.hits / structureB.hitsMax))[0]
+            tower.repair(target)
+        })
+    }
 }
