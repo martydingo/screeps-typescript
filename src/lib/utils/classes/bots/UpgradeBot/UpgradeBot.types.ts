@@ -2,8 +2,7 @@ export { }
 
 declare global {
     type UpgradeBotParams = {
-        pickup: Id<Resource<ResourceConstant>> | Id<Structure> | null
-        dropOff: Id<Structure> | null
+        controllerId: Id<StructureController>
     }
     interface UpgradeBotMemory extends BotMemory {
         params: UpgradeBotParams

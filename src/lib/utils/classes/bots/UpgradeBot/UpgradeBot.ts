@@ -8,25 +8,27 @@ export class UpgradeBot extends Bot {
     public priority: number = config.bots.upgradeBots.priority;
     public role: string = config.bots.upgradeBots.role;
     public name: string
-    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | null, dropOff?: Id<Structure> | null }) {
+    constructor(controllerId: Id<StructureController>, roomName: string) {
         super();
         this.memory = {
             role: config.bots.upgradeBots.role,
             params: {
-                pickup: params.pickup && params.pickup || null,
-                dropOff: params.dropOff && params.dropOff|| null,
+                controllerId: controllerId
             },
             room: roomName
         }
-        this.name = `tB-${roomName}`
-
-        if(params.pickup){
-            this.name = `${this.name}-${params.pickup}`
-        }
-        if(params.dropOff){
-            this.name = `${this.name}-${params.dropOff}`
+        this.name = `uB-${controllerId}`
+    }
+    private upgradeController(bot: Creep): void {
+        const controller = Game.getObjectById(bot.memory.params.controllerId) as StructureController
+        if (controller) {
+            const upgradeResult = bot.upgradeController(controller)
+            if (upgradeResult == ERR_NOT_IN_RANGE) {
+                bot.moveTo(controller)
+            }
         }
     }
+
     public runBot(bot: Creep): void {
         if (!bot.memory.status) {
             if (bot.spawning) {
@@ -38,24 +40,15 @@ export class UpgradeBot extends Bot {
             bot.memory.status = "pickingUp"
         }
         else {
-            bot.memory.status = "droppingOff"
+            bot.memory.status = "upgrading"
         }
 
         switch (bot.memory.status) {
             case "pickingUp":
-                if(bot.memory.params.pickup != null){
-                    //
-                } else {
-                    console.log("pickingUp-TB-DroppedResource")
-                    this.pickupEnergy(bot)
-                }
+                this.pickupEnergy(bot)
                 break;
-                case "droppingOff":
-                if(bot.memory.params.dropOff != null){
-                    //
-                } else {
-                    this.fillSpawn(bot)
-                }
+            case "upgrading":
+                this.upgradeController(bot)
                 break;
             default:
                 break;

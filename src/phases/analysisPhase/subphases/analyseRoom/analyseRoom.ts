@@ -1,6 +1,7 @@
 import { log } from "lib/utils/log"
 import { analyseSources } from "./analyseSources/analyseSources"
 import { analyseResources } from "./analyseResources/analyseResources"
+import { analyseController } from "./analyseController/analyseController"
 
 function buildRoomAnalysisMemory(roomName: string) {
     log.debug(`Building Room Analysis Memory for ${roomName}`)
@@ -13,4 +14,5 @@ export function analyseRoom(roomName: string) {
     buildRoomAnalysisMemory(roomName)
     analyseSources(roomName)
     analyseResources(roomName)
+    analyseController(roomName)
 }

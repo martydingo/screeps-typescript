@@ -2,7 +2,7 @@ import { upgradeBotConfiguration } from "./upgradeBotConfig.types";
 export const upgradeBotConfig: upgradeBotConfiguration = {
     role: "upgradeBot",
     parts: {
-        1: [CARRY, MOVE, CARRY, MOVE],
+        1: [WORK, WORK, CARRY, MOVE],
         2: [WORK, WORK, CARRY, MOVE],
         3: [WORK, WORK, CARRY, MOVE],
         4: [WORK, WORK, CARRY, MOVE],
