@@ -36,8 +36,8 @@ export class Bot {
         }
     }
     public pickupEnergy(bot: Creep) {
-        const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceA.amount + droppedResourceB.amount)
-        if(droppedEnergy[0]){
+        const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceB.amount - droppedResourceA.amount)
+        if (droppedEnergy[0]) {
             this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
         }
     }

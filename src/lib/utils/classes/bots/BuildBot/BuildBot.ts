@@ -1,6 +1,7 @@
 import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
 import { Bot } from "../Bot";
 import { config } from "config/config";
+import { log } from "lib/utils/log";
 
 export class BuildBot extends Bot {
     public memory: BuildBotMemory;
@@ -20,14 +21,17 @@ export class BuildBot extends Bot {
     private buildConstructionSite(bot: Creep): void {
         const constructionSiteEntries = Object.entries(Memory.rooms[bot.memory.room].monitoring.construction)
         .sort(([, constructionSiteA], [, constructionSiteB]) => (constructionSiteA.progress / constructionSiteA.progressTotal) + (constructionSiteB.progress / constructionSiteB.progressTotal))[0]
-        if(constructionSiteEntries){
-            const constructionSiteId = constructionSiteEntries[0][0] as Id<ConstructionSite>
+        if (constructionSiteEntries) {
+            const constructionSiteId = constructionSiteEntries[0] as Id<ConstructionSite>
             if(constructionSiteId){
                 const constructionSite = Game.getObjectById(constructionSiteId)
+                log.debug(`BuildBot ${bot.name} is building ${constructionSiteId}`)
                 if (constructionSite) {
                     const buildResult = bot.build(constructionSite)
                     if (buildResult == ERR_NOT_IN_RANGE) {
                         bot.moveTo(constructionSite)
+                    } else if (buildResult != OK) {
+                        log.info(`BuildBot ${bot.name} encountered error ${buildResult} while building ${constructionSiteId}`)
                     }
                 }
             }

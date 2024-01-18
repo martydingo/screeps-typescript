@@ -24,7 +24,7 @@ function deleteBuildBotJobs(roomName: string, index: number) {
 }
 
 export function analyseConstruction(roomName: string) {
-    const buildBotCount = Object.keys(Memory.rooms[roomName].monitoring.construction).length
+    const buildBotCount = Math.round(Object.keys(Memory.rooms[roomName].monitoring.construction).length / 3)
 
     for (let index = 1; index <= buildBotCount; index++) {
         const buildBot = new BuildBot(roomName, index)

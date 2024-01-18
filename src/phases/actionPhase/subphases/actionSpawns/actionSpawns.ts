@@ -18,17 +18,20 @@ function processNewSpawnRequests() {
         .filter(([, botData]) => botData.status === "new")
         .sort(([, a], [, b]) => a.priority - b.priority)
 
-    spawnLoop: for (const [botName, botData] of spawnQueue) {
-        const spawn = Object.values(Game.spawns).filter((spawn) => spawn.room.name === botData.room && !spawn.spawning)[0]
+    if (spawnQueue.length === 0) {
+        return
+    }
+    const botName = spawnQueue[0][0]
+    const botData = spawnQueue[0][1]
+    const spawn = Object.values(Game.spawns).filter((spawn) => spawn.room.name === botData.room && !spawn.spawning)[0]
         if (spawn) {
             const spawnResult = spawn.spawnCreep(botData.parts, botData.name, { memory: botData.memory })
             log.info(`Spawning ${botName} in ${botData.room} with result ${spawnResult}`)
             if (spawnResult === OK) {
                 Memory.analysis.queues.spawn[botName].status = "spawning"
-                break spawnLoop;
             }
         }
-    }
+
 }
 
 function processSpawnQueue() {

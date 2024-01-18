@@ -7,6 +7,11 @@ import { log } from "lib/utils/log";
 export const loop = ErrorMapper.wrapLoop(() => {
   log.info(`Current game tick is ${Game.time}`);
   log.debug("Starting Phase Controller")
+  if (Game.cpu.bucket == 10000) {
+    if (Game.cpu.generatePixel) {
+      Game.cpu.generatePixel()
+    }
+  }
   new PhaseController()
   // Automatically delete memory of missing creeps
   for (const name in Memory.creeps) {
