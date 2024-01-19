@@ -71,4 +71,11 @@ export class Bot {
             bot.moveTo(roomSpawn)
         }
     }
+
+    public repairStructure(bot: Creep, structure: Structure<StructureConstant>) {
+        const repairResult = bot.repair(structure)
+        if (repairResult === ERR_NOT_IN_RANGE) {
+            bot.moveTo(structure)
+        }
+    }
 }
