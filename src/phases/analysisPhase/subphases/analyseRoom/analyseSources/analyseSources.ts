@@ -23,12 +23,13 @@ function createSourceBotJobs(roomName: string) {
     Object.entries(Memory.rooms[roomName].analysis.sources).forEach(([sourceId, sourceData]) => {
         if (sourceData.assignedBot === null) {
             const sourceBot = new SourceBot(sourceId as Id<Source>, roomName)
+            const parts =  Object.values(Game.creeps).filter(creep => creep.memory.room === roomName).length > 0 && sourceBot.parts[Game.rooms[roomName].energyCapacityAvailable] || sourceBot.parts[Game.rooms[roomName].energyAvailable]
             if (!Memory.analysis.queues.spawn[sourceBot.name]) {
                 Memory.analysis.queues.spawn[sourceBot.name] = {
                     name: sourceBot.name,
                     room: roomName,
                     priority: sourceBot.priority,
-                    parts: sourceBot.parts[Game.rooms[roomName].energyCapacityAvailable],
+                    parts: parts,
                     memory: sourceBot.memory,
                     status: "new"
                 }
