@@ -4,13 +4,17 @@ function createTransportBotJob(roomName: string) {
     const transportBot = new TransportBot(roomName, {
         dropOff: "towers"
     })
-    Memory.analysis.queues.spawn[transportBot.name] = {
-        name: transportBot.name,
-        room: roomName,
-        priority: transportBot.priority,
-        parts: transportBot.parts[Game.rooms[roomName].energyCapacityAvailable],
-        memory: transportBot.memory,
-        status: "new"
+    if (!Game.creeps[transportBot.name]) {
+        Memory.analysis.queues.spawn[transportBot.name] = {
+            name: transportBot.name,
+            room: roomName,
+            priority: transportBot.priority,
+            parts: transportBot.parts[Game.rooms[roomName].energyCapacityAvailable],
+            memory: transportBot.memory,
+            status: "new"
+        }
+    } else {
+        delete Memory.analysis.queues.spawn[transportBot.name]
     }
 }
 

@@ -53,7 +53,7 @@ export class SourceBot extends Bot {
         switch (bot.memory.status) {
             case "harvesting":
                 this.harvestSource(bot)
-                if(Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null).length > 0){
+                if (Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null && transportBot.memory.params.dropOff === null).length > 0){
                     bot.drop(RESOURCE_ENERGY)
                 }
                 break;
