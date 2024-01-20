@@ -21,11 +21,6 @@ export class SourceBot extends Bot {
         this.name = `sB-${sourceId}`
         this.room = room
     }
-
-    public dropIntoContainer(bot: Creep, container: StructureContainer) {
-
-    }
-
     public runBot(bot: Creep): void {
         if (!bot.memory.status) {
             if (bot.spawning) {
@@ -55,54 +50,19 @@ export class SourceBot extends Bot {
             // }
 
         }
-        const spawnTransportBots = Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null && transportBot.memory.params.dropOff === null)
         switch (bot.memory.status) {
             case "harvesting":
-                const containers = Object.values(Game.structures).filter(structure => structure.structureType === "container" && structure.room.name === bot.room.name)
-                let nearbyContainer: StructureContainer | undefined
-                containers.forEach((container) => {
-                    if (bot.pos.isNearTo(container)) {
-                        nearbyContainer = container as StructureContainer
-                    }
-                })
-
-                const source = Game.getObjectById(this.memory.params.sourceId) as Source
-                if (nearbyContainer) {
-
-                    if (source) {
-                        if (source.energy === 0) {
-                            this.repairStructure(bot, containers[0])
-                        }
-                    }
-
-                    if (spawnTransportBots.length > 0) {
-                        if (nearbyContainer) {
-                            this.dropIntoContainer(bot, nearbyContainer)
-                        } else {
-                            bot.drop(RESOURCE_ENERGY)
-                        }
-                    }
-                }
                 this.harvestSource(bot)
+                if (Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null && transportBot.memory.params.dropOff === null).length > 0) {
+                    bot.drop(RESOURCE_ENERGY)
+                }
                 break;
             case "depositing":
-                if (spawnTransportBots.length == 0) {
+                const transportBots = Object.values(Game.creeps).filter(transportBot => transportBot.memory.role == "transportBot")
+                if (transportBots.length == 0) {
                     this.fillSpawn(bot)
                 } else {
-                    if (spawnTransportBots.length > 0) {
-                        const containers = Object.values(Game.structures).filter(structure => structure.structureType === "container" && structure.room.name === bot.room.name)
-                        let nearbyContainer: StructureContainer | null = null
-                        containers.forEach((container) => {
-                            if (bot.pos.isNearTo(container)) {
-                                nearbyContainer = container as StructureContainer
-                            }
-                        })
-                        if (nearbyContainer) {
-                            this.dropIntoContainer(bot, nearbyContainer)
-                        } else {
-                            bot.drop(RESOURCE_ENERGY)
-                        }
-                    }
+                    bot.drop(RESOURCE_ENERGY)
                 }
                 break;
             default:
