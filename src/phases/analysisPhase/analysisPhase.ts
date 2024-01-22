@@ -2,6 +2,7 @@ import { analyseRoom } from "./subphases/analyseRoom/analyseRoom"
 import { config } from "config/config"
 import { log } from "lib/utils/log"
 import { analyseSpawning } from "./subphases/analyseSpawning/analyseSpawning"
+import { getOwnedRooms } from "lib/utils/roomUtils"
 
 function buildAnalysisMemory() {
     log.debug("Building Analysis Memory")
@@ -21,7 +22,7 @@ export function analysisPhase() {
 
     analyseSpawning()
 
-    const roomsToAnalyse = config.rooms.activeRooms
+    const roomsToAnalyse = [...getOwnedRooms()]
     roomsToAnalyse.forEach(roomName => {
         analyseRoom(roomName)
     })
