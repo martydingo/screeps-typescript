@@ -17,14 +17,18 @@ function setLinkConfig(roomName: string, link: StructureLink) {
 }
 
 function createLinkTransportJob(roomName: string){
-    const linkTransportBot = new TransportBot(roomName, {dropOff: "links"})
-    Memory.analysis.queues.spawn[linkTransportBot.name] = {
-        name: linkTransportBot.name,
-        room: roomName,
-        priority: linkTransportBot.priority,
-        parts: linkTransportBot.parts[Game.rooms[roomName].energyCapacityAvailable],
-        memory: linkTransportBot.memory,
-        status: "new"
+    const linkTransportBot = new TransportBot(roomName, { dropOff: "links" })
+    if (!Game.creeps[linkTransportBot.name]) {
+        Memory.analysis.queues.spawn[linkTransportBot.name] = {
+            name: linkTransportBot.name,
+            room: roomName,
+            priority: linkTransportBot.priority,
+            parts: linkTransportBot.parts[Game.rooms[roomName].energyCapacityAvailable],
+            memory: linkTransportBot.memory,
+            status: "new"
+        }
+    } else {
+        delete Memory.analysis.queues.spawn[linkTransportBot.name]
     }
 }
 

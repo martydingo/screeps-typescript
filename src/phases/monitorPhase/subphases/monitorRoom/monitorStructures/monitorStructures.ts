@@ -7,6 +7,7 @@ import { monitorTowers } from "./monitorTowers/monitorTowers";
 import { monitorContainers } from "./monitorContainers/monitorContainers";
 import { monitorRoads } from "./monitorRoads/monitorRoads";
 import { monitorLinks } from "./monitorLinks/monitorLinks";
+import { monitorSpawns } from "./monitorSpawns/monitorSpawns";
 
 function buildStructureMonitorMemory(roomName: string) {
     log.debug(`Building structure monitor memory for ${roomName}`)
@@ -20,6 +21,7 @@ export function monitorStructures(roomName: string){
     log.debug(`Monitoring structures in ${roomName}`)
     buildStructureMonitorMemory(roomName)
     monitorSources(roomName)
+    monitorSpawns(roomName)
     monitorController(roomName)
     monitorExtensions(roomName)
     monitorStorage(roomName)

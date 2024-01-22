@@ -17,7 +17,7 @@ export function monitorSources(roomName: string){
         const sourceMonitorEntry: SourceMonitorEntry = {
             energy: source.energy,
             energyCapacity: source.energyCapacity,
-            regenTime: source.ticksToRegeneration
+            regenTime: source.ticksToRegeneration || 300
         }
         Memory.rooms[roomName].monitoring.structures.sources[source.id] = sourceMonitorEntry
     })
