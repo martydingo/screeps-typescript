@@ -32,7 +32,9 @@ export function actionTowers(roomName: string) {
         })
     }
 
-    const roadsInDisrepair: StructureRoad[] = []
+    const roadsInDisrepair: StructureRoad[] = Object.keys(Memory.rooms[roomName].monitoring.structures.roads)
+        .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
+        .filter(road => road && road.hits < road.hitsMax) as StructureRoad[]
     const containersInDisrepair: StructureContainer[] = []
     const structuresInDisrepair = [...roadsInDisrepair, ...containersInDisrepair]
 

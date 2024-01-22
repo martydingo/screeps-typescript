@@ -53,16 +53,14 @@ export class SourceBot extends Bot {
         switch (bot.memory.status) {
             case "harvesting":
                 this.harvestSource(bot)
-                if (Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null && transportBot.memory.params.dropOff === null).length > 0) {
-                    bot.drop(RESOURCE_ENERGY)
-                }
                 break;
             case "depositing":
-                const transportBots = Object.values(Game.creeps).filter(transportBot => transportBot.memory.role == "transportBot")
-                if (transportBots.length == 0) {
-                    this.fillSpawn(bot)
-                } else {
+                const transportBots = Object.values(Game.creeps).filter((transportBot) => transportBot.memory.role === "transportBot" && transportBot.memory.room === bot.memory.room && transportBot.memory.params.pickup === null && transportBot.memory.params.dropOff === "spawns")
+                if (transportBots.length > 0) {
                     bot.drop(RESOURCE_ENERGY)
+                    this.harvestSource(bot)
+                } else {
+                    this.fillSpawn(bot)
                 }
                 break;
             default:

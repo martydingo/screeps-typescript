@@ -45,7 +45,7 @@ export class UpgradeBot extends Bot {
 
         switch (bot.memory.status) {
             case "pickingUp":
-                this.pickupEnergy(bot)
+                this.fetchEnergy(bot)
                 break;
             case "upgrading":
                 this.upgradeController(bot)

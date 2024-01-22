@@ -56,7 +56,7 @@ export class BuildBot extends Bot {
 
         switch (bot.memory.status) {
             case "pickingUp":
-                this.pickupEnergy(bot)
+                this.fetchEnergy(bot)
                 break;
             case "building":
                 this.buildConstructionSite(bot)

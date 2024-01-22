@@ -4,6 +4,7 @@ import { analyseResources } from "./analyseResources/analyseResources"
 import { analyseController } from "./analyseController/analyseController"
 import { analyseConstruction } from "./analyseConstruction/analyseConstruction"
 import { analyseTowers } from "./analyseTowers/analyseTowers"
+import { analyseStorage } from "./analyseStorage/analyseStorage"
 
 function buildRoomAnalysisMemory(roomName: string) {
     log.debug(`Building Room Analysis Memory for ${roomName}`)
@@ -16,6 +17,7 @@ export function analyseRoom(roomName: string) {
     buildRoomAnalysisMemory(roomName)
     analyseSources(roomName)
     analyseResources(roomName)
+    analyseStorage(roomName)
     analyseController(roomName)
     analyseConstruction(roomName)
     analyseTowers(roomName)

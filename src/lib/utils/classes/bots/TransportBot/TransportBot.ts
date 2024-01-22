@@ -10,7 +10,7 @@ export class TransportBot extends Bot {
     public priority: number = config.bots.transportBots.priority;
     public role: string = config.bots.transportBots.role;
     public name: string
-    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | null, dropOff?: Id<Structure> | "towers" | null }) {
+    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | "loot" | null, dropOff?: Id<Structure> | "towers" | "spawns" | null }) {
         super();
         this.memory = {
             role: config.bots.transportBots.role,
@@ -60,15 +60,25 @@ export class TransportBot extends Bot {
         switch (bot.memory.status) {
             case "pickingUp":
                 if(bot.memory.params.pickup != null){
-                    //
+                    if(bot.memory.params.pickup === "loot"){
+                        this.pickupEnergy(bot)
+                    }
                 } else {
-                    this.pickupEnergy(bot)
+                    this.fetchEnergy(bot)
                 }
                 break;
                 case "droppingOff":
                 if(bot.memory.params.dropOff != null){
                     if(bot.memory.params.dropOff === "towers"){
                         this.fillTowers(bot)
+                    } else if (bot.memory.params.dropOff === "spawns") {
+                        this.fillSpawn(bot)
+                    }
+                    else {
+                        const dropOff = Game.getObjectById(bot.memory.params.dropOff as Id<Structure>)
+                        if(dropOff){
+                            this.dropOffResource(bot, dropOff, RESOURCE_ENERGY)
+                        }
                     }
                 } else {
                     this.fillSpawn(bot)

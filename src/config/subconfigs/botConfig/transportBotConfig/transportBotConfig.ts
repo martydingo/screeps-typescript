@@ -24,5 +24,5 @@ export const transportBotConfig: transportBotConfiguration = {
         1250: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, CARRY, MOVE, MOVE, CARRY, MOVE, MOVE],
         1300: [CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE, CARRY, MOVE]
     },
-    priority: Object.values(Game.creeps).filter(creep => creep.memory.role === "sourceBot").length > 0 && 1 || 2,
+    priority: 2,
 }

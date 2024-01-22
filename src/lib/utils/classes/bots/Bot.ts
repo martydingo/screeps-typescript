@@ -35,10 +35,35 @@ export class Bot {
             log.info(`${bot.name} suffered ${transferResult} while dropping ${resource} off at ${structure}`)
         }
     }
+
     public pickupEnergy(bot: Creep) {
         const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceB.amount - droppedResourceA.amount)
         if (droppedEnergy[0]) {
             this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+        }
+    }
+
+    public withdrawEnergy(bot: Creep, structure: Structure<StructureConstant>) {
+        const withdrawResult = bot.withdraw(structure, RESOURCE_ENERGY)
+        if (withdrawResult === ERR_NOT_IN_RANGE) {
+            bot.moveTo(structure)
+        }
+    }
+
+    public fetchEnergy(bot: Creep) {
+        const room = Game.rooms[bot.memory.room]
+        if (room) {
+            const storage = room.storage
+            if (storage) {
+                if (storage.store[RESOURCE_ENERGY] > bot.store.getFreeCapacity()) {
+                    this.withdrawEnergy(bot, storage)
+                }
+            } else {
+                const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceB.amount - droppedResourceA.amount)
+                if (droppedEnergy[0]) {
+                    this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+                }
+            }
         }
     }
 
