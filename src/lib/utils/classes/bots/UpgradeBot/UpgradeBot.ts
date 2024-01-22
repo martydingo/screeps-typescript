@@ -29,6 +29,23 @@ export class UpgradeBot extends Bot {
         }
     }
 
+    private checkForLinks(bot: Creep): StructureLink | undefined {
+        const room = Game.rooms[bot.memory.room]
+        let nearbyLink
+        if(room){
+            if(room.controller){
+                const linksInRoom = Object.keys(Memory.rooms[room.name].monitoring.structures.links).map(linkId => Game.getObjectById(linkId as Id<StructureLink>)) as StructureLink[]
+                const linksToRecieve = linksInRoom.filter(link => Memory.rooms[room.name].analysis.links[link.id].mode === "receive")
+                linksToRecieve.forEach(link => {
+                    if(link.pos.inRangeTo(room.controller!.pos, 3)){
+                        nearbyLink = link
+                    }
+                })
+            }
+        }
+        return nearbyLink
+    }
+
     public runBot(bot: Creep): void {
         if (!bot.memory.status) {
             if (bot.spawning) {
@@ -45,7 +62,15 @@ export class UpgradeBot extends Bot {
 
         switch (bot.memory.status) {
             case "pickingUp":
-                this.fetchEnergy(bot)
+                const nearbyLink = this.checkForLinks(bot)
+                if(nearbyLink){
+                    const withdrawResult = bot.withdraw(nearbyLink, RESOURCE_ENERGY)
+                    if(withdrawResult === ERR_NOT_IN_RANGE){
+                        bot.moveTo(nearbyLink)
+                    }
+                } else {
+                    this.fetchEnergy(bot)
+                }
                 break;
             case "upgrading":
                 this.upgradeController(bot)

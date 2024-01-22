@@ -10,7 +10,7 @@ export class TransportBot extends Bot {
     public priority: number = config.bots.transportBots.priority;
     public role: string = config.bots.transportBots.role;
     public name: string
-    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | "loot" | null, dropOff?: Id<Structure> | "towers" | "spawns" | null }) {
+    constructor(roomName: string, params: { pickup?: Id<Resource<ResourceConstant>> | Id<Structure> | "loot" | null, dropOff?: Id<Structure> | "towers" | "spawns" | "links" | null }) {
         super();
         this.memory = {
             role: config.bots.transportBots.role,
@@ -40,6 +40,16 @@ export class TransportBot extends Bot {
         const nextTower = towers.sort((towerA, towerB) => towerA.store[RESOURCE_ENERGY] - towerB.store[RESOURCE_ENERGY])[0]
         if(nextTower){
             this.dropOffResource(bot, nextTower, RESOURCE_ENERGY)
+        }
+    }
+
+    private fillLinks(bot: Creep){
+        const links = Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.links).map(linkId => Game.getObjectById(linkId as Id<StructureLink>)) as StructureLink[]
+        const linksToSend = links.filter(link => Memory.rooms[bot.memory.room].analysis.links[link.id].mode === "send")
+        const linkToFill = linksToSend.sort((linkA, linkB) => linkA.store[RESOURCE_ENERGY] - linkB.store[RESOURCE_ENERGY])[0]
+
+        if(linkToFill){
+            this.dropOffResource(bot, linkToFill, RESOURCE_ENERGY)
         }
     }
 
@@ -73,6 +83,8 @@ export class TransportBot extends Bot {
                         this.fillTowers(bot)
                     } else if (bot.memory.params.dropOff === "spawns") {
                         this.fillSpawn(bot)
+                    } else if (bot.memory.params.dropOff === "links") {
+                        this.fillLinks(bot)
                     }
                     else {
                         const dropOff = Game.getObjectById(bot.memory.params.dropOff as Id<Structure>)
