@@ -60,7 +60,13 @@ export class SourceBot extends Bot {
                     bot.drop(RESOURCE_ENERGY)
                     this.harvestSource(bot)
                 } else {
-                    this.fillSpawn(bot)
+                    const spawnsInRoom = Object.values(Game.spawns).filter(spawn => spawn.room.name === bot.room.name)
+                    if (spawnsInRoom.length > 0) {
+                        this.fillSpawn(bot)
+                    } else {
+                        bot.drop(RESOURCE_ENERGY)
+                        this.harvestSource(bot)
+                    }
                 }
                 break;
             default:

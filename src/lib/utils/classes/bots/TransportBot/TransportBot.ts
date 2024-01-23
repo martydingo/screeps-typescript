@@ -74,7 +74,16 @@ export class TransportBot extends Bot {
             case "pickingUp":
                 if(bot.memory.params.pickup != null){
                     if(bot.memory.params.pickup === "loot"){
-                        this.pickupEnergy(bot)
+                        if(bot.pos.roomName !== bot.memory.room){
+                            const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceB.amount - droppedResourceA.amount)
+                            if(droppedEnergy[0]){
+                                bot.moveTo(Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+                            } else {
+                                bot.moveTo(new RoomPosition(25, 25, bot.memory.room))
+                            }
+                        } else {
+                            this.pickupEnergy(bot)
+                        }
                     }
                 } else {
                     this.fetchEnergy(bot)

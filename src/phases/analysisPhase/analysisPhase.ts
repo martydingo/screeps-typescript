@@ -23,6 +23,15 @@ export function analysisPhase() {
     analyseSpawning()
 
     const roomsToAnalyse = [...getOwnedRooms()]
+
+    config.rooms.roomsToMine.forEach((roomName) => {
+        if(Game.rooms[roomName]){
+            roomsToAnalyse.push(roomName)
+        } else {
+            //
+        }
+    })
+
     roomsToAnalyse.forEach(roomName => {
         analyseRoom(roomName)
     })

@@ -38,14 +38,32 @@ export class ExplorerBot extends Bot {
             }
         }
 
+        if(bot.memory.params.isClaiming === true){
+            bot.memory.status = "claiming"
+        } else if ( bot.memory.params.isReserving === true){
+            bot.memory.status = "reserving"
+        } else {
+            bot.memory.status = "exploring"
+        }
+
         switch (bot.memory.status) {
 
 
             case "claiming":
                 break;
             case "reserving":
+                const controllerArray = Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.controller)
+                const controllerId = controllerArray[0] as Id<StructureController>
+                const controller = Game.getObjectById(controllerId)
+                if(controller){
+                    const reserveResult = bot.reserveController(controller)
+                    if(reserveResult === ERR_NOT_IN_RANGE){
+                        bot.moveTo(controller)
+                    }
+                }
                 break;
             case "exploring":
+                bot.moveTo(new RoomPosition(25, 25, bot.memory.room))
                 break;
             default:
                 break;

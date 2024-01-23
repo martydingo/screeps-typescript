@@ -14,6 +14,7 @@ export type BotConfiguration = {
     upgradeBots: upgradeBotConfiguration
     buildBots: buildBotConfiguration
     explorerBots: ExplorerBotConfiguration
+    [key: string]: GenericBotConfiguration
 }
 
 export interface GenericBotConfiguration {

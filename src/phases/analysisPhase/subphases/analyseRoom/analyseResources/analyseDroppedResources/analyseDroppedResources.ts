@@ -1,4 +1,5 @@
 import { TransportBot } from "lib/utils/classes/bots/TransportBot/TransportBot"
+import { findClosestStorage } from "lib/utils/roomUtils"
 
 function createTransportBotJobs(roomName: string) {
     let storageId: Id<StructureStorage> | null = null
@@ -8,7 +9,11 @@ function createTransportBotJobs(roomName: string) {
 
     if (storageArray.length > 0) {
         storageId = storageArray[0].id
+    } else {
+        storageId = findClosestStorage(roomName)
+    }
 
+    if(storageId) {
         const transportBot = new TransportBot(roomName, { pickup: "loot", dropOff: storageId })
         Memory.analysis.queues.spawn[transportBot.name] = {
             name: transportBot.name,
@@ -30,6 +35,10 @@ export function analyseDroppedResources(roomName: string) {
 
         if (storageArray.length > 0) {
             storageId = storageArray[0].id
+        } else {
+            storageId = findClosestStorage(roomName)
+        }
+        if(storageId) {
             const transportBot = new TransportBot(roomName, { pickup: "loot", dropOff: storageId })
             if (!Game.creeps[transportBot.name]) {
                 createTransportBotJobs(roomName)

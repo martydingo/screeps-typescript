@@ -9,6 +9,14 @@ function buildControllerMemory(roomName: string) {
 
 function createUpgradeBotJob(roomName: string) {
     const controllerId = Object.keys(Memory.rooms[roomName].monitoring.structures.controller)[0] as Id<StructureController>
+    const controller = Game.getObjectById(controllerId)
+    if (!controller) {
+        return
+    }
+    if(!controller.my) {
+        return
+    }
+
     if (Memory.rooms[roomName].analysis.controller.assignedBot === null) {
         const upgradeBot = new UpgradeBot(controllerId, roomName)
         if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
