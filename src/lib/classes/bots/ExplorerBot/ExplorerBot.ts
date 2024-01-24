@@ -9,17 +9,17 @@ export class ExplorerBot extends Bot {
   public priority: number = config.bots.explorerBots.priority;
   public role: string = config.bots.explorerBots.role;
   public name: string;
-  constructor(roomName: string, params: { isClaiming: boolean; isReserving: boolean }) {
+  public constructor(roomName: string, params: { isClaiming: boolean; isReserving: boolean }) {
     super();
-    Object.keys(this.parts).forEach(energyCapacityAvailableIndex => {
-      const energyCapacityAvailable = parseInt(energyCapacityAvailableIndex);
-      if (params.isClaiming) {
-        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM];
-      }
-      if (params.isReserving) {
-        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM, CLAIM];
-      }
-    });
+    // Object.keys(this.parts).forEach(energyCapacityAvailableIndex => {
+    //   const energyCapacityAvailable = parseInt(energyCapacityAvailableIndex);
+    //   if (params.isClaiming) {
+    //     this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM];
+    //   }
+    //   if (params.isReserving) {
+    //     this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM, CLAIM];
+    //   }
+    // });
 
     this.memory = {
       role: config.bots.explorerBots.role,
