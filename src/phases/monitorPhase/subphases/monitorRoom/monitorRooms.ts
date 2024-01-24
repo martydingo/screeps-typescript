@@ -25,7 +25,7 @@ function buildRoomMonitorMemory(roomName: string) {
 }
 
 function createExplorerBotJobs(roomName: string) {
-  let parts: BodyPartConstant[] = [MOVE];
+  const parts: BodyPartConstant[] = [MOVE];
   let params = { isClaiming: false, isReserving: false };
 
   if (Memory.rooms[roomName].monitoring.structures) {
@@ -36,11 +36,9 @@ function createExplorerBotJobs(roomName: string) {
         const closestSpawn = findClosestSpawn(roomName);
         if (closestSpawn) {
           if (closestSpawn.room.energyCapacityAvailable >= 1250 && config.rooms.roomsToMine.includes(roomName)) {
-            parts = [MOVE, CLAIM, CLAIM];
             params = { isClaiming: false, isReserving: true };
           }
           if (closestSpawn.room.energyCapacityAvailable >= 650 && config.rooms.roomsToClaim.includes(roomName)) {
-            parts = [MOVE, CLAIM];
             params = { isClaiming: true, isReserving: false };
           }
         }
@@ -55,7 +53,7 @@ function createExplorerBotJobs(roomName: string) {
         name: explorerBot.name,
         room: roomName,
         priority: explorerBot.priority,
-        parts,
+        parts: [MOVE],
         memory: explorerBot.memory,
         status: "new"
       };

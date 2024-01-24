@@ -11,15 +11,15 @@ export class ExplorerBot extends Bot {
   public name: string;
   public constructor(roomName: string, params: { isClaiming: boolean; isReserving: boolean }) {
     super();
-    // Object.keys(this.parts).forEach(energyCapacityAvailableIndex => {
-    //   const energyCapacityAvailable = parseInt(energyCapacityAvailableIndex);
-    //   if (params.isClaiming) {
-    //     this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM];
-    //   }
-    //   if (params.isReserving) {
-    //     this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM, CLAIM];
-    //   }
-    // });
+    Object.keys(this.parts).forEach(energyCapacityAvailableIndex => {
+      const energyCapacityAvailable = parseInt(energyCapacityAvailableIndex);
+      if (params.isClaiming) {
+        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM];
+      }
+      if (params.isReserving) {
+        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM, CLAIM];
+      }
+    });
 
     this.memory = {
       role: config.bots.explorerBots.role,
@@ -27,6 +27,11 @@ export class ExplorerBot extends Bot {
       room: roomName
     };
     this.name = `eB-${roomName}`;
+    if (this.memory.params.isClaiming === true) {
+      this.name = `eB-${roomName}-claim`;
+    } else if (this.memory.params.isReserving === true) {
+      this.name = `eB-${roomName}-reserve`;
+    }
   }
 
   public runBot(bot: Creep): void {
