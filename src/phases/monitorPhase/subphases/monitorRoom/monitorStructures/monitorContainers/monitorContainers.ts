@@ -8,7 +8,7 @@ export function monitorContainers(roomName: string) {
   buildContainerMonitorMemory(roomName);
   const room = Game.rooms[roomName];
   if (room) {
-    const containers = room.find(FIND_STRUCTURES, {
+    const containers: StructureContainer[] = room.find(FIND_STRUCTURES, {
       filter: structure => structure.structureType === STRUCTURE_CONTAINER
     });
     containers.forEach(container => {

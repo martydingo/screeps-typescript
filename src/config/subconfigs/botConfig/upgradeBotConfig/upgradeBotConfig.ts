@@ -1,5 +1,6 @@
 import { upgradeBotConfiguration } from "./upgradeBotConfig.types";
 export const upgradeBotConfig: upgradeBotConfiguration = {
+  count: 2,
   role: "upgradeBot",
   parts: {
     300: [WORK, WORK, CARRY, MOVE],

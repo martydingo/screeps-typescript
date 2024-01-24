@@ -1,3 +1,4 @@
+import { config } from "config/config";
 import { UpgradeBot } from "lib/classes/bots/UpgradeBot/UpgradeBot";
 import { log } from "lib/utils/log";
 
@@ -7,7 +8,7 @@ function buildControllerMemory(roomName: string) {
   }
 }
 
-function createUpgradeBotJob(roomName: string) {
+function manageUpgradeBotJobs(roomName: string) {
   const controllerId = Object.keys(
     Memory.rooms[roomName].monitoring.structures.controller
   )[0] as Id<StructureController>;
@@ -19,29 +20,24 @@ function createUpgradeBotJob(roomName: string) {
     return;
   }
 
-  if (Memory.rooms[roomName].analysis.controller.assignedBot === null) {
-    const upgradeBot = new UpgradeBot(controllerId, roomName);
-    if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
-      Memory.analysis.queues.spawn[upgradeBot.name] = {
-        name: upgradeBot.name,
-        room: roomName,
-        priority: upgradeBot.priority,
-        parts: upgradeBot.parts[Game.rooms[roomName].energyCapacityAvailable],
-        memory: upgradeBot.memory,
-        status: "new"
-      };
-    }
-  }
-}
-
-function assignUpgradeBotJobs(roomName: string) {
   Object.keys(Memory.rooms[roomName].monitoring.structures.controller).forEach(controllerId => {
-    const upgradeBot = new UpgradeBot(controllerId as Id<StructureController>, roomName);
-    if (Game.creeps[upgradeBot.name]) {
-      Memory.rooms[roomName].analysis.controller.assignedBot = upgradeBot.name;
-      delete Memory.analysis.queues.spawn[upgradeBot.name];
-    } else {
-      Memory.rooms[roomName].analysis.controller.assignedBot = null;
+    const upgradeBotCount = config.bots.upgradeBots.count;
+    for (let i = 1; i <= upgradeBotCount; i++) {
+      const upgradeBot = new UpgradeBot(controllerId as Id<StructureController>, roomName, i);
+      if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
+        if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
+          Memory.analysis.queues.spawn[upgradeBot.name] = {
+            name: upgradeBot.name,
+            room: roomName,
+            priority: upgradeBot.priority,
+            parts: upgradeBot.parts[Game.rooms[roomName].energyCapacityAvailable],
+            memory: upgradeBot.memory,
+            status: "new"
+          };
+        } else {
+          delete Memory.analysis.queues.spawn[upgradeBot.name];
+        }
+      }
     }
   });
 }
@@ -49,6 +45,5 @@ function assignUpgradeBotJobs(roomName: string) {
 export function analyseController(roomName: string) {
   log.debug(`Analysing controller in room ${roomName}`);
   buildControllerMemory(roomName);
-  createUpgradeBotJob(roomName);
-  assignUpgradeBotJobs(roomName);
+  manageUpgradeBotJobs(roomName);
 }

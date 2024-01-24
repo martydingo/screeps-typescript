@@ -28,16 +28,20 @@ function createExplorerBotJobs(roomName: string) {
   let parts: BodyPartConstant[] = [MOVE];
   let params = { isClaiming: false, isReserving: false };
 
-  if (Memory.rooms[roomName].monitoring) {
+  if (Memory.rooms[roomName].monitoring.structures) {
     const controllerArray = Object.keys(Memory.rooms[roomName].monitoring.structures.controller);
     if (controllerArray.length > 0) {
       const controller = controllerArray[0] as Id<StructureController>;
       if (controller) {
         const closestSpawn = findClosestSpawn(roomName);
         if (closestSpawn) {
-          if (closestSpawn.room.energyCapacityAvailable >= 1250) {
+          if (closestSpawn.room.energyCapacityAvailable >= 1250 && config.rooms.roomsToMine.includes(roomName)) {
             parts = [MOVE, CLAIM, CLAIM];
             params = { isClaiming: false, isReserving: true };
+          }
+          if (closestSpawn.room.energyCapacityAvailable >= 650 && config.rooms.roomsToClaim.includes(roomName)) {
+            parts = [MOVE, CLAIM];
+            params = { isClaiming: true, isReserving: false };
           }
         }
       }
@@ -45,24 +49,27 @@ function createExplorerBotJobs(roomName: string) {
   }
 
   const explorerBot = new ExplorerBot(roomName, params);
-  if (!Game.creeps[explorerBot.name]) {
-    Memory.analysis.queues.spawn[explorerBot.name] = {
-      name: explorerBot.name,
-      room: roomName,
-      priority: explorerBot.priority,
-      parts,
-      memory: explorerBot.memory,
-      status: "new"
-    };
-  } else {
-    delete Memory.analysis.queues.spawn[explorerBot.name];
+  if (!Memory.analysis.queues.spawn[explorerBot.name]) {
+    if (!Game.creeps[explorerBot.name]) {
+      Memory.analysis.queues.spawn[explorerBot.name] = {
+        name: explorerBot.name,
+        room: roomName,
+        priority: explorerBot.priority,
+        parts,
+        memory: explorerBot.memory,
+        status: "new"
+      };
+    } else {
+      delete Memory.analysis.queues.spawn[explorerBot.name];
+    }
   }
 }
 
 export function monitorRooms() {
   const roomsToMonitor: string[] = [...getOwnedRooms()];
 
-  config.rooms.roomsToMine.forEach(roomName => {
+  [...config.rooms.roomsToMine, ...config.rooms.roomsToClaim].forEach(roomName => {
+    buildRoomMonitorMemory(roomName);
     if (Game.rooms[roomName]) {
       roomsToMonitor.push(roomName);
       if (Game.rooms[roomName].controller) {

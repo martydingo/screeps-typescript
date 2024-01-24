@@ -9,7 +9,7 @@ export class BuildBot extends Bot {
   public priority: number = config.bots.buildBots.priority;
   public role: string = config.bots.buildBots.role;
   public name: string;
-  constructor(roomName: string, index: number) {
+  public constructor(roomName: string, index: number) {
     super();
     this.memory = {
       role: config.bots.buildBots.role,

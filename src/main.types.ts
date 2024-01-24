@@ -1,13 +1,13 @@
-export { };
+export {};
 
 declare global {
-  interface Bot extends Creep {}
+  type Bot = Creep;
   export interface Memory {
     //
   }
   namespace NodeJS {
     interface Global {
-      environment: "production" | "staging" | "development"
+      environment: "production" | "staging" | "development";
     }
   }
 }

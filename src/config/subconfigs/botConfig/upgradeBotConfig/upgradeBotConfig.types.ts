@@ -1,3 +1,5 @@
 import { GenericBotConfiguration } from "../botConfig.types";
 
-export type upgradeBotConfiguration = GenericBotConfiguration;
+export interface upgradeBotConfiguration extends GenericBotConfiguration {
+  count: number;
+}

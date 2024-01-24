@@ -1,7 +1,7 @@
-import { monitorPhase } from "./monitorPhase/monitorPhase";
-import { log } from "../lib/utils/log";
-import { analysisPhase } from "./analysisPhase/analysisPhase";
 import { actionPhase } from "./actionPhase/actionPhase";
+import { analysisPhase } from "./analysisPhase/analysisPhase";
+import { log } from "../lib/utils/log";
+import { monitorPhase } from "./monitorPhase/monitorPhase";
 
 export class PhaseController {
   public constructor() {

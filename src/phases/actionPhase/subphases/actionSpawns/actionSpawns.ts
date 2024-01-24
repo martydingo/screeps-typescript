@@ -2,6 +2,14 @@ import { config } from "config/config";
 import { log } from "lib/utils/log";
 import { findClosestSpawn } from "lib/utils/roomUtils";
 
+function clearBadSpawnRequests() {
+  Object.entries(Memory.analysis.queues.spawn)
+    .filter(([, spawnEntry]) => spawnEntry.parts === undefined)
+    .forEach(([botName]) => {
+      delete Memory.analysis.queues.spawn[botName];
+    });
+}
+
 function processSpawnedCreeps() {
   Object.entries(Memory.analysis.queues.spawn)
     .filter(([, spawnEntry]) => {
@@ -36,6 +44,7 @@ function processNewSpawnRequests() {
     spawn = findClosestSpawn(botData.memory.room)!;
     parts = config.bots[`${botData.memory.role}s`].parts[spawn.room.energyCapacityAvailable];
   }
+  console.log(`${parts}, ${botData.name}, ${{ memory: botData.memory }}`);
   const spawnResult = spawn.spawnCreep(parts, botData.name, { memory: botData.memory });
   log.info(`Spawning ${botName} in ${botData.room} with result ${spawnResult}`);
   if (spawnResult === OK) {
@@ -44,6 +53,7 @@ function processNewSpawnRequests() {
 }
 
 function processSpawnQueue() {
+  clearBadSpawnRequests();
   processNewSpawnRequests();
   processSpawnedCreeps();
 }

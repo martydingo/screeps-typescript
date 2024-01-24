@@ -13,7 +13,7 @@ export function actionBots() {
         sourceBot.runBot(creep);
         break;
       case "upgradeBot":
-        const upgradeBot = new UpgradeBot(creep.memory.params.controllerId, creep.memory.room);
+        const upgradeBot = new UpgradeBot(creep.memory.params.controllerId, creep.memory.room, 0);
         upgradeBot.runBot(creep);
         break;
       case "buildBot":

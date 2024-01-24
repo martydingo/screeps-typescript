@@ -7,5 +7,7 @@ declare global {
     params: any;
     status?: string;
   }
-  type CreepMemory = BotMemory;
+  interface CreepMemory extends BotMemory {
+    [key: string]: any;
+  }
 }

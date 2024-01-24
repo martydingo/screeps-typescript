@@ -1,5 +1,5 @@
-import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
 import { Bot } from "../Bot";
+import { BotParts } from "config/subconfigs/botConfig/botConfig.types";
 import { config } from "config/config";
 
 export class UpgradeBot extends Bot {
@@ -8,7 +8,7 @@ export class UpgradeBot extends Bot {
   public priority: number = config.bots.upgradeBots.priority;
   public role: string = config.bots.upgradeBots.role;
   public name: string;
-  constructor(controllerId: Id<StructureController>, roomName: string) {
+  public constructor(controllerId: Id<StructureController>, roomName: string, index: number) {
     super();
     this.memory = {
       role: config.bots.upgradeBots.role,
@@ -17,13 +17,13 @@ export class UpgradeBot extends Bot {
       },
       room: roomName
     };
-    this.name = `uB-${controllerId}`;
+    this.name = `uB-${controllerId}-${index}`;
   }
   private upgradeController(bot: Creep): void {
     const controller = Game.getObjectById(bot.memory.params.controllerId) as StructureController;
     if (controller) {
       const upgradeResult = bot.upgradeController(controller);
-      if (upgradeResult == ERR_NOT_IN_RANGE) {
+      if (upgradeResult === ERR_NOT_IN_RANGE) {
         bot.moveTo(controller);
       }
     }
