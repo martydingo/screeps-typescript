@@ -5,8 +5,8 @@ export {};
 
 export type Configuration = {
     bots: BotConfiguration
-    rooms: RoomConfiguration
+    rooms: RoomConfiguration['production'|'staging'|'development']
     logging: LogConfiguration
-    links: LinkConfiguration
+    links: LinkConfiguration['production'|'staging'|'development']
 }
 

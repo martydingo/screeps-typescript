@@ -4,5 +4,7 @@ type LinkConfigurationEntry = {
 }
 
 export type LinkConfiguration = {
-    [key: Id<StructureLink> | string]: LinkConfigurationEntry
+    [environment: string]: {
+        [key: Id<StructureLink> | string]: LinkConfigurationEntry
+    }
 }

@@ -1,4 +1,4 @@
-import { TransportBot } from "lib/utils/classes/bots/TransportBot/TransportBot"
+import { TransportBot } from "lib/classes/bots/TransportBot/TransportBot"
 import { log } from "lib/utils/log"
 
 function buildDroppedResourceMonitorMemory(roomName: string){

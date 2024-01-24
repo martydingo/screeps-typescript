@@ -43,11 +43,30 @@ export class Bot {
         }
     }
 
-    public withdrawEnergy(bot: Creep, structure: Structure<StructureConstant>) {
+    public withdrawEnergy(bot: Creep, structure: Structure<StructureConstant> | Ruin) {
         const withdrawResult = bot.withdraw(structure, RESOURCE_ENERGY)
         if (withdrawResult === ERR_NOT_IN_RANGE) {
             bot.moveTo(structure)
         }
+    }
+
+    public scavengeEnergyFromRuin(bot: Creep) {
+        // const ruins = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.ruins)
+        //     .sort(([, ruinA], [, ruinB]) => ruinA.contents[RESOURCE_ENERGY] - ruinB.contents[RESOURCE_ENERGY]
+        //     )
+        // const ruinId = ruins[0][0] as Id<Ruin>
+        const ruins: Ruin[] = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.ruins)
+            .filter(([, ruinMonitorData]) => ruinMonitorData.contents[RESOURCE_ENERGY] > 0)
+            .map(([ruinId, ]) => Game.getObjectById(ruinId as Id<Ruin>)!)
+
+        const ruin = bot.pos.findClosestByPath(ruins)
+
+        if (ruin) {
+            if (ruin.store[RESOURCE_ENERGY] > 0) {
+                this.withdrawEnergy(bot, ruin)
+            }
+        }
+
     }
 
     public fetchEnergy(bot: Creep) {
@@ -59,9 +78,11 @@ export class Bot {
                     this.withdrawEnergy(bot, storage)
                 }
             } else {
-                const droppedEnergy = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.droppedResources).sort(([, droppedResourceA], [, droppedResourceB]) => droppedResourceB.amount - droppedResourceA.amount)
-                if (droppedEnergy[0]) {
-                    this.pickupResource(bot, Game.getObjectById(droppedEnergy[0][0] as Id<Resource<ResourceConstant>>)!)
+                const ruins = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.ruins)
+                if (ruins.length > 0) {
+                    this.scavengeEnergyFromRuin(bot)
+                } else {
+                    this.pickupEnergy(bot)
                 }
             }
         }
@@ -80,19 +101,19 @@ export class Bot {
                 extensionsInRoom.push(Game.getObjectById(extensionId as Id<StructureExtension>)!)
             })
             const extensionToFill = extensionsInRoom
-            .filter((extension) => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0 )
-            .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])[0]
+                .filter((extension) => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
+                .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])[0]
 
-            if(extensionToFill){
+            if (extensionToFill) {
                 this.dropOffResource(bot, extensionToFill, RESOURCE_ENERGY)
             }
         }
     }
 
-    public recycleBot(bot: Creep){
+    public recycleBot(bot: Creep) {
         const roomSpawn = Object.values(Game.spawns).filter((spawn) => spawn.pos.roomName === bot.memory.room)[0]
         const recycleResult = roomSpawn.recycleCreep(bot)
-        if(recycleResult === ERR_NOT_IN_RANGE){
+        if (recycleResult === ERR_NOT_IN_RANGE) {
             bot.moveTo(roomSpawn)
         }
     }

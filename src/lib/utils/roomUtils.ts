@@ -12,8 +12,10 @@ export function findClosestStorage(roomName: string) {
     })
 
     const sortedStorageMatrix = Object.entries(storageMatrix).sort(([, a], [, b]) => a - b)
-
-    return sortedStorageMatrix[0][0] as Id<StructureStorage>
+    if (sortedStorageMatrix.length > 0) {
+        return sortedStorageMatrix[0][0] as Id<StructureStorage>
+    }
+    return
 }
 
 export function findClosestSpawn(roomName: string): StructureSpawn | null {

@@ -10,7 +10,6 @@ export function monitorStorage(roomName: string) {
     storage.forEach(storage => {
         Memory.rooms[roomName].monitoring.structures.storage[storage.id] = {
             contents: storage.store
-
         }
     })
 

@@ -1,4 +1,4 @@
-import { TransportBot } from "lib/utils/classes/bots/TransportBot/TransportBot"
+import { TransportBot } from "lib/classes/bots/TransportBot/TransportBot"
 
 function createTransportBotJob(roomName: string) {
     const transportBot = new TransportBot(roomName, {

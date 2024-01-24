@@ -5,7 +5,7 @@ import { monitorResources } from "./monitorResources/monitorResources";
 import { monitorConstruction } from "./monitorConstruction/monitorConstruction";
 import { monitorHostiles } from "./monitorHostiles/monitorHostiles";
 import { findClosestSpawn, getOwnedRooms } from "lib/utils/roomUtils";
-import { ExplorerBot } from "lib/utils/classes/bots/ExplorerBot/ExplorerBot";
+import { ExplorerBot } from "lib/classes/bots/ExplorerBot/ExplorerBot";
 
 function buildRoomMonitorMemory(roomName: string) {
     log.debug(`Building room monitor memory for ${roomName}`)

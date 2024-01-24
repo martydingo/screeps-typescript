@@ -2,7 +2,8 @@ module.exports = {
   env: {
     browser: true,
     es6: true,
-    node: true
+    node: true,
+    "screeps/screeps": true
   },
   extends: [
     "eslint:recommended",
@@ -19,7 +20,7 @@ module.exports = {
     project: "tsconfig.json",
     sourceType: "module"
   },
-  plugins: ["@typescript-eslint", "import"],
+  plugins: ["@typescript-eslint", "import", "screeps"],
   settings: {
     "import/parsers": {
       "@typescript-eslint/parser": [".ts", ".tsx"]

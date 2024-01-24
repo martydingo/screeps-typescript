@@ -1,4 +1,4 @@
-import { BuildBot } from "lib/utils/classes/bots/BuildBot/BuildBot";
+import { BuildBot } from "lib/classes/bots/BuildBot/BuildBot";
 
 function createBuildBotJobs(roomName: string, index: number) {
 

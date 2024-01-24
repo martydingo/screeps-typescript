@@ -1,4 +1,4 @@
-import { UpgradeBot } from "lib/utils/classes/bots/UpgradeBot/UpgradeBot"
+import { UpgradeBot } from "lib/classes/bots/UpgradeBot/UpgradeBot"
 import { log } from "lib/utils/log"
 
 function buildControllerMemory(roomName: string) {

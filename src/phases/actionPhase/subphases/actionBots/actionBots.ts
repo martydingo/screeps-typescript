@@ -1,8 +1,8 @@
-import { BuildBot } from "lib/utils/classes/bots/BuildBot/BuildBot";
-import { ExplorerBot } from "lib/utils/classes/bots/ExplorerBot/ExplorerBot";
-import { SourceBot } from "lib/utils/classes/bots/SourceBot/SourceBot"
-import { TransportBot } from "lib/utils/classes/bots/TransportBot/TransportBot";
-import { UpgradeBot } from "lib/utils/classes/bots/UpgradeBot/UpgradeBot";
+import { BuildBot } from "lib/classes/bots/BuildBot/BuildBot";
+import { ExplorerBot } from "lib/classes/bots/ExplorerBot/ExplorerBot";
+import { SourceBot } from "lib/classes/bots/SourceBot/SourceBot"
+import { TransportBot } from "lib/classes/bots/TransportBot/TransportBot";
+import { UpgradeBot } from "lib/classes/bots/UpgradeBot/UpgradeBot";
 import { log } from "lib/utils/log";
 
 export function actionBots() {

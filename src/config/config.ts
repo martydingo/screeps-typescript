@@ -4,11 +4,18 @@ import { linkConfig } from "./subconfigs/linkConfig/linkConfig";
 import { logConfig } from "./subconfigs/logConfig/logConfig";
 import { roomConfig } from "./subconfigs/roomConfig/roomConfig";
 
-const userConfig: Configuration = {
+//@ts-expect-error
+if (Game.cpu.generatePixel) {
+    global.environment = "production"
+  } else {
+    global.environment = "development"
+  }
+
+export const userConfig: Configuration = {
     bots: botConfig,
-    rooms: roomConfig,
+    rooms: roomConfig[global.environment],
     logging: logConfig,
-    links: linkConfig
+    links: linkConfig[global.environment]
 }
 
 export const config: Configuration = {

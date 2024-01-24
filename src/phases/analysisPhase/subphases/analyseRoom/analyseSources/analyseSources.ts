@@ -1,4 +1,4 @@
-import { SourceBot } from "lib/utils/classes/bots/SourceBot/SourceBot"
+import { SourceBot } from "lib/classes/bots/SourceBot/SourceBot"
 import { log } from "lib/utils/log"
 
 function buildSourceAnalysisMemory(roomName: string) {

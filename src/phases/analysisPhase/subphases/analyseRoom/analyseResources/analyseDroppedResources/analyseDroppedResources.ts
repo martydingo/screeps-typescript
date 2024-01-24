@@ -1,8 +1,8 @@
-import { TransportBot } from "lib/utils/classes/bots/TransportBot/TransportBot"
+import { TransportBot } from "lib/classes/bots/TransportBot/TransportBot"
 import { findClosestStorage } from "lib/utils/roomUtils"
 
 function createTransportBotJobs(roomName: string) {
-    let storageId: Id<StructureStorage> | null = null
+    let storageId: Id<StructureStorage> | undefined
     const storageArray = Object.keys(Memory.rooms[roomName].monitoring.structures.storage)
         .map(storageId => Game.getObjectById(storageId as Id<StructureStorage>))
         .filter(storage => storage) as StructureStorage[]
@@ -28,7 +28,7 @@ function createTransportBotJobs(roomName: string) {
 
 export function analyseDroppedResources(roomName: string) {
     if (Object.values(Memory.rooms[roomName].monitoring.resources.droppedResources).length > 0) {
-        let storageId: Id<StructureStorage> | null = null
+        let storageId: Id<StructureStorage> | undefined
         const storageArray = Object.keys(Memory.rooms[roomName].monitoring.structures.storage)
             .map(storageId => Game.getObjectById(storageId as Id<StructureStorage>))
             .filter(storage => storage) as StructureStorage[]

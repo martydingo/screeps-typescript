@@ -1,5 +1,11 @@
-import { getOwnedRooms } from "../../../lib/utils/roomUtils";
-
 export const roomConfig: RoomConfiguration = {
-    roomsToMine: ["W8N2"],
+    development: {
+        roomsToMine: ["W8N2"],
+    },
+    staging: {
+        roomsToMine: ["W8N2"],
+    },
+    production: {
+        roomsToMine: [],
+    },
 }
