@@ -1,14 +1,14 @@
-export {}
+export {};
 declare global {
-    type ControllerMonitorEntry = {
-        progress: number
-        nextLevel: number
-        rcl: number
-        downgrade: number
-        safeMode: number | null
-    }
+  interface ControllerMonitorEntry {
+    progress: number;
+    nextLevel: number;
+    rcl: number;
+    downgrade: number;
+    safeMode: number | null;
+  }
 
-    type ControllerMonitorData = {
-        [key: Id<StructureController>]: ControllerMonitorEntry
-    }
+  interface ControllerMonitorData {
+    [key: Id<StructureController>]: ControllerMonitorEntry;
+  }
 }

@@ -1,10 +1,9 @@
-type LinkConfigurationEntry = {
-    mode: "send" | "receive" | "both"
-
+interface LinkConfigurationEntry {
+  mode: "send" | "receive" | "both";
 }
 
-export type LinkConfiguration = {
-    [environment: string]: {
-        [key: Id<StructureLink> | string]: LinkConfigurationEntry
-    }
+export interface LinkConfiguration {
+  [environment: string]: {
+    [key: Id<StructureLink> | string]: LinkConfigurationEntry;
+  };
 }

@@ -1,4 +1,3 @@
-import { GenericBotConfiguration } from "../botConfig.types"
+import { GenericBotConfiguration } from "../botConfig.types";
 
-export interface transportBotConfiguration extends GenericBotConfiguration {  }
-
+export type transportBotConfiguration = GenericBotConfiguration;

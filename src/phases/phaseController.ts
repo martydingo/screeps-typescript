@@ -4,14 +4,14 @@ import { analysisPhase } from "./analysisPhase/analysisPhase";
 import { actionPhase } from "./actionPhase/actionPhase";
 
 export class PhaseController {
-    constructor() {
-        this.runPhases()
-    }
+  public constructor() {
+    this.runPhases();
+  }
 
-    private runPhases() {
-        log.debug("Running Phases")
-        monitorPhase()
-        analysisPhase()
-        actionPhase()
-    }
+  private runPhases() {
+    log.debug("Running Phases");
+    monitorPhase();
+    analysisPhase();
+    actionPhase();
+  }
 }

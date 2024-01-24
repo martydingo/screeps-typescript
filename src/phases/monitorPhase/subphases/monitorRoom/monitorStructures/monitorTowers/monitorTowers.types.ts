@@ -1,11 +1,10 @@
-
-export {}
+export {};
 declare global {
-    type TowerMonitorEntry = {
-        energy: number
-    }
+  interface TowerMonitorEntry {
+    energy: number;
+  }
 
-    type TowerMonitorData = {
-        [key: Id<StructureTower>]: TowerMonitorEntry
-    }
+  interface TowerMonitorData {
+    [key: Id<StructureTower>]: TowerMonitorEntry;
+  }
 }

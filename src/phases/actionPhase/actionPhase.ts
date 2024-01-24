@@ -6,14 +6,13 @@ import { actionLinks } from "./subphases/actionStructures/actionLinks/actionLink
 import { getOwnedRooms } from "lib/utils/roomUtils";
 
 export function actionPhase() {
-    actionSpawns()
-    actionBots()
+  actionSpawns();
+  actionBots();
 
-    const roomsToAction: string[] =  [...getOwnedRooms()]
+  const roomsToAction: string[] = [...getOwnedRooms()];
 
-    roomsToAction.forEach(roomName => {
-        actionTowers(roomName)
-        actionLinks(roomName)
-    })
-
+  roomsToAction.forEach(roomName => {
+    actionTowers(roomName);
+    actionLinks(roomName);
+  });
 }

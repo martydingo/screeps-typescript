@@ -1,5 +1,5 @@
 import { actionTowers } from "./actionTowers/actionTowers";
 
-export function actionStructures(roomName: string){
-    actionTowers(roomName)
+export function actionStructures(roomName: string) {
+  actionTowers(roomName);
 }

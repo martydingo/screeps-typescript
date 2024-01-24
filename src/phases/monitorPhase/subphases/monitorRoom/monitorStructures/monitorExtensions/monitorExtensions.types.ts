@@ -1,12 +1,12 @@
-export {}
+export {};
 
 declare global {
-    type ExtensionMonitorEntry = {
-        energy: number
-        energyCapacity: number
-    }
+  interface ExtensionMonitorEntry {
+    energy: number;
+    energyCapacity: number;
+  }
 
-    type ExtensionMonitorData = {
-        [key: Id<StructureExtension>]: ExtensionMonitorEntry
-    }
+  interface ExtensionMonitorData {
+    [key: Id<StructureExtension>]: ExtensionMonitorEntry;
+  }
 }

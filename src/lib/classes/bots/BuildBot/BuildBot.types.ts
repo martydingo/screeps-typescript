@@ -1,6 +1,5 @@
-export { }
+export {};
 
 declare global {
-    interface BuildBotMemory extends BotMemory {
-    }
+  type BuildBotMemory = BotMemory;
 }

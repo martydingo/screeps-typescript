@@ -1,14 +1,12 @@
-
-export {}
+export {};
 declare global {
-    type RoadMonitorEntry = {
-        hits: number
-        hitsMax: number
-        decayTime: number
-    }
+  interface RoadMonitorEntry {
+    hits: number;
+    hitsMax: number;
+    decayTime: number;
+  }
 
-    type RoadMonitorData = {
-        [key: Id<StructureRoad>]: RoadMonitorEntry
-    }
+  interface RoadMonitorData {
+    [key: Id<StructureRoad>]: RoadMonitorEntry;
+  }
 }
-

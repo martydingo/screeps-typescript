@@ -1,10 +1,10 @@
-export { }
+export {};
 
 declare global {
-    type SourceAnalysisEntry = {
-        assignedBot: string | null
-    }
-    type SourceAnalysisData = {
-        [sourceId: Id<Source>]: SourceAnalysisEntry
-    }
+  interface SourceAnalysisEntry {
+    assignedBot: string | null;
+  }
+  interface SourceAnalysisData {
+    [sourceId: Id<Source>]: SourceAnalysisEntry;
+  }
 }

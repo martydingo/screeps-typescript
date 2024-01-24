@@ -1,10 +1,10 @@
-export { }
+export {};
 
 declare global {
-    type UpgradeBotParams = {
-        controllerId: Id<StructureController>
-    }
-    interface UpgradeBotMemory extends BotMemory {
-        params: UpgradeBotParams
-    }
+  interface UpgradeBotParams {
+    controllerId: Id<StructureController>;
+  }
+  interface UpgradeBotMemory extends BotMemory {
+    params: UpgradeBotParams;
+  }
 }

@@ -3,10 +3,9 @@ import { LinkConfiguration } from "./subconfigs/linkConfig/linkConfig.types";
 
 export {};
 
-export type Configuration = {
-    bots: BotConfiguration
-    rooms: RoomConfiguration['production'|'staging'|'development']
-    logging: LogConfiguration
-    links: LinkConfiguration['production'|'staging'|'development']
+export interface Configuration {
+  bots: BotConfiguration;
+  rooms: RoomConfiguration["production" | "staging" | "development"];
+  logging: LogConfiguration;
+  links: LinkConfiguration["production" | "staging" | "development"];
 }
-

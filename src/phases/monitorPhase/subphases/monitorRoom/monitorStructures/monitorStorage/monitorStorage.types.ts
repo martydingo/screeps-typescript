@@ -1,12 +1,10 @@
-
-export {}
+export {};
 declare global {
-    type StorageMonitorEntry = {
-        contents: StoreDefinition
-    }
+  interface StorageMonitorEntry {
+    contents: StoreDefinition;
+  }
 
-    type StorageMonitorData = {
-        [key: Id<StructureStorage>]: StorageMonitorEntry
-    }
+  interface StorageMonitorData {
+    [key: Id<StructureStorage>]: StorageMonitorEntry;
+  }
 }
-

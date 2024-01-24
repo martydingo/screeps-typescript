@@ -1,12 +1,12 @@
-export { }
+export {};
 declare global {
-    type RoomAnalysisData = {
-        sources: SourceAnalysisData
-        controller: ControllerAnalysisData
-        links: LinkAnalysisData
-    }
+  interface RoomAnalysisData {
+    sources: SourceAnalysisData;
+    controller: ControllerAnalysisData;
+    links: LinkAnalysisData;
+  }
 
-    interface RoomMemory {
-        analysis: RoomAnalysisData
-    }
+  interface RoomMemory {
+    analysis: RoomAnalysisData;
+  }
 }

@@ -1,14 +1,14 @@
-export { }
+export {};
 
 declare global {
-    type RoomMonitorData = {
-        structures: StructureMonitorData;
-        resources: ResourceMonitorData;
-        construction: ConstructionMonitorData;
-        hostiles: HostileMonitorData;
-    }
+  interface RoomMonitorData {
+    structures: StructureMonitorData;
+    resources: ResourceMonitorData;
+    construction: ConstructionMonitorData;
+    hostiles: HostileMonitorData;
+  }
 
-    interface RoomMemory {
-        monitoring: RoomMonitorData;
-    }
+  interface RoomMemory {
+    monitoring: RoomMonitorData;
+  }
 }

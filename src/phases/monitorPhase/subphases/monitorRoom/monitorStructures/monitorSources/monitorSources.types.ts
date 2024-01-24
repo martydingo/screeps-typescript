@@ -1,13 +1,13 @@
-export { };
+export {};
 
 declare global {
-    type SourceMonitorEntry = {
-        energy: number;
-        energyCapacity: number;
-        regenTime: number;
-    }
+  interface SourceMonitorEntry {
+    energy: number;
+    energyCapacity: number;
+    regenTime: number;
+  }
 
-    type SourceMonitorData = {
-        [sourceId: Id<Source>]: SourceMonitorEntry;
-    }
+  interface SourceMonitorData {
+    [sourceId: Id<Source>]: SourceMonitorEntry;
+  }
 }

@@ -1,9 +1,9 @@
 export {};
 
 declare global {
-    type RoomConfiguration = {
-        [environment: string]: {
-            roomsToMine: string[];
-        }
+  interface RoomConfiguration {
+    [environment: string]: {
+      roomsToMine: string[];
     };
+  }
 }

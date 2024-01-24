@@ -1,4 +1,4 @@
-import { monitorSources } from "./monitorSources/monitorSources"
+import { monitorSources } from "./monitorSources/monitorSources";
 import { log } from "../../../../../lib/utils/log";
 import { monitorController } from "./monitorControllers/monitorControllers";
 import { monitorExtensions } from "./monitorExtensions/monitorExtensions";
@@ -10,23 +10,22 @@ import { monitorLinks } from "./monitorLinks/monitorLinks";
 import { monitorSpawns } from "./monitorSpawns/monitorSpawns";
 
 function buildStructureMonitorMemory(roomName: string) {
-    log.debug(`Building structure monitor memory for ${roomName}`)
-    if (!Memory.rooms[roomName].monitoring.structures) {
-        Memory.rooms[roomName].monitoring.structures = {} as StructureMonitorData
-    }
-
+  log.debug(`Building structure monitor memory for ${roomName}`);
+  if (!Memory.rooms[roomName].monitoring.structures) {
+    Memory.rooms[roomName].monitoring.structures = {} as StructureMonitorData;
+  }
 }
 
-export function monitorStructures(roomName: string){
-    log.debug(`Monitoring structures in ${roomName}`)
-    buildStructureMonitorMemory(roomName)
-    monitorSources(roomName)
-    monitorSpawns(roomName)
-    monitorController(roomName)
-    monitorExtensions(roomName)
-    monitorStorage(roomName)
-    monitorTowers(roomName)
-    monitorContainers(roomName)
-    monitorRoads(roomName)
-    monitorLinks(roomName)
+export function monitorStructures(roomName: string) {
+  log.debug(`Monitoring structures in ${roomName}`);
+  buildStructureMonitorMemory(roomName);
+  monitorSources(roomName);
+  monitorSpawns(roomName);
+  monitorController(roomName);
+  monitorExtensions(roomName);
+  monitorStorage(roomName);
+  monitorTowers(roomName);
+  monitorContainers(roomName);
+  monitorRoads(roomName);
+  monitorLinks(roomName);
 }

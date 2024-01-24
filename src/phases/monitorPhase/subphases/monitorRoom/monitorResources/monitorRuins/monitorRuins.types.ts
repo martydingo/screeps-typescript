@@ -1,10 +1,10 @@
-export {}
+export {};
 declare global {
-    type RuinMonitorEntry = {
-        contents: StoreDefinition
-    }
+  interface RuinMonitorEntry {
+    contents: StoreDefinition;
+  }
 
-    type RuinMonitorData = {
-        [key: Id<Ruin>]: RuinMonitorEntry
-    }
+  interface RuinMonitorData {
+    [key: Id<Ruin>]: RuinMonitorEntry;
+  }
 }

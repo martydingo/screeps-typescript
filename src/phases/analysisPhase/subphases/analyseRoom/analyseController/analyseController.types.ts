@@ -1,8 +1,8 @@
-export { }
+export {};
 
 declare global {
-    type ControllerAnalysisData = {
-        assignedBot: string | null
-        mode: 'upgrade' | 'reserve' | 'claim'
-    }
+  interface ControllerAnalysisData {
+    assignedBot: string | null;
+    mode: "upgrade" | "reserve" | "claim";
+  }
 }

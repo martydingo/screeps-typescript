@@ -1,13 +1,13 @@
-export {}
+export {};
 
 declare global {
-    type SpawnMonitorEntry = {
-        energy: number
-        energyCapacity: number
-        spawning: number
-    }
+  interface SpawnMonitorEntry {
+    energy: number;
+    energyCapacity: number;
+    spawning: number;
+  }
 
-    type SpawnMonitorData = {
-        [key: Id<StructureSpawn>]: SpawnMonitorEntry
-    }
+  interface SpawnMonitorData {
+    [key: Id<StructureSpawn>]: SpawnMonitorEntry;
+  }
 }

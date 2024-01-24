@@ -1,14 +1,13 @@
-export {}
+export {};
 
 declare global {
-    type ConstructionMonitorEntry = {
-        progress: number
-        progressTotal: number
-        structureType: BuildableStructureConstant
-    }
+  interface ConstructionMonitorEntry {
+    progress: number;
+    progressTotal: number;
+    structureType: BuildableStructureConstant;
+  }
 
-    type ConstructionMonitorData = {
-        [key: Id<ConstructionSite>]: ConstructionMonitorEntry
-    }
+  interface ConstructionMonitorData {
+    [key: Id<ConstructionSite>]: ConstructionMonitorEntry;
+  }
 }
-

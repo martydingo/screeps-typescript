@@ -1,14 +1,14 @@
-export {}
+export {};
 
 declare global {
-    type LinkMonitorEntry = {
-        energy: number
-        energyCapacity: number
-        // mode: "send" | "receive" | "both"
-        cooldown: number
-    }
+  interface LinkMonitorEntry {
+    energy: number;
+    energyCapacity: number;
+    // mode: "send" | "receive" | "both"
+    cooldown: number;
+  }
 
-    type LinkMonitorData = {
-        [key: Id<StructureLink>]: LinkMonitorEntry
-    }
+  interface LinkMonitorData {
+    [key: Id<StructureLink>]: LinkMonitorEntry;
+  }
 }

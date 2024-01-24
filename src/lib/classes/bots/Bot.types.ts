@@ -1,11 +1,11 @@
-export { }
+export {};
 
 declare global {
-    interface BotMemory {
-        role: string
-        room: string
-        params: any
-        status?: string
-    }
-    interface CreepMemory extends BotMemory { }
+  interface BotMemory {
+    role: string;
+    room: string;
+    params: any;
+    status?: string;
+  }
+  type CreepMemory = BotMemory;
 }

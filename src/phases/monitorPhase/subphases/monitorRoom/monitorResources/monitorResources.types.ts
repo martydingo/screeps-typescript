@@ -1,7 +1,7 @@
-export {}
+export {};
 declare global {
-    type ResourceMonitorData = {
-        droppedResources: DroppedResourceMonitorData
-        ruins: RuinMonitorData
-    }
+  interface ResourceMonitorData {
+    droppedResources: DroppedResourceMonitorData;
+    ruins: RuinMonitorData;
+  }
 }

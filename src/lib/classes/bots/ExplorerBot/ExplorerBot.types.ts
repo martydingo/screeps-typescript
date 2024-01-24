@@ -1,10 +1,9 @@
-export { }
+export {};
 
 declare global {
-    type ExplorerBotParams = {
-        isClaiming: boolean
-        isReserving: boolean
-    }
-    interface ExplorerBotMemory extends BotMemory {
-    }
+  interface ExplorerBotParams {
+    isClaiming: boolean;
+    isReserving: boolean;
+  }
+  type ExplorerBotMemory = BotMemory;
 }

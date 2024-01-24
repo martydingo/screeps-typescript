@@ -1,14 +1,14 @@
-export { }
+export {};
 
 declare global {
-    type HostileMonitorEntry = {
-        hits: number
-        hitsMax: number
-        parts: BodyPartConstant[]
-        owner: string
-    }
+  interface HostileMonitorEntry {
+    hits: number;
+    hitsMax: number;
+    parts: BodyPartConstant[];
+    owner: string;
+  }
 
-    type HostileMonitorData = {
-        [id: Id<Creep>]: HostileMonitorEntry
-    }
+  interface HostileMonitorData {
+    [id: Id<Creep>]: HostileMonitorEntry;
+  }
 }

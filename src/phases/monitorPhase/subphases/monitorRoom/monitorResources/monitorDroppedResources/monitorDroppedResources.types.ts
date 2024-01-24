@@ -1,12 +1,12 @@
-export {}
+export {};
 declare global {
-    type DroppedResourceMonitorEntry = {
-        resourceType: ResourceConstant
-        pos: RoomPosition
-        amount: number
-    }
+  interface DroppedResourceMonitorEntry {
+    resourceType: ResourceConstant;
+    pos: RoomPosition;
+    amount: number;
+  }
 
-    type DroppedResourceMonitorData = {
-        [key: Id<Resource<ResourceConstant>>]: DroppedResourceMonitorEntry
-    }
+  interface DroppedResourceMonitorData {
+    [key: Id<Resource<ResourceConstant>>]: DroppedResourceMonitorEntry;
+  }
 }

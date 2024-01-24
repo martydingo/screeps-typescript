@@ -1,11 +1,11 @@
-export {}
+export {};
 
 declare global {
-    type LinkAnalysisEntry = {
-        mode: "send" | "receive" | "both"
-    }
+  interface LinkAnalysisEntry {
+    mode: "send" | "receive" | "both";
+  }
 
-    type LinkAnalysisData = {
-        [key: Id<StructureLink>]: LinkAnalysisEntry
-    }
+  interface LinkAnalysisData {
+    [key: Id<StructureLink>]: LinkAnalysisEntry;
+  }
 }
