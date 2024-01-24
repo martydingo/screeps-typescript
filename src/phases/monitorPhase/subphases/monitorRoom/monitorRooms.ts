@@ -47,18 +47,20 @@ function createExplorerBotJobs(roomName: string) {
   }
 
   const explorerBot = new ExplorerBot(roomName, params);
-  if (!Memory.analysis.queues.spawn[explorerBot.name]) {
-    if (!Game.creeps[explorerBot.name]) {
-      Memory.analysis.queues.spawn[explorerBot.name] = {
-        name: explorerBot.name,
-        room: roomName,
-        priority: explorerBot.priority,
-        parts: [MOVE],
-        memory: explorerBot.memory,
-        status: "new"
-      };
-    } else {
-      delete Memory.analysis.queues.spawn[explorerBot.name];
+  if (Memory.analysis.queues.spawn) {
+    if (!Memory.analysis.queues.spawn[explorerBot.name]) {
+      if (!Game.creeps[explorerBot.name]) {
+        Memory.analysis.queues.spawn[explorerBot.name] = {
+          name: explorerBot.name,
+          room: roomName,
+          priority: explorerBot.priority,
+          parts: [MOVE],
+          memory: explorerBot.memory,
+          status: "new"
+        };
+      } else {
+        delete Memory.analysis.queues.spawn[explorerBot.name];
+      }
     }
   }
 }
