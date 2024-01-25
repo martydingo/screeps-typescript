@@ -65,14 +65,18 @@ export class UpgradeBot extends Bot {
 
     switch (bot.memory.status) {
       case "pickingUp":
-        const nearbyLink = this.checkForLinks(bot);
-        if (nearbyLink) {
-          const withdrawResult = bot.withdraw(nearbyLink, RESOURCE_ENERGY);
-          if (withdrawResult === ERR_NOT_IN_RANGE) {
-            bot.moveTo(nearbyLink);
-          }
+        if (bot.pos.roomName !== bot.memory.room) {
+          bot.moveTo(new RoomPosition(25, 25, bot.memory.room));
         } else {
-          this.fetchEnergy(bot);
+          const nearbyLink = this.checkForLinks(bot);
+          if (nearbyLink) {
+            const withdrawResult = bot.withdraw(nearbyLink, RESOURCE_ENERGY);
+            if (withdrawResult === ERR_NOT_IN_RANGE) {
+              bot.moveTo(nearbyLink);
+            }
+          } else {
+            this.fetchEnergy(bot);
+          }
         }
         break;
       case "upgrading":

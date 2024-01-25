@@ -75,6 +75,8 @@ export class Bot {
       if (storage) {
         if (storage.store[RESOURCE_ENERGY] > bot.store.getFreeCapacity()) {
           this.withdrawEnergy(bot, storage);
+        } else {
+          this.pickupEnergy(bot);
         }
       } else {
         const ruins = Object.entries(Memory.rooms[bot.memory.room].monitoring.resources.ruins);
@@ -84,6 +86,8 @@ export class Bot {
           this.pickupEnergy(bot);
         }
       }
+    } else {
+      bot.moveTo(new RoomPosition(25, 25, bot.memory.room));
     }
   }
 
@@ -104,9 +108,9 @@ export class Bot {
       });
       const sortedExtensions = extensionsInRoom
         .filter(extension => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
-        .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])
+        .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY]);
 
-        const closestExtension = bot.pos.findClosestByPath(sortedExtensions);
+      const closestExtension = bot.pos.findClosestByPath(sortedExtensions);
 
       if (closestExtension) {
         this.dropOffResource(bot, closestExtension, RESOURCE_ENERGY);
