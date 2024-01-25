@@ -9,6 +9,6 @@ export const roomConfig: RoomConfiguration = {
   },
   production: {
     roomsToMine: [],
-    roomsToClaim: []
+    roomsToClaim: ["E58S57"]
   }
 };
