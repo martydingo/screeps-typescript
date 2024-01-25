@@ -26,7 +26,7 @@ function buildRoomMonitorMemory(roomName: string) {
 
 function createExplorerBotJobs(roomName: string) {
   let params = { isClaiming: false, isReserving: false };
-  let parts: BodyPartConstant[] = [MOVE]
+  let parts: BodyPartConstant[] = [MOVE];
   if (Memory.rooms[roomName].monitoring.structures) {
     const controllerArray = Object.keys(Memory.rooms[roomName].monitoring.structures.controller);
     if (controllerArray.length > 0) {
@@ -49,21 +49,20 @@ function createExplorerBotJobs(roomName: string) {
 
   const explorerBot = new ExplorerBot(roomName, params);
   if (Memory.analysis.queues.spawn) {
-      if (!Game.creeps[explorerBot.name]) {
-        Memory.analysis.queues.spawn[explorerBot.name] = {
-          name: explorerBot.name,
-          room: roomName,
-          priority: explorerBot.priority,
-          parts: parts,
-          memory: explorerBot.memory,
-          status: "new"
-        };
-      } else {
-        delete Memory.analysis.queues.spawn[explorerBot.name];
-      }
+    if (!Game.creeps[explorerBot.name]) {
+      Memory.analysis.queues.spawn[explorerBot.name] = {
+        name: explorerBot.name,
+        room: roomName,
+        priority: explorerBot.priority,
+        parts,
+        memory: explorerBot.memory,
+        status: "new"
+      };
+    } else {
+      delete Memory.analysis.queues.spawn[explorerBot.name];
     }
   }
-
+}
 
 export function monitorRooms() {
   const roomsToMonitor: string[] = [...getOwnedRooms()];
@@ -76,7 +75,12 @@ export function monitorRooms() {
         if (!Game.rooms[roomName].controller!.my) {
           const closestSpawn = findClosestSpawn(roomName);
           if (closestSpawn) {
-            if (closestSpawn.room.energyCapacityAvailable >= 1250) {
+            if (config.rooms.roomsToMine.includes(roomName) && closestSpawn.room.energyCapacityAvailable >= 1250) {
+              createExplorerBotJobs(roomName);
+            } else if (
+              config.rooms.roomsToClaim.includes(roomName) &&
+              closestSpawn.room.energyCapacityAvailable >= 650
+            ) {
               createExplorerBotJobs(roomName);
             }
           }
