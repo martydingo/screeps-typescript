@@ -1,3 +1,4 @@
+import { spawn } from "child_process";
 import { config } from "config/config";
 import { log } from "lib/utils/log";
 import { findClosestSpawn } from "lib/utils/roomUtils";
@@ -5,8 +6,21 @@ import { findClosestSpawn } from "lib/utils/roomUtils";
 function clearBadSpawnRequests() {
   Object.entries(Memory.analysis.queues.spawn)
     .filter(([, spawnEntry]) => spawnEntry.parts === undefined)
-    .forEach(([botName]) => {
-      delete Memory.analysis.queues.spawn[botName];
+    .forEach(([botName, spawnEntry]) => {
+      const spawn = findClosestSpawn(spawnEntry.memory.room)!;
+      const parts = config.bots[`${spawnEntry.memory.role}s`].parts[spawn.room.energyCapacityAvailable];
+      if(!parts){
+        console.log(spawnEntry.memory.role, spawn.room.energyCapacityAvailable, config.bots[`${spawnEntry.memory.role}s`].parts)
+        log.debug(`Clearing bad spawn request for ${botName} in ${spawnEntry.room}`)
+        delete Memory.analysis.queues.spawn[botName];
+      } else {
+        Memory.analysis.queues.spawn[botName].parts = parts;
+        if(spawn.pos.roomName !== spawnEntry.memory.room){{
+          Memory.analysis.queues.spawn[botName].priority = Memory.analysis.queues.spawn[botName].priority + 1
+        }
+      }
+    }
+
     });
 }
 
@@ -37,19 +51,18 @@ function processNewSpawnRequests() {
   const spawns = Object.values(Game.spawns).filter(spawn => spawn.room.name === botData.room && !spawn.spawning);
   let spawn: StructureSpawn;
   let parts: BodyPartConstant[];
-  if (spawns.length) {
+  parts = botData.parts;
+  if (spawns.length > 0) {
     spawn = spawns[0];
-    parts = botData.parts;
   } else {
-    spawn = findClosestSpawn(botData.memory.room)!;
-    parts = config.bots[`${botData.memory.role}s`].parts[spawn.room.energyCapacityAvailable];
+    spawn = findClosestSpawn(botData.room)!;
   }
-  console.log(`${parts}, ${botData.name}, ${{ memory: botData.memory }}`);
-  const spawnResult = spawn.spawnCreep(parts, botData.name, { memory: botData.memory });
-  log.info(`Spawning ${botName} in ${botData.room} with result ${spawnResult}`);
-  if (spawnResult === OK) {
-    Memory.analysis.queues.spawn[botName].status = "spawning";
-  }
+    // console.log(`${parts}, ${botData.name}, ${{ memory: botData.memory }}`);
+    const spawnResult = spawn.spawnCreep(parts, botData.name, { memory: botData.memory });
+    log.info(`Spawning ${botName} in ${botData.room} with result ${spawnResult}`);
+    if (spawnResult === OK) {
+      Memory.analysis.queues.spawn[botName].status = "spawning";
+    }
 }
 
 function processSpawnQueue() {

@@ -102,12 +102,14 @@ export class Bot {
       Object.keys(Memory.rooms[bot.memory.room].monitoring.structures.extensions).forEach(extensionId => {
         extensionsInRoom.push(Game.getObjectById(extensionId as Id<StructureExtension>)!);
       });
-      const extensionToFill = extensionsInRoom
+      const sortedExtensions = extensionsInRoom
         .filter(extension => extension.store.getFreeCapacity(RESOURCE_ENERGY) > 0)
-        .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])[0];
+        .sort((extensionA, extensionB) => extensionA.store[RESOURCE_ENERGY] - extensionB.store[RESOURCE_ENERGY])
 
-      if (extensionToFill) {
-        this.dropOffResource(bot, extensionToFill, RESOURCE_ENERGY);
+        const closestExtension = bot.pos.findClosestByPath(sortedExtensions);
+
+      if (closestExtension) {
+        this.dropOffResource(bot, closestExtension, RESOURCE_ENERGY);
       }
     }
   }

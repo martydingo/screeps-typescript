@@ -24,7 +24,7 @@ export function analysisPhase() {
 
   const roomsToAnalyse = [...getOwnedRooms()];
 
-  config.rooms.roomsToMine.forEach(roomName => {
+  [...new Set(...config.rooms.roomsToMine, ...config.rooms.roomsToClaim)].forEach(roomName => {
     if (Game.rooms[roomName]) {
       roomsToAnalyse.push(roomName);
     } else {

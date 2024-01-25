@@ -30,7 +30,7 @@ export class SourceBot extends Bot {
     }
     if (bot.store.getFreeCapacity() > 0 || bot.getActiveBodyparts(CARRY) == 0) {
       bot.memory.status = "harvesting";
-    } else {
+    } else if(bot.store.getFreeCapacity() == 0) {
       bot.memory.status = "depositing";
 
       // let spawnsFull: boolean[] = []

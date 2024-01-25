@@ -11,13 +11,14 @@ export class ExplorerBot extends Bot {
   public name: string;
   public constructor(roomName: string, params: { isClaiming: boolean; isReserving: boolean }) {
     super();
+
     Object.keys(this.parts).forEach(energyCapacityAvailableIndex => {
       const energyCapacityAvailable = parseInt(energyCapacityAvailableIndex);
       if (params.isClaiming) {
-        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM];
+        this.parts[energyCapacityAvailable] = [MOVE, CLAIM];
       }
       if (params.isReserving) {
-        this.parts[energyCapacityAvailable] = [...this.parts[energyCapacityAvailable], CLAIM, CLAIM];
+        this.parts[energyCapacityAvailable] = [MOVE, CLAIM, CLAIM];
       }
     });
 

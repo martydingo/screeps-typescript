@@ -22,7 +22,7 @@ function deleteBuildBotJobs(roomName: string, index: number) {
 }
 
 export function analyseConstruction(roomName: string) {
-  const buildBotCount = Math.round(Object.keys(Memory.rooms[roomName].monitoring.construction).length / 3);
+  const buildBotCount = Math.round(Object.keys(Memory.rooms[roomName].monitoring.construction).length / 2);
 
   if (buildBotCount > 0) {
     for (let index = 1; index <= buildBotCount; index++) {

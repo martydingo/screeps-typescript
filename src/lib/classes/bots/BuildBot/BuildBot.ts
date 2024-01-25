@@ -21,8 +21,8 @@ export class BuildBot extends Bot {
   private buildConstructionSite(bot: Creep): void {
     const constructionSiteEntries = Object.entries(Memory.rooms[bot.memory.room].monitoring.construction).sort(
       ([, constructionSiteA], [, constructionSiteB]) =>
-        constructionSiteA.progress / constructionSiteA.progressTotal +
-        constructionSiteB.progress / constructionSiteB.progressTotal
+        constructionSiteB.progress / constructionSiteB.progressTotal -
+        constructionSiteA.progress / constructionSiteA.progressTotal
     )[0];
     if (constructionSiteEntries) {
       const constructionSiteId = constructionSiteEntries[0] as Id<ConstructionSite>;

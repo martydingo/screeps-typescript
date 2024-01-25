@@ -24,8 +24,9 @@ function manageUpgradeBotJobs(roomName: string) {
     const upgradeBotCount = config.bots.upgradeBots.count;
     for (let i = 1; i <= upgradeBotCount; i++) {
       const upgradeBot = new UpgradeBot(controllerId as Id<StructureController>, roomName, i);
-      if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
+      if (!Game.creeps[upgradeBot.name]) {
         if (!Memory.analysis.queues.spawn[upgradeBot.name]) {
+          log.debug(`Creating upgrade bot job for ${upgradeBot.name} in ${roomName}`);
           Memory.analysis.queues.spawn[upgradeBot.name] = {
             name: upgradeBot.name,
             room: roomName,
@@ -34,9 +35,9 @@ function manageUpgradeBotJobs(roomName: string) {
             memory: upgradeBot.memory,
             status: "new"
           };
-        } else {
-          delete Memory.analysis.queues.spawn[upgradeBot.name];
         }
+      } else {
+        delete Memory.analysis.queues.spawn[upgradeBot.name];
       }
     }
   });

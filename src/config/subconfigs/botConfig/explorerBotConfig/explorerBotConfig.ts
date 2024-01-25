@@ -32,7 +32,17 @@ export const explorerBotConfig: ExplorerBotConfiguration = {
     1650: [MOVE],
     1700: [MOVE],
     1750: [MOVE],
-    1800: [MOVE]
+    1800: [MOVE],
+    1850: [MOVE],
+    1900: [MOVE],
+    1950: [MOVE],
+    2000: [MOVE],
+    2050: [MOVE],
+    2100: [MOVE],
+    2150: [MOVE],
+    2200: [MOVE],
+    2250: [MOVE],
+    2300: [MOVE],
   },
   priority: 5
 };

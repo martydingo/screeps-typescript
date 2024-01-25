@@ -31,7 +31,7 @@ export class TransportBot extends Bot {
     }
     if (params.dropOff) {
       this.name = `${this.name}-${params.dropOff}`;
-      if (params.dropOff === "towers" || params.dropOff === "spawns" || params.dropOff === "links") {
+      if (params.dropOff === "towers" || params.dropOff === "links") {
         this.priority = this.priority + 2;
       }
     }
