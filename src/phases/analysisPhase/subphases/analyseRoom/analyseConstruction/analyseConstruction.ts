@@ -23,7 +23,6 @@ function deleteBuildBotJobs(roomName: string, index: number) {
 
 export function analyseConstruction(roomName: string) {
   const buildBotCount = Math.round(Object.keys(Memory.rooms[roomName].monitoring.construction).length / 2);
-
   if (buildBotCount > 0) {
     for (let index = 1; index <= buildBotCount; index++) {
       const buildBot = new BuildBot(roomName, index);
@@ -39,7 +38,9 @@ export function analyseConstruction(roomName: string) {
     }
   } else {
     Object.entries(Memory.analysis.queues.spawn)
-      .filter(([, spawnQueueEntry]) => spawnQueueEntry.memory.role === "buildBot")
+      .filter(
+        ([, spawnQueueEntry]) => spawnQueueEntry.memory.role === "buildBot" && spawnQueueEntry.memory.room === roomName
+      )
       .forEach(([spawnQueueEntryName]) => {
         delete Memory.analysis.queues.spawn[spawnQueueEntryName];
       });
