@@ -50,6 +50,12 @@ export class BuildBot extends Bot {
         return;
       }
     }
+
+    if(bot.pos.roomName !== bot.memory.room) {
+      bot.moveTo(new RoomPosition(25, 25, bot.memory.room))
+      return
+    }
+
     if (bot.store.getFreeCapacity() === bot.store.getCapacity()) {
       bot.memory.status = "pickingUp";
     } else if (bot.store.getFreeCapacity() === 0) {
