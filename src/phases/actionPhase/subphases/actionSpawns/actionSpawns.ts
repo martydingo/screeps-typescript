@@ -38,9 +38,9 @@ function processSpawnedCreeps() {
     });
 }
 
-function processNewSpawnRequests() {
+function processNewSpawnRequests(roomName: string) {
   const spawnQueue = Object.entries(Memory.analysis.queues.spawn)
-    .filter(([, botData]) => botData.status === "new")
+    .filter(([, botData]) => botData.status === "new" && botData.room === roomName)
     .sort(([, a], [, b]) => a.priority - b.priority);
 
   if (spawnQueue.length === 0) {
@@ -67,7 +67,8 @@ function processNewSpawnRequests() {
 
 function processSpawnQueue() {
   clearBadSpawnRequests();
-  processNewSpawnRequests();
+  const roomsWithSpawns = Object.values(Game.spawns).map(spawn => spawn.room.name);
+  roomsWithSpawns.forEach((roomName) => processNewSpawnRequests(roomName))
   processSpawnedCreeps();
 }
 
