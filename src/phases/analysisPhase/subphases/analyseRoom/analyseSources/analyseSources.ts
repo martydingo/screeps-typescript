@@ -26,7 +26,7 @@ function createSourceBotJobs(roomName: string) {
       const parts =
         (Object.values(Game.creeps).filter(creep => creep.memory.room === roomName).length > 0 &&
           sourceBot.parts[Game.rooms[roomName].energyCapacityAvailable]) ||
-        sourceBot.parts[Game.rooms[roomName].energyAvailable];
+        sourceBot.parts[(Math.floor(Game.rooms[roomName].energyAvailable / 50) * 50)];
       if (
         !Memory.analysis.queues.spawn[sourceBot.name] ||
         Memory.analysis.queues.spawn[sourceBot.name].parts !== parts
