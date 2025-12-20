@@ -1,4 +1,5 @@
 import { ErrorMapper } from "utils/ErrorMapper";
+import { Monitors } from "Monitors/Monitors"
 
 declare global {
   /*
@@ -38,4 +39,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
       delete Memory.creeps[name];
     }
   }
+
+  new Monitors()
 });
