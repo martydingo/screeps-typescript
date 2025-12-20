@@ -1,6 +1,8 @@
 import { config } from "../../config"
+import { ControllerMonitor } from "./ControllerMonitor"
+import { SourceMonitor } from "./SourceMonitor"
 
-class RoomMonitor {
+export class RoomMonitor {
     private rooms: string[]
     public constructor() {
         if (!Memory.rooms) {
@@ -13,6 +15,13 @@ class RoomMonitor {
             if (!Memory.rooms[roomName]) {
                 Memory.rooms[roomName] = {}
             }
+            this.monitorRoom(roomName)
         })
+
+    }
+
+    private monitorRoom(roomName: string) {
+        new SourceMonitor(roomName)
+        new ControllerMonitor(roomName)
     }
 }

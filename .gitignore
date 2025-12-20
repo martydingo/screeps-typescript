@@ -91,3 +91,6 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 bun.lockb
+
+*2*
+*3*
