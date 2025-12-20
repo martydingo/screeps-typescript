@@ -1,0 +1,36 @@
+interface SourceMemory {
+  energy: {
+    amount: number;
+    capacity: number;
+  }
+  regeneration: number
+}
+
+declare global {
+  interface RoomMemory {
+    sources?: {[key: string]: SourceMemory}
+  }
+}
+
+export class SourceMonitor {
+  public constructor(roomName: string) {
+    if (Game.rooms[roomName]) {
+      const room = Game.rooms[roomName]
+      const sources = room.find(FIND_SOURCES)
+
+      if (sources.length > 0) {
+        if (!room.memory.sources) {
+          room.memory.sources = {}
+        }
+
+        sources.forEach((source) => room.memory.sources![source.id] = {
+          energy: {
+            amount: source.energy,
+            capacity: source.energyCapacity
+          },
+          regeneration: source.ticksToRegeneration
+        })
+      }
+    }
+  }
+}
