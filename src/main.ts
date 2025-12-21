@@ -1,5 +1,6 @@
 import { ErrorMapper } from "utils/ErrorMapper";
 import { Monitors } from "Monitors/Monitors"
+import { Daemons } from "Daemons/Daemons";
 
 declare global {
   /*
@@ -15,12 +16,6 @@ declare global {
   interface Memory {
     uuid: number;
     log: any;
-  }
-
-  interface CreepMemory {
-    role: string;
-    room: string;
-    working: boolean;
   }
 
 }
@@ -42,4 +37,5 @@ export const loop = ErrorMapper.wrapLoop(() => {
   }
 
   new Monitors()
+  new Daemons()
 });

@@ -3,7 +3,7 @@ interface SpawnMemory {
     amount: number;
     capacity: number;
   }
-    room: string;
+  room: string;
 }
 
 export class SpawnMonitor {
@@ -13,16 +13,16 @@ export class SpawnMonitor {
       Memory.spawns = {};
     }
 
-      Object.values(Game.spawns).forEach((spawn) => {
-          const payload: SpawnMemory = {
-              energy: {
-                  amount: spawn.store[RESOURCE_ENERGY],
-                  capacity: spawn.store.getCapacity(RESOURCE_ENERGY)
-                },
-                room: spawn.room.name
-            };
+    Object.values(Game.spawns).forEach((spawn) => {
+      const payload: SpawnMemory = {
+        energy: {
+          amount: spawn.store[RESOURCE_ENERGY],
+          capacity: spawn.store.getCapacity(RESOURCE_ENERGY)
+        },
+        room: spawn.room.name
+      };
 
-            Memory.spawns[spawn.name] = payload;
-        })
+      Memory.spawns[spawn.name] = payload;
+    })
   }
 }

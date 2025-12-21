@@ -10,6 +10,7 @@ interface ControllerMemory {
     timeLeft?: number
     cooldown?: number
   }
+  level: number
 }
 
 declare global {
@@ -34,6 +35,7 @@ export class ControllerMonitor {
             nextLevel: room.controller.progressTotal
           },
           downgrade: room.controller.ticksToDowngrade,
+          level: room.controller.level
         }
 
         if (room.controller.safeMode !== undefined) {
