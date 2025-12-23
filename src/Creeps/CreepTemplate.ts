@@ -8,6 +8,7 @@ declare global {
   interface Creep {
     mineSource: (sourceId: Id<Source>) => number;
     fetchDroppedEnergy: () => number;
+    lootEnergyFromRuin: () => number;
     fetchEnergy: () => number;
   }
 }
@@ -30,7 +31,7 @@ Creep.prototype.fetchDroppedEnergy = function () {
   const resourceMatrix = Memory.rooms[this.room.name].resources;
   if (resourceMatrix) {
     const resourceDistanceMatrix = Object.entries(resourceMatrix)
-      .filter(([, resourceMemory]) => resourceMemory.resource === RESOURCE_ENERGY)
+      .filter(([, resourceMemory]) => resourceMemory.resource === RESOURCE_ENERGY && resourceMemory.amount > 50)
       .map(([resourceId, resourceMemory]) => {
         return {
           id: resourceId,
@@ -58,8 +59,41 @@ Creep.prototype.fetchDroppedEnergy = function () {
   } else return ERR_NOT_FOUND;
 };
 
+Creep.prototype.lootEnergyFromRuin = function () {
+  const ruinMatrix = Memory.rooms[this.room.name].structures?.ruins;
+  if (ruinMatrix) {
+    const ruinDistanceMatrix = Object.entries(ruinMatrix)
+      .filter(([, ruinMemory]) => ruinMemory.energy.amount > 0)
+      .map(([ruinId, ruinMemory]) => {
+        return {
+          id: ruinId,
+          amount: ruinMemory.energy.amount,
+          distance: this.pos.getRangeTo(ruinMemory.pos.x, ruinMemory.pos.y)
+        };
+      });
+
+    const closestRuinMatrix = ruinDistanceMatrix.sort((ruinA, ruinB) => ruinA.distance - ruinB.distance)[0];
+    if (closestRuinMatrix) {
+      const closestRuinId = closestRuinMatrix.id as Id<Ruin>;
+      const closestRuin = Game.getObjectById(closestRuinId);
+      if (closestRuin) {
+        const withdrawResult = this.withdraw(closestRuin, RESOURCE_ENERGY);
+
+        // console.log(`${this.name}`)
+        if (withdrawResult === ERR_NOT_IN_RANGE) {
+          this.moveTo(closestRuin);
+        }
+        return withdrawResult;
+      } else return ERR_INVALID_TARGET;
+    } else return ERR_NOT_FOUND;
+  } else return ERR_NOT_FOUND;
+};
+
 Creep.prototype.fetchEnergy = function () {
   const fetchDroppedResourceResult = this.fetchDroppedEnergy();
+  if (fetchDroppedResourceResult !== OK) {
+    this.lootEnergyFromRuin();
+  }
 
   return fetchDroppedResourceResult;
 };

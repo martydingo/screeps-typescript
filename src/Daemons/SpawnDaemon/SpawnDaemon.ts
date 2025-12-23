@@ -44,12 +44,12 @@ export class SpawnDaemon {
             const spawnCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.room === roomName && creep.memory.type === "SpawnCreep")
 
             if (spawnCreeps.length === 0) {
-                Memory.jobs[`SpawnCreep-${roomName}-${spawnCreeps.length + 1}`] = {
+                Memory.jobs[`SpawnCreep-${roomName}-${Game.time}`] = {
                   type: "spawn",
-                  name: `SpawnCreep-${roomName}-${spawnCreeps.length + 1}`,
+                  name: `SpawnCreep-${roomName}-${Game.time}`,
                   bodyPartRatio: SpawnCreep.bodyPartRatio,
                   status: "pending",
-                  priority: 3,
+                  priority: 2,
                   params: {
                     memory: {
                       type: "SpawnCreep",

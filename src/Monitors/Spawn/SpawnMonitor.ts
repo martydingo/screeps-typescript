@@ -3,6 +3,7 @@ interface SpawnMemory {
     amount: number;
     capacity: number;
   }
+  spawning: boolean
   room: string;
 }
 
@@ -19,6 +20,7 @@ export class SpawnMonitor {
           amount: spawn.store[RESOURCE_ENERGY],
           capacity: spawn.store.getCapacity(RESOURCE_ENERGY)
         },
+        spawning: spawn.spawning !== null && true || false,
         room: spawn.room.name
       };
 

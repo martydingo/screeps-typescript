@@ -5,10 +5,10 @@ export class ControllerDaemon {
         Object.keys(Memory.rooms).forEach((roomName) => {
             Object.keys(Memory.rooms[roomName].controller!).forEach((controllerId) => {
                 const assignedCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.assignedController === controllerId)
-                if (assignedCreeps.length === 0) {
-                    Memory.jobs[`ControllerCreep-${controllerId}-${assignedCreeps.length + 1}`] = {
+                if (assignedCreeps.length < 2) {
+                    Memory.jobs[`ControllerCreep-${controllerId}-${Game.time}`] = {
                         type: "spawn",
-                        name: `ControllerCreep-${controllerId}-${assignedCreeps.length + 1}`,
+                        name: `ControllerCreep-${controllerId}-${Game.time}`,
                         bodyPartRatio: ControllerCreep.bodyPartRatio,
                         status: "pending",
                         priority: 3,
@@ -26,4 +26,6 @@ export class ControllerDaemon {
             })
         })
     }
+
 }
+

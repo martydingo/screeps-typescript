@@ -10,7 +10,7 @@ declare global {
 }
 
 export class ControllerCreep extends CreepTemplate {
-  public static bodyPartRatio = { work: 1, carry: 1, move: 1.5 };
+  public static bodyPartRatio = { work: 2, carry: 1, move: 1.5 };
 
   public constructor() {
     super();

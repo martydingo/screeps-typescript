@@ -1,11 +1,13 @@
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
+import { RuinMonitor, RuinMonitorMemory } from "./RuinMonitor";
 import { TowerMonitor, TowerMonitorMemory } from "./TowerMonitor";
 
 interface StructureMonitorMemory {
   extensions: ExtensionMonitorMemory;
   towers: TowerMonitorMemory;
   roads: RoadMonitorMemory;
+  ruins: RuinMonitorMemory
 }
 
 declare global {
@@ -42,6 +44,13 @@ export class StructureMonitor {
                 break;
             }
           });
+        }
+      }
+    });
+    Object.values(Game.rooms).forEach(room => {
+      if (room) {
+        if (room.controller?.my) {
+          room.find(FIND_RUINS).forEach(structure =>  new RuinMonitor(structure));
         }
       }
     });
