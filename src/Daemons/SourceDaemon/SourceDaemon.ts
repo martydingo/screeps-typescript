@@ -7,12 +7,14 @@ export class SourceDaemon {
 
             Object.keys(Memory.rooms[roomName].sources!).forEach((sourceId) => {
                 const assignedCreeps = Object.values(Game.creeps).filter((creep) => creep.memory.assignedSource === sourceId)
-                if (assignedCreeps.length === 0) {
+                const assignedJobs = Object.values(Memory.jobs).filter((job) => job.params.memory.assignedSource === sourceId)
+                if (assignedCreeps.length === 0 && assignedJobs.length === 0) {
                     Memory.jobs[`SourceCreep-${sourceId}-${Game.time}`] = {
                       type: "spawn",
                       name: `SourceCreep-${sourceId}-${Game.time}`,
                     //   bodyParts: SourceCreep.bodyParts[roomLevel],
                       bodyPartRatio: SourceCreep.bodyPartRatio,
+                      maxBodyParts: SourceCreep.maxBodyParts,
                       status: "pending",
                       priority: 1,
                       params: {

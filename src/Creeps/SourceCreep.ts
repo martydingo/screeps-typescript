@@ -10,7 +10,8 @@ declare global {
 }
 
 export class SourceCreep extends CreepTemplate {
-  public static bodyPartRatio = { work: 2, carry: 0, move: 1 };
+  public static bodyPartRatio = { work: 2, carry: 0.1, move: 1 };
+  public static maxBodyParts = { work: 7, carry: 1, move: 8 };
 
   public constructor() {
     super();
@@ -23,9 +24,23 @@ export class SourceCreep extends CreepTemplate {
         }
 
         if (sourceCreep.memory.curTask === "miningSource") {
+          const assignedSource = sourceCreep.memory.assignedSource
+          if (Game.flags[`anchor-${assignedSource as string}`]) {
+            const anchorPoint = Game.flags[`anchor-${assignedSource as string}`]
+            if (sourceCreep.pos !== anchorPoint.pos) {
+              sourceCreep.moveTo(anchorPoint.pos)
+            }
+          }
           sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
           if (sourceCreep.store[RESOURCE_ENERGY] > 0) {
-            sourceCreep.drop(RESOURCE_ENERGY);
+            if (sourceCreep.room.storage) {
+              const transferResult = sourceCreep.transfer(sourceCreep.room.storage, RESOURCE_ENERGY)
+              if (transferResult !== OK) {
+                sourceCreep.drop(RESOURCE_ENERGY);
+              }
+            } else {
+              sourceCreep.drop(RESOURCE_ENERGY);
+            }
           }
         }
       });

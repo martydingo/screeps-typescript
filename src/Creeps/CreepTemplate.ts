@@ -9,6 +9,7 @@ declare global {
     mineSource: (sourceId: Id<Source>) => number;
     fetchDroppedEnergy: () => number;
     lootEnergyFromRuin: () => number;
+    fetchEnergyFromStorage: () => number;
     fetchEnergy: () => number;
   }
 }
@@ -89,13 +90,29 @@ Creep.prototype.lootEnergyFromRuin = function () {
   } else return ERR_NOT_FOUND;
 };
 
-Creep.prototype.fetchEnergy = function () {
-  const fetchDroppedResourceResult = this.fetchDroppedEnergy();
-  if (fetchDroppedResourceResult !== OK) {
-    this.lootEnergyFromRuin();
+Creep.prototype.fetchEnergyFromStorage = function () {
+  if (this.room.storage) {
+    const withdrawResult = this.withdraw(this.room.storage, RESOURCE_ENERGY)
+    if (withdrawResult === ERR_NOT_IN_RANGE) {
+      this.moveTo(this.room.storage)
+      return OK
+    }
+    return withdrawResult
   }
+  return ERR_NOT_FOUND
+}
 
-  return fetchDroppedResourceResult;
+Creep.prototype.fetchEnergy = function () {
+  const withdrawResult = this.fetchEnergyFromStorage()
+  if (withdrawResult !== OK) {
+
+    const fetchDroppedResourceResult = this.fetchDroppedEnergy();
+    if (fetchDroppedResourceResult !== OK) {
+      this.lootEnergyFromRuin();
+    }
+    return fetchDroppedResourceResult;
+  }
+  return ERR_INVALID_TARGET
 };
 
 export class CreepTemplate {

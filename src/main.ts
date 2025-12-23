@@ -1,5 +1,5 @@
 import { ErrorMapper } from "utils/ErrorMapper";
-import { Monitors } from "Monitors/Monitors"
+import { Monitors } from "Monitors/Monitors";
 import { Daemons } from "Daemons/Daemons";
 
 declare global {
@@ -17,18 +17,18 @@ declare global {
     uuid: number;
     log: any;
   }
-
 }
 // Syntax for adding proprties to `global` (ex "global.log")
 declare const global: {
   log: any;
-}
+};
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  if (Game.cpu.bucket === 10000) Game.cpu.generatePixel()
-
+  if (Game.cpu.generatePixel) {
+    if (Game.cpu.bucket === 10000) Game.cpu.generatePixel();
+  }
   console.log(`Current game tick is ${Game.time}`);
 
   // Automatically delete memory of missing creeps
@@ -38,6 +38,6 @@ export const loop = ErrorMapper.wrapLoop(() => {
     }
   }
 
-  new Monitors()
-  new Daemons()
+  new Monitors();
+  new Daemons();
 });

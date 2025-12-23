@@ -14,7 +14,10 @@ const COST: Record<PartKey, number> = {
   claim: 600
 };
 
+
+
 export type Ratio = Partial<Record<PartKey, number>>;
+export type MaxBodyParts = Partial<Record<PartKey, number>>;
 
 function sumRatioCost(ratio: Ratio): number {
   let total = 0;
@@ -35,6 +38,7 @@ function totalRatioCount(ratio: Ratio): number {
  */
 export function buildBodyFromRatio(opts: {
   ratio: Ratio;
+  maxBodyParts: MaxBodyParts
   energyAvailable: number; // room.energyAvailable (or spawn energy)
   minSpend?: number; // default 300
   maxParts?: number; // default 50
@@ -44,6 +48,17 @@ export function buildBodyFromRatio(opts: {
 }): PartKey[] {
   const {
     ratio,
+    maxBodyParts = {
+      tough: 50,
+      move: 50,
+      work: 50,
+      carry: 50,
+      attack: 50,
+      // eslint-disable-next-line camelcase
+      ranged_attack: 50,
+      heal: 50,
+      claim: 50
+    },
     energyAvailable,
     minSpend = 300,
     maxParts = 50,
@@ -71,6 +86,7 @@ export function buildBodyFromRatio(opts: {
   // Start with floors of fractional targets
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const counts: Record<PartKey, number> = Object.create(null);
+
   const remainders: { part: PartKey; rem: number }[] = [];
 
   for (const p of partsInRatio) {
@@ -119,6 +135,13 @@ export function buildBodyFromRatio(opts: {
     // Add at least something affordable
     if (COST[cheapestPart] <= budget) counts[cheapestPart] = 1;
   }
+
+
+  Object.keys(counts).forEach(bodyPartName => {
+    if (counts[bodyPartName as BodyPartConstant] > maxBodyParts[bodyPartName as BodyPartConstant]!) {
+      counts[bodyPartName as BodyPartConstant] = maxBodyParts[bodyPartName as BodyPartConstant]!;
+    }
+  });
 
   // --- Build ordered output array ---
 
