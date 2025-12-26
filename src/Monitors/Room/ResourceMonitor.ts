@@ -26,9 +26,9 @@ export class ResourceMonitor {
                     resource: resource.resourceType,
                     pos: resource.pos
                 })
+                Object.keys(Memory.rooms[roomName].resources!).forEach((resourceId) => Game.getObjectById(resourceId as Id<Resource>) === null && delete Memory.rooms[roomName].resources![resourceId])
             }
 
-            Object.keys(Memory.rooms[roomName].resources!).forEach((resourceId) => Game.getObjectById(resourceId as Id<Resource>) === null && delete Memory.rooms[roomName].resources![resourceId])
         }
     }
 }

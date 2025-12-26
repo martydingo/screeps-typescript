@@ -1,6 +1,7 @@
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
 import { RuinMonitor, RuinMonitorMemory } from "./RuinMonitor";
+import { StorageMonitor, StorageMonitorMemory } from "./StorageMonitor";
 import { TowerMonitor, TowerMonitorMemory } from "./TowerMonitor";
 
 interface StructureMonitorMemory {
@@ -8,6 +9,7 @@ interface StructureMonitorMemory {
   towers: TowerMonitorMemory;
   roads: RoadMonitorMemory;
   ruins: RuinMonitorMemory;
+  storage: StorageMonitorMemory;
 }
 
 declare global {
@@ -41,6 +43,8 @@ export class StructureMonitor {
           case "tower":
             new TowerMonitor(structure as StructureTower);
             break;
+          case "storage":
+            new StorageMonitor(structure as StructureStorage)
         }
       }
     });

@@ -13,9 +13,13 @@ export class TowerDaemon {
   }
 
   private cycleTowers(tower: StructureTower) {
-    this.healCreeps(tower);
-    this.attackCreeps(tower);
-    this.repairStructures(tower);
+    const attackCreepResult = this.attackCreeps(tower);
+    if (attackCreepResult !== OK) {
+      const healCreepResult =  this.healCreeps(tower);
+      if (healCreepResult !== OK) {
+        const repairStructureResult =  this.repairStructures(tower);
+      }
+    }
   }
 
   private healCreeps(tower: StructureTower) {
@@ -24,17 +28,19 @@ export class TowerDaemon {
     );
     const curTarget = creepsToHeal[Game.time % 4];
 
-    tower.heal(curTarget);
+    return tower.heal(curTarget);
   }
   private attackCreeps(tower: StructureTower) {
     if (Memory.rooms[tower.room.name].hostiles) {
-      const hostileCreeps = Object.keys(Memory.rooms[tower.room.name].hostiles!)
-        .map(towerId => Game.getObjectById(towerId as Id<Creep>))
-        .filter(creep => creep !== null);
+      const hostileCreeps = Object.keys(tower.room.memory.hostiles!)
+      .map(creepId => Game.getObjectById(creepId as Id<Creep>))
+      // .filter(creep => creep !== null);
 
-      const curTarget = hostileCreeps[Game.time % 4];
-      tower.attack(curTarget!);
+      const curTarget = hostileCreeps[0];
+
+      return tower.attack(curTarget!);
     }
+    return ERR_INVALID_TARGET
   }
   private repairStructures(tower: StructureTower) {
     if (tower.room.memory.structures?.roads) {
@@ -44,10 +50,10 @@ export class TowerDaemon {
           .sort((roadA, roadB) => roadA!.hits - roadB!.hits);
 
         if (roads.length > 0) {
-            tower.repair(roads[0]!)
+            return tower.repair(roads[0]!)
         }
     }
 
-
+    return ERR_INVALID_TARGET
   }
 }

@@ -54,6 +54,9 @@ export class SpawnCreep extends CreepTemplate {
       if (structureData.extensions) {
         extensionsToFeed = Object.keys(structureData.extensions)
           .map(extensionId => Game.getObjectById(extensionId as Id<StructureExtension>) as StructureExtension)
+          .sort(
+            (extensionA, extensionB) => spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB)
+          )
           .filter(extension => extension.store[RESOURCE_ENERGY] < extension.store.getCapacity(RESOURCE_ENERGY));
       }
       if (structureData.towers) {

@@ -1,12 +1,12 @@
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
 interface SourceCreepMemory extends CreepMemoryTemplate {
-    assignedSource: Id<Source>
+  assignedSource: Id<Source>;
 }
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface CreepMemory extends Partial<SourceCreepMemory> { }
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface CreepMemory extends Partial<SourceCreepMemory> {}
 }
 
 export class SourceCreep extends CreepTemplate {
@@ -24,22 +24,29 @@ export class SourceCreep extends CreepTemplate {
         }
 
         if (sourceCreep.memory.curTask === "miningSource") {
-          const assignedSource = sourceCreep.memory.assignedSource
+          let shouldMine = false;
+          const assignedSource = sourceCreep.memory.assignedSource;
           if (Game.flags[`anchor-${assignedSource as string}`]) {
-            const anchorPoint = Game.flags[`anchor-${assignedSource as string}`]
-            if (sourceCreep.pos !== anchorPoint.pos) {
-              sourceCreep.moveTo(anchorPoint.pos)
+            const anchorPoint = Game.flags[`anchor-${assignedSource as string}`];
+            if (sourceCreep.pos.getRangeTo(anchorPoint.pos) > 0) {
+              sourceCreep.moveTo(anchorPoint.pos);
+            } else {
+              shouldMine = true;
             }
+          } else {
+            shouldMine = true;
           }
-          sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
-          if (sourceCreep.store[RESOURCE_ENERGY] > 0) {
-            if (sourceCreep.room.storage) {
-              const transferResult = sourceCreep.transfer(sourceCreep.room.storage, RESOURCE_ENERGY)
-              if (transferResult !== OK) {
+          if (shouldMine === true) {
+            sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
+            if (sourceCreep.store[RESOURCE_ENERGY] > 0) {
+              if (sourceCreep.room.storage) {
+                const transferResult = sourceCreep.transfer(sourceCreep.room.storage, RESOURCE_ENERGY);
+                if (transferResult !== OK) {
+                  sourceCreep.drop(RESOURCE_ENERGY);
+                }
+              } else {
                 sourceCreep.drop(RESOURCE_ENERGY);
               }
-            } else {
-              sourceCreep.drop(RESOURCE_ENERGY);
             }
           }
         }

@@ -13,9 +13,16 @@ export interface SpawnJob {
   };
 }
 
+declare global {
+  interface Memory {
+    spawnHeld: { [key: string]: number };
+  }
+}
+
 export class SpawnDaemon {
   public constructor() {
     this.manageSpawnCreepJobs();
+
     Object.entries(Memory.jobs)
       .filter(([, job]) => job.type === "spawn" && job.status === "pending")
       .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority)
@@ -23,42 +30,82 @@ export class SpawnDaemon {
       .forEach(([spawnJobId, spawnJob]) => {
         const roomName = spawnJob.params.memory.room as string;
 
-        const spawnersInRoom = Object.values(Game.spawns).filter(spawn => spawn.room.name === roomName);
+        const spawnersInRoom = Object.values(Game.spawns).filter(spawner => spawner.room.name === roomName);
+
+        let spawn;
 
         if (spawnersInRoom.length > 0) {
-          const bodyParts = buildBodyFromRatio({
-            ratio: spawnJob.bodyPartRatio,
-            energyAvailable: Game.rooms[roomName].energyAvailable,
-            maxBodyParts: spawnJob.maxBodyParts || {
-              tough: 50,
-              move: 50,
-              work: 50,
-              carry: 50,
-              attack: 50,
-              // eslint-disable-next-line camelcase
-              ranged_attack: 50,
-              heal: 50,
-              claim: 50
-            }
-          });
-          const spawnCost = this.discernCost(bodyParts);
-          if (
-            Memory.rooms[roomName].energy!.amount >= spawnCost &&
-            spawnCost <= Memory.rooms[roomName].energy!.capacity
-          ) {
-            spawnersInRoom
-              .filter(spawner => spawner.spawning === null)
-              .forEach(spawner => {
-                const spawnResult = spawner.spawnCreep(bodyParts, spawnJob.name, { memory: spawnJob.params.memory });
-                console.log(`Spawn Result: ${spawnResult}`);
+          spawn = spawnersInRoom.filter(spawner => spawner.spawning === null)[0];
+        } else {
+          spawn = this.findClosestSpawn(roomName);
+        }
 
-                if (spawnResult === OK) {
-                  delete Memory.jobs[spawnJobId];
-                }
-              });
+        if (spawn) {
+          const shouldSpawn = this.waitUntilFullCapacity(spawn);
+          if (shouldSpawn === true) {
+            const bodyParts = buildBodyFromRatio({
+              ratio: spawnJob.bodyPartRatio,
+              energyAvailable: spawn.room.energyAvailable,
+              maxBodyParts: spawnJob.maxBodyParts || {
+                tough: 50,
+                move: 50,
+                work: 50,
+                carry: 50,
+                attack: 50,
+                // eslint-disable-next-line camelcase
+                ranged_attack: 50,
+                heal: 50,
+                claim: 50
+              }
+            });
+
+            const spawnCost = this.discernCost(bodyParts);
+            if (spawn.room.memory.energy!.amount >= spawnCost && spawnCost <= spawn.room.memory.energy!.capacity) {
+              const spawnResult = spawn.spawnCreep(bodyParts, spawnJob.name, { memory: spawnJob.params.memory });
+              console.log(`Spawn Result: ${spawnResult}`);
+
+              if (spawnResult === OK) {
+                delete Memory.jobs[spawnJobId];
+              }
+            }
           }
         }
       });
+  }
+
+  private waitUntilFullCapacity(spawn: StructureSpawn): boolean {
+    if (!Memory.spawnHeld) {
+      Memory.spawnHeld = {};
+    }
+    if (spawn.room.energyAvailable === spawn.room.energyCapacityAvailable) {
+      delete Memory.spawnHeld[spawn.room.name];
+      return true;
+    } else {
+      if (!Memory.spawnHeld[spawn.room.name]) {
+        Memory.spawnHeld[spawn.room.name] = Game.time;
+        return false;
+      } else {
+        if (Game.time - Memory.spawnHeld[spawn.room.name] >= 300) {
+          delete Memory.spawnHeld[spawn.room.name];
+          return true;
+        } else {
+          return false;
+        }
+      }
+    }
+  }
+
+  private findClosestSpawn(roomName: string) {
+    const spawnDistanceMatrix = Object.values(Game.spawns)
+      .map(spawn => {
+        return {
+          spawn,
+          distance: Object.values(Game.map.findRoute(roomName, spawn.room.name)).length
+        };
+      })
+      .sort((spawnDistanceA, spawnDistanceB) => spawnDistanceA.distance - spawnDistanceB.distance);
+
+    return spawnDistanceMatrix.reverse().pop()?.spawn;
   }
 
   private manageSpawnCreepJobs() {

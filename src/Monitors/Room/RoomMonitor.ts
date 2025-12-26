@@ -24,7 +24,7 @@ export class RoomMonitor {
             Memory.rooms = {}
         }
 
-        this.rooms = [...Object.keys(Game.rooms), ...config.roomsToMine]
+        this.rooms = [...Object.keys(Game.rooms), ...config.roomsToMine[Memory.env]];
 
         this.rooms.forEach((roomName) => {
             if (!Memory.rooms[roomName]) {

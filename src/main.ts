@@ -16,6 +16,7 @@ declare global {
   interface Memory {
     uuid: number;
     log: any;
+    env: "prod" | "dev"
   }
 }
 // Syntax for adding proprties to `global` (ex "global.log")
@@ -27,7 +28,10 @@ declare const global: {
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
   if (Game.cpu.generatePixel) {
+    Memory.env = "prod"
     if (Game.cpu.bucket === 10000) Game.cpu.generatePixel();
+  } else {
+    Memory.env = "dev"
   }
   console.log(`Current game tick is ${Game.time}`);
 
