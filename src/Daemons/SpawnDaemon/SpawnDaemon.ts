@@ -1,5 +1,6 @@
 import { MaxBodyParts, Ratio, buildBodyFromRatio } from "utils/buildBodyFromRatio";
 import { SpawnCreep } from "Creeps/SpawnCreep";
+import { Log, LogSeverity } from "utils/log";
 
 export interface SpawnJob {
   type: "spawn";
@@ -23,6 +24,13 @@ export class SpawnDaemon {
   public constructor() {
     this.manageSpawnCreepJobs();
 
+    Log(
+      LogSeverity.DEBUG,
+      "SpawnDaemon",
+      `There are ${
+        Object.entries(Memory.jobs).filter(([, job]) => job.type === "spawn" && job.status === "pending").length
+      } pending spawn jobs`
+    );
     Object.entries(Memory.jobs)
       .filter(([, job]) => job.type === "spawn" && job.status === "pending")
       .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority)
@@ -36,8 +44,14 @@ export class SpawnDaemon {
 
         if (spawnersInRoom.length > 0) {
           spawn = spawnersInRoom.filter(spawner => spawner.spawning === null)[0];
+          Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn ${spawn.name} found locally within room ${roomName}`);
         } else {
           spawn = this.findClosestSpawn(roomName);
+          Log(
+            LogSeverity.DEBUG,
+            "SpawnDaemon",
+            `Spawn not found within room ${roomName}. ${spawn!.name} will be used instead.`
+          );
         }
 
         if (spawn) {
@@ -76,19 +90,44 @@ export class SpawnDaemon {
   private waitUntilFullCapacity(spawn: StructureSpawn): boolean {
     if (!Memory.spawnHeld) {
       Memory.spawnHeld = {};
+      Log(LogSeverity.DEBUG, "SpawnDaemon", `spawnHeld memory not found, spawnHeld memory initialised.`);
     }
     if (spawn.room.energyAvailable === spawn.room.energyCapacityAvailable) {
       delete Memory.spawnHeld[spawn.room.name];
+      Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn energy in room ${spawn.room.name} matches capacity, allowing spawn`);
       return true;
     } else {
       if (!Memory.spawnHeld[spawn.room.name]) {
         Memory.spawnHeld[spawn.room.name] = Game.time;
+        Log(
+          LogSeverity.DEBUG,
+          "SpawnDaemon",
+          `Spawn energy in room ${spawn.room.name} is under capacity, delaying spawn until ${Game.time + 300}`
+        );
         return false;
       } else {
         if (Game.time - Memory.spawnHeld[spawn.room.name] >= 300) {
+          Log(
+            LogSeverity.DEBUG,
+            "SpawnDaemon",
+            `Spawn energy in room ${
+              spawn.room.name
+            } is still under capacity, but it has been longer then 300 ticks since ${
+              Memory.spawnHeld[spawn.pos.roomName]
+            } (cur: ${Game.time}), proceeding with spawn`
+          );
           delete Memory.spawnHeld[spawn.room.name];
           return true;
         } else {
+          Log(
+            LogSeverity.DEBUG,
+            "SpawnDaemon",
+            `Spawn energy in room ${
+              spawn.room.name
+            } is still under capacity, and it has not yet been longer then 300 ticks since ${
+              Memory.spawnHeld[spawn.pos.roomName]
+            } (cur: ${Game.time}), delaying spawn`
+          );
           return false;
         }
       }
@@ -112,14 +151,20 @@ export class SpawnDaemon {
     Object.values(Game.spawns)
       .map(spawn => spawn.room.name)
       .forEach(roomName => {
-        const spawnCreeps = Object.values(Game.creeps).filter(
+        const assignedCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
         );
-        const spawnJobs = Object.values(Memory.jobs).filter(
+        const assignedJobs = Object.values(Memory.jobs).filter(
           job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
         );
 
-        if (spawnCreeps.length === 0 && spawnJobs.length === 0) {
+        const requestedCreeps = 1;
+        if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
+          Log(
+            LogSeverity.DEBUG,
+            "SpawnDaemon",
+            `Number of spawn creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+          );
           Memory.jobs[`SpawnCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `SpawnCreep-${roomName}-${Game.time}`,
@@ -135,6 +180,7 @@ export class SpawnDaemon {
               }
             }
           };
+          Log(LogSeverity.INFORMATIONAL, "SpawnDaemon", `Spawn creep spawn job created in ${roomName} at ${Game.time}`);
         }
       });
   }

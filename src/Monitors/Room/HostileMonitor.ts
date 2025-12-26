@@ -1,3 +1,5 @@
+import { Log, LogSeverity } from "utils/log";
+
 interface HostileMemory {
   hits: {
     current: number;
@@ -21,33 +23,40 @@ export class HostileMonitor {
   public constructor(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
-        if (room) {
-            if (room.memory.hostiles) {
-                Object.keys(room.memory.hostiles).forEach(
-                    hostileId => Game.getObjectById(hostileId as Id<Creep>) == null && delete room.memory.hostiles![hostileId]
-                );
-            }
-            const hostiles = room.find(FIND_HOSTILE_CREEPS);
-
-
-            if (hostiles.length > 0) {
-                if (!room.memory.hostiles) {
-                    room.memory.hostiles = {};
-                }
-
-                hostiles.forEach(
-                    hostile =>
-                    (room.memory.hostiles![hostile.id] = {
-                        hits: {
-                            current: hostile.hits,
-                            total: hostile.hitsMax
-                        },
-                        body: hostile.body,
-                        owner: hostile.owner.username
-                    })
-                );
-            }
+      if (room) {
+        if (room.memory.hostiles) {
+          Object.keys(room.memory.hostiles).forEach(
+            hostileId => Game.getObjectById(hostileId as Id<Creep>) == null && delete room.memory.hostiles![hostileId]
+          );
         }
+        const hostiles = room.find(FIND_HOSTILE_CREEPS);
+
+        if (hostiles.length > 0) {
+          Log(LogSeverity.ALERT, "HostileMonitor", `${roomName} - ${hostiles.length} hostiles detected`);
+
+          if (!room.memory.hostiles) {
+            room.memory.hostiles = {};
+            Log(
+              LogSeverity.DEBUG,
+              "HostileMonitor",
+              `${roomName} - hostiles detected but no hostile memory exists, room hostile monitor memory initialised.`
+            );
+          }
+
+          hostiles.forEach(hostile => {
+            room.memory.hostiles![hostile.id] = {
+              hits: {
+                current: hostile.hits,
+                total: hostile.hitsMax
+              },
+              body: hostile.body,
+              owner: hostile.owner.username
+            };
+            Log(LogSeverity.DEBUG, "HostileMonitor", `${roomName} - hostile ${hostile.id} monitored.`);
+          });
+          Log(LogSeverity.DEBUG, "HostileMonitor", `${roomName} - ${hostiles.length} hostiles monitored.`);
+        }
+      }
     }
   }
 }

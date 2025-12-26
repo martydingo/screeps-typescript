@@ -1,6 +1,7 @@
 import { config } from "config";
 import { ClaimCreep } from "Creeps/ClaimCreep";
 import { ControllerCreep } from "Creeps/ControllerCreep";
+import { Log, LogSeverity } from "utils/log";
 
 export class ControllerDaemon {
   public constructor() {
@@ -21,8 +22,14 @@ export class ControllerDaemon {
               const assignedJobs = Object.values(Memory.jobs).filter(
                 job => job.params.memory.assignedController === controllerId
               );
+              const requestedCreeps = 2;
+              if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
+                Log(
+                  LogSeverity.DEBUG,
+                  "ControllerDaemon",
+                  `Number of controller creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+                );
 
-              if (assignedCreeps.length < 2 && assignedJobs.length === 0) {
                 Memory.jobs[`ControllerCreep-${controllerId}-${Game.time}`] = {
                   type: "spawn",
                   name: `ControllerCreep-${controllerId}-${Game.time}`,
@@ -38,6 +45,11 @@ export class ControllerDaemon {
                     }
                   }
                 };
+                Log(
+                  LogSeverity.INFORMATIONAL,
+                  "ControllerDaemon",
+                  `Controller creep spawn job created for ${controller.id} in ${roomName} at ${Game.time}`
+                );
               }
             }
           }
@@ -67,8 +79,13 @@ export class ControllerDaemon {
         const assignedJobs = Object.values(Memory.jobs).filter(
           job => job.params.memory.type === "ClaimCreep" && job.params.memory.room === roomName
         );
-
-        if (assignedCreeps.length === 0 && assignedJobs.length === 0) {
+        const requestedCreeps = 1;
+        if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
+          Log(
+            LogSeverity.DEBUG,
+            "ControllerDaemon",
+            `Number of claim creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+          );
           Memory.jobs[`ClaimCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `ClaimCreep-${roomName}-${Game.time}`,
@@ -84,6 +101,11 @@ export class ControllerDaemon {
               }
             }
           };
+          Log(
+            LogSeverity.INFORMATIONAL,
+            "ControllerDaemon",
+            `Claim creep spawn job created for ${roomName} at ${Game.time}`
+          );
         }
       }
     });

@@ -1,14 +1,16 @@
+import { Log, LogSeverity } from "utils/log";
+
 export interface TowerMonitorMemory {
   [key: string]: {
     hits: {
-      current: number
-      total: number
-    }
+      current: number;
+      total: number;
+    };
     energy: {
       amount: number;
       capacity: number;
     };
-    pos: RoomPosition
+    pos: RoomPosition;
   };
 }
 
@@ -16,6 +18,7 @@ export class TowerMonitor {
   public constructor(tower: StructureTower) {
     if (!tower.room.memory.structures!.towers) {
       tower.room.memory.structures!.towers = {};
+      Log(LogSeverity.DEBUG, "TowerMonitor", `tower monitor memory not found, tower monitor memory initialised.`);
     }
     tower.room.memory.structures!.towers[tower.id] = {
       hits: {
@@ -28,5 +31,6 @@ export class TowerMonitor {
       },
       pos: tower.pos
     };
+    Log(LogSeverity.DEBUG, "TowerMonitor", `tower ${tower.id}} monitored.`);
   }
 }

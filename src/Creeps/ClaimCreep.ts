@@ -1,3 +1,4 @@
+import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
 type ClaimCreepMemory = CreepMemoryTemplate;
@@ -19,6 +20,7 @@ export class ClaimCreep extends CreepTemplate {
       .forEach(claimCreep => {
         if (claimCreep.memory.curTask === "spawning" && claimCreep.spawning === false) {
           claimCreep.memory.curTask = "movingToRoom";
+          Log(LogSeverity.DEBUG, "claimCreep", `${claimCreep.name} has spawned, task set to "movingToRoom".`);
         }
 
         switch (claimCreep.memory.curTask) {
@@ -33,8 +35,22 @@ export class ClaimCreep extends CreepTemplate {
   }
   private moveToRoom(claimCreep: Creep) {
     const moveResult = claimCreep.moveTo(new RoomPosition(25, 25, claimCreep.memory.room!));
+    if (moveResult === OK) {
+      Log(LogSeverity.DEBUG, "claimCreep", `${claimCreep.name} has moved towards ${claimCreep.memory.room!}`,);
+    } else {
+      Log(
+        LogSeverity.ERROR,
+        "claimCreep",
+        `${claimCreep.name} has failed to move while moving towards ${claimCreep.memory.room!}: ${moveResult}.`
+      );
+    }
     if (claimCreep.room.name === claimCreep.memory.room) {
       claimCreep.memory.curTask = "claimingController";
+      Log(
+        LogSeverity.DEBUG,
+        "claimCreep",
+        `${claimCreep.name} has moved into ${claimCreep.memory.room}, task set to "claimingController".`
+      );
     }
   }
 
@@ -47,9 +63,44 @@ export class ClaimCreep extends CreepTemplate {
           const claimResult = claimCreep.claimController(controller);
           if (claimResult === ERR_NOT_IN_RANGE) {
             const moveResult = claimCreep.moveTo(controller);
+            if (moveResult === OK) {
+              Log(
+                LogSeverity.DEBUG,
+                "claimCreep",
+                `${claimCreep.name} is not in range of controller ${controller.id} in ${claimCreep.memory
+                  .room!}, and is moving towards the controller.`
+              );
+            } else {
+              Log(
+                LogSeverity.DEBUG,
+                "claimCreep",
+                `${claimCreep.name} is not in range of controller ${controller.id} in ${claimCreep.memory
+                  .room!}, and has failed attempting to move towards the controller with the result: ${moveResult}.`
+              );
+            }
             return moveResult;
+          } else {
+            if (claimResult === OK) {
+              Log(
+                LogSeverity.NOTICE,
+                "claimCreep",
+                `${claimCreep.name} has successfully claimed ${claimCreep.memory.room!}!`
+              );
+            } else {
+              Log(
+                LogSeverity.ERROR,
+                "claimCreep",
+                `${claimCreep.name} has failed to claim ${claimCreep.memory.room!} with the error code ${claimResult}.`
+              );
+            }
           }
           return claimResult;
+        } else {
+          Log(
+            LogSeverity.WARNING,
+            "claimCreep",
+            `${claimCreep.name} has attempted to claim ${claimCreep.memory.room!}, but we already have claimed it!`
+          );
         }
         return ERR_INVALID_TARGET;
       } else {
@@ -57,6 +108,12 @@ export class ClaimCreep extends CreepTemplate {
       }
     } else {
       claimCreep.memory.curTask = "movingToRoom";
+      Log(
+        LogSeverity.WARNING,
+        "claimCreep",
+        `${claimCreep.name} has attempted to claim ${claimCreep.memory.room!}, but needs to move intp ${claimCreep
+          .memory.room!}. Setting task to "movingToRoom".`
+      );
       return ERR_NOT_IN_RANGE;
     }
   }

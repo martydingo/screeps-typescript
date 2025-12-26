@@ -1,6 +1,7 @@
 import { ErrorMapper } from "utils/ErrorMapper";
 import { Monitors } from "Monitors/Monitors";
 import { Daemons } from "Daemons/Daemons";
+import { Log, LogSeverity } from "utils/log";
 
 declare global {
   /*
@@ -16,7 +17,7 @@ declare global {
   interface Memory {
     uuid: number;
     log: any;
-    env: "prod" | "dev"
+    env: "prod" | "dev";
   }
 }
 // Syntax for adding proprties to `global` (ex "global.log")
@@ -27,21 +28,34 @@ declare const global: {
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 export const loop = ErrorMapper.wrapLoop(() => {
-  if (Game.cpu.generatePixel) {
-    Memory.env = "prod"
-    if (Game.cpu.bucket === 10000) Game.cpu.generatePixel();
-  } else {
-    Memory.env = "dev"
-  }
-  console.log(`Current game tick is ${Game.time}`);
+  Log(LogSeverity.INFORMATIONAL, "main", `Current game tick is ${Game.time}.`);
 
-  // Automatically delete memory of missing creeps
+  if (Game.cpu.generatePixel) {
+    Memory.env = "prod";
+    if (Game.cpu.bucket === 10000) {
+      Game.cpu.generatePixel();
+      Log(
+        LogSeverity.INFORMATIONAL,
+        "main",
+        `Generated pixel at ${Game.time} - total: ${Game.resources[PIXEL] as string}.`
+      );
+    }
+  } else {
+    Memory.env = "dev";
+  }
+  Log(LogSeverity.DEBUG, "main", `Environment defined as ${Memory.env}.`);
+
+  Log(LogSeverity.DEBUG, "main", `Clearing creep memory.`);
   for (const name in Memory.creeps) {
+    Log(LogSeverity.DEBUG, "main", `Checking ${name} in Memory.creeps.`);
     if (!(name in Game.creeps)) {
+      Log(LogSeverity.DEBUG, "main", `Deleting old creep memory ${name} in Memory.creeps.`);
       delete Memory.creeps[name];
     }
   }
 
   new Monitors();
+  Log(LogSeverity.DEBUG, "main", `Monitors initialized.`);
   new Daemons();
+  Log(LogSeverity.DEBUG, "main", `Daemons initialized.`);
 });

@@ -1,4 +1,6 @@
+import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
+import { StorageMonitor } from "Monitors/Structure/StorageMonitor";
 
 interface SourceCreepMemory extends CreepMemoryTemplate {
   assignedSource: Id<Source>;
@@ -21,6 +23,7 @@ export class SourceCreep extends CreepTemplate {
       .forEach(sourceCreep => {
         if (sourceCreep.memory.curTask === "spawning" && sourceCreep.spawning === false) {
           sourceCreep.memory.curTask = "miningSource";
+          Log(LogSeverity.DEBUG, "SourceCreep", `${sourceCreep.name} has spawned, task set to "fetchingEnergy"`);
         }
 
         if (sourceCreep.memory.curTask === "miningSource") {
@@ -29,7 +32,20 @@ export class SourceCreep extends CreepTemplate {
           if (Game.flags[`anchor-${assignedSource as string}`]) {
             const anchorPoint = Game.flags[`anchor-${assignedSource as string}`];
             if (sourceCreep.pos.getRangeTo(anchorPoint.pos) > 0) {
-              sourceCreep.moveTo(anchorPoint.pos);
+              const moveResult = sourceCreep.moveTo(anchorPoint.pos);
+              if (moveResult === OK) {
+                Log(
+                  LogSeverity.DEBUG,
+                  "SourceCreep",
+                  `${sourceCreep.name} has moved towards anchor ${anchorPoint.name}`
+                );
+              } else {
+                Log(
+                  LogSeverity.DEBUG,
+                  "SourceCreep",
+                  `${sourceCreep.name} has failed to move towards anchor ${anchorPoint.name} with result: ${moveResult}`
+                );
+              }
             } else {
               shouldMine = true;
             }
@@ -43,9 +59,17 @@ export class SourceCreep extends CreepTemplate {
                 const transferResult = sourceCreep.transfer(sourceCreep.room.storage, RESOURCE_ENERGY);
                 if (transferResult !== OK) {
                   sourceCreep.drop(RESOURCE_ENERGY);
+                  Log(LogSeverity.DEBUG, "SourceCreep", `${sourceCreep.name} has dropped energy`);
+                } else {
+                  Log(
+                    LogSeverity.DEBUG,
+                    "SourceCreep",
+                    `${sourceCreep.name} deposited energy into storage ${sourceCreep.room.storage.id}`
+                  );
                 }
               } else {
                 sourceCreep.drop(RESOURCE_ENERGY);
+                Log(LogSeverity.DEBUG, "SourceCreep", `${sourceCreep.name} has dropped energy`);
               }
             }
           }

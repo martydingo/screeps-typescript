@@ -1,9 +1,17 @@
 import { BuildCreep } from "Creeps/BuildCreep";
+import { Log, LogSeverity } from "utils/log";
 
 export class ConstructionDaemon {
   public constructor() {
     Object.keys(Memory.rooms).forEach(roomName => {
       if (Object.keys(Memory.rooms[roomName].constructionSites || []).length > 0) {
+        Log(
+          LogSeverity.DEBUG,
+          "ConstructionDaemon",
+          `${
+            Object.keys(Memory.rooms[roomName].constructionSites!).length
+          } construction sites detected within ${roomName}`
+        );
         const buildCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "BuildCreep"
         );
@@ -13,12 +21,13 @@ export class ConstructionDaemon {
 
         //   console.log(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5 )
         //   console.log(Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3));
-        if (
-          buildCreeps.length <
-            Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3) &&
-          builderSpawnJobs.length <
-            Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3)
-        ) {
+        const requestedCreeps = Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3)
+        if (buildCreeps.length < requestedCreeps && builderSpawnJobs.length === 0) {
+          Log(
+            LogSeverity.DEBUG,
+            "ConstructionDaemon",
+            `Number of build creeps in $${roomName} (${buildCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+          );
           Memory.jobs[`BuildCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `BuildCreep-${roomName}-${Game.time}`,
@@ -34,6 +43,11 @@ export class ConstructionDaemon {
               }
             }
           };
+          Log(
+            LogSeverity.INFORMATIONAL,
+            "ConstructionDaemon",
+            `Build creep spawn job created in ${roomName} at ${Game.time}`
+          );
         }
       }
     });
