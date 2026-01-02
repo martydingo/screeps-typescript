@@ -1,6 +1,6 @@
 import { Log, LogSeverity } from "utils/log";
 
-interface ResourceMemory {
+interface ResourceMonitorMemory {
   amount: number;
   resource: ResourceConstant;
   pos: RoomPosition;
@@ -8,7 +8,7 @@ interface ResourceMemory {
 
 declare global {
   interface RoomMemory {
-    resources?: { [key: string]: ResourceMemory };
+    resources?: { [key: string]: ResourceMonitorMemory };
   }
 }
 

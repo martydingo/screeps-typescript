@@ -31,31 +31,79 @@ export class SpawnDaemon {
         Object.entries(Memory.jobs).filter(([, job]) => job.type === "spawn" && job.status === "pending").length
       } pending spawn jobs`
     );
-    Object.entries(Memory.jobs)
-      .filter(([, job]) => job.type === "spawn" && job.status === "pending")
-      .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority)
-      .reverse()
-      .forEach(([spawnJobId, spawnJob]) => {
-        const roomName = spawnJob.params.memory.room as string;
+    const priorityLevels = new Set();
+    const spawnJobs: [string, SpawnJob][] = Object.entries(Memory.jobs).filter(([, job]) => job.type === "spawn") as [
+      string,
+      SpawnJob
+    ][];
 
+    spawnJobs
+      .map(([, spawnJob]) => spawnJob.priority)
+      .sort()
+      .forEach(priorityLevel => priorityLevels.add(priorityLevel));
+
+    const roomNames: Set<string> = new Set();
+    spawnJobs.map(([, spawnJob]) => spawnJob.params.memory.room).forEach(roomName => roomNames.add(roomName as string));
+
+    roomNames.forEach(roomName => {
+      let haltSpawn = false;
+      let spawnerJobs: [string, SpawnJob][] = [];
+      priorityLevels.forEach(priorityLevel => {
+        if (haltSpawn === false) {
+          const curSpawnJobs = spawnJobs.filter(
+            ([, job]) =>
+              job.type === "spawn" &&
+              job.status === "pending" &&
+              job.priority === priorityLevel &&
+              job.params.memory.room === roomName
+          );
+          if (curSpawnJobs.length > 0) {
+            spawnerJobs = curSpawnJobs;
+            haltSpawn = true;
+          }
+        }
+      });
+
+      spawnerJobs.forEach(([spawnJobId, spawnJob]) => {
         const spawnersInRoom = Object.values(Game.spawns).filter(spawner => spawner.room.name === roomName);
 
         let spawn;
 
         if (spawnersInRoom.length > 0) {
           spawn = spawnersInRoom.filter(spawner => spawner.spawning === null)[0];
-          Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn ${spawn.name} found locally within room ${roomName}`);
+          if (spawn) {
+            Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn ${spawn.name} found locally within room ${roomName}`);
+          }
         } else {
           spawn = this.findClosestSpawn(roomName);
-          Log(
-            LogSeverity.DEBUG,
-            "SpawnDaemon",
-            `Spawn not found within room ${roomName}. ${spawn!.name} will be used instead.`
-          );
+          if (spawn) {
+            Log(
+              LogSeverity.DEBUG,
+              "SpawnDaemon",
+              `Spawn not found within room ${roomName}. ${spawn.name} will be used instead.`
+            );
+          }
         }
 
         if (spawn) {
-          const shouldSpawn = this.waitUntilFullCapacity(spawn);
+          const desiredBodyParts = buildBodyFromRatio({
+            ratio: spawnJob.bodyPartRatio,
+            energyAvailable: spawn.room.energyCapacityAvailable,
+            maxBodyParts: spawnJob.maxBodyParts || {
+              tough: 50,
+              move: 50,
+              work: 50,
+              carry: 50,
+              attack: 50,
+              // eslint-disable-next-line camelcase
+              ranged_attack: 50,
+              heal: 50,
+              claim: 50
+            }
+          });
+
+          const shouldSpawn = this.waitUntilFullCapacity(spawn, desiredBodyParts);
+
           if (shouldSpawn === true) {
             const bodyParts = buildBodyFromRatio({
               ratio: spawnJob.bodyPartRatio,
@@ -76,7 +124,6 @@ export class SpawnDaemon {
             const spawnCost = this.discernCost(bodyParts);
             if (spawn.room.memory.energy!.amount >= spawnCost && spawnCost <= spawn.room.memory.energy!.capacity) {
               const spawnResult = spawn.spawnCreep(bodyParts, spawnJob.name, { memory: spawnJob.params.memory });
-              console.log(`Spawn Result: ${spawnResult}`);
 
               if (spawnResult === OK) {
                 delete Memory.jobs[spawnJobId];
@@ -85,50 +132,84 @@ export class SpawnDaemon {
           }
         }
       });
+    });
+
+    // const spawnJobs = Object.entries(Memory.jobs)
+    //   .filter(([, job]) => job.type === "spawn" && job.status === "pending")
+    //   .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority);
   }
 
-  private waitUntilFullCapacity(spawn: StructureSpawn): boolean {
+  private waitUntilFullCapacity(spawn: StructureSpawn, desiredBodyParts: BodyPartConstant[]): boolean {
     if (!Memory.spawnHeld) {
       Memory.spawnHeld = {};
       Log(LogSeverity.DEBUG, "SpawnDaemon", `spawnHeld memory not found, spawnHeld memory initialised.`);
     }
-    if (spawn.room.energyAvailable === spawn.room.energyCapacityAvailable) {
+    const spawnCreeps = Object.values(Game.creeps).filter(
+      creep => creep.memory.room === spawn.pos.roomName && creep.memory.type === "SpawnCreep"
+    );
+
+    if (spawnCreeps.length === 0) {
       delete Memory.spawnHeld[spawn.room.name];
-      Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn energy in room ${spawn.room.name} matches capacity, allowing spawn`);
+      Log(
+        LogSeverity.DEBUG,
+        "SpawnDaemon",
+        `No spawn creeps in ${spawn.room.name}, no further increase of spawn energy possible, allowing spawn`
+      );
       return true;
     } else {
-      if (!Memory.spawnHeld[spawn.room.name]) {
-        Memory.spawnHeld[spawn.room.name] = Game.time;
+      const bodyPartCost = this.discernCost(desiredBodyParts);
+      if (bodyPartCost <= spawn.room.energyAvailable) {
+        delete Memory.spawnHeld[spawn.room.name];
         Log(
           LogSeverity.DEBUG,
           "SpawnDaemon",
-          `Spawn energy in room ${spawn.room.name} is under capacity, delaying spawn until ${Game.time + 300}`
+          `Spawn energy in room ${spawn.room.name} (${spawn.room.energyAvailable}) is equal or above desired body part cost ${bodyPartCost}, allowing spawn`
         );
-        return false;
+        return true;
       } else {
-        if (Game.time - Memory.spawnHeld[spawn.room.name] >= 300) {
+        if (spawn.room.energyAvailable === spawn.room.energyCapacityAvailable) {
+          delete Memory.spawnHeld[spawn.room.name];
           Log(
             LogSeverity.DEBUG,
             "SpawnDaemon",
-            `Spawn energy in room ${
-              spawn.room.name
-            } is still under capacity, but it has been longer then 300 ticks since ${
-              Memory.spawnHeld[spawn.pos.roomName]
-            } (cur: ${Game.time}), proceeding with spawn`
+            `Spawn energy in room ${spawn.room.name} matches capacity, allowing spawn`
           );
-          delete Memory.spawnHeld[spawn.room.name];
           return true;
         } else {
-          Log(
-            LogSeverity.DEBUG,
-            "SpawnDaemon",
-            `Spawn energy in room ${
-              spawn.room.name
-            } is still under capacity, and it has not yet been longer then 300 ticks since ${
-              Memory.spawnHeld[spawn.pos.roomName]
-            } (cur: ${Game.time}), delaying spawn`
-          );
-          return false;
+          if (!Memory.spawnHeld[spawn.room.name]) {
+            Memory.spawnHeld[spawn.room.name] = Game.time;
+            Log(
+              LogSeverity.DEBUG,
+              "SpawnDaemon",
+              `Spawn energy in room ${spawn.room.name} is under capacity, delaying spawn until ${Game.time + 300}`
+            );
+            return false;
+          } else {
+            if (Game.time - Memory.spawnHeld[spawn.room.name] >= 450) {
+              Log(
+                LogSeverity.DEBUG,
+                "SpawnDaemon",
+                `Spawn energy in room ${
+                  spawn.room.name
+                } is still under capacity, but it has been longer then 300 ticks since ${
+                  Memory.spawnHeld[spawn.pos.roomName]
+                } (cur: ${Game.time}), proceeding with spawn`
+              );
+              delete Memory.spawnHeld[spawn.room.name];
+              return true;
+            } else {
+              Log(
+                LogSeverity.DEBUG,
+                "SpawnDaemon",
+                `Spawn energy in room ${
+                  spawn.room.name
+                } is still under capacity, and it has not yet been longer then 300 ticks since ${
+                  Memory.spawnHeld[spawn.pos.roomName]
+                } (cur: ${Game.time}), delaying spawn`
+              );
+              return false;
+            }
+          }
         }
       }
     }
@@ -154,12 +235,20 @@ export class SpawnDaemon {
         const assignedCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
         );
-        const assignedJobs = Object.values(Memory.jobs).filter(
+        const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+
+        const assignedJobs = spawnJobs.filter(
           job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
         );
 
+        // const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+        // const assignedJobs = spawnJobs.filter(
+        //   job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
+        // );
+
         const requestedCreeps = 1;
         if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
+          //
           Log(
             LogSeverity.DEBUG,
             "SpawnDaemon",
@@ -170,7 +259,7 @@ export class SpawnDaemon {
             name: `SpawnCreep-${roomName}-${Game.time}`,
             bodyPartRatio: SpawnCreep.bodyPartRatio,
             status: "pending",
-            priority: 2,
+            priority: this.determineSpawnCreepPriority(roomName),
             params: {
               memory: {
                 type: "SpawnCreep",
@@ -183,6 +272,50 @@ export class SpawnDaemon {
           Log(LogSeverity.INFORMATIONAL, "SpawnDaemon", `Spawn creep spawn job created in ${roomName} at ${Game.time}`);
         }
       });
+  }
+
+  private determineSpawnCreepPriority(roomName: string): 1 | 2 {
+    const energyThreshold = 1000;
+    let energyInRoom = false;
+
+    const room = Game.rooms[roomName];
+
+    if (room) {
+      const storage = room.storage;
+      if (storage) {
+        if (storage.store[RESOURCE_ENERGY] > energyThreshold) {
+          energyInRoom = true;
+        }
+      }
+
+      if (energyInRoom === false) {
+        const roomMemory = Memory.rooms[roomName];
+        if (roomMemory) {
+          const resourceMemory = roomMemory.resources;
+          if (resourceMemory) {
+            const energyResources = Object.values(resourceMemory).filter(
+              resource => resource.resource === RESOURCE_ENERGY
+            );
+            if (energyResources.length > 0) {
+              let energyAmountInRoom = 0;
+              energyResources.forEach(resource => (energyAmountInRoom = energyAmountInRoom + resource.amount));
+              if (energyAmountInRoom > energyThreshold) {
+                energyInRoom = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const spawnCreepCount = Object.values(Game.creeps).filter(
+      creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
+    ).length;
+    if (spawnCreepCount === 0) {
+      if (energyInRoom === true) {
+        return 1;
+      } else return 2;
+    } else return 2;
   }
 
   private discernCost(bodyParts: BodyPartConstant[]) {

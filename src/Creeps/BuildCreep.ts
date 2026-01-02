@@ -11,7 +11,7 @@ declare global {
 }
 
 export class BuildCreep extends CreepTemplate {
-  public static bodyPartRatio = { work: 1, carry: 1, move: 1.5 };
+  public static bodyPartRatio = { work: 1, carry: 1, move: 2 };
   public constructor() {
     super();
 

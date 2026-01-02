@@ -1,6 +1,10 @@
 import { BuildCreep } from "Creeps/BuildCreep";
 import { ClaimCreep } from "Creeps/ClaimCreep";
 import { ControllerCreep } from "Creeps/ControllerCreep";
+import { ExtractorCreep } from "Creeps/ExtractorCreep";
+import { LabCreep } from "Creeps/LabCreep";
+import { LinkCreep } from "Creeps/LinkCreep";
+import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnCreep } from "Creeps/SpawnCreep";
 import { TransportCreep } from "Creeps/TransportCreep";
@@ -18,7 +22,16 @@ export class CreepDaemon {
     Log(LogSeverity.DEBUG, "CreepDaemon", `Build creep daemon initalised`);
     new ClaimCreep();
     Log(LogSeverity.DEBUG, "CreepDaemon", `Claim creep daemon initalised`);
+    new ReserveCreep();
+    Log(LogSeverity.DEBUG, "CreepDaemon", `Claim creep daemon initalised`);
     new TransportCreep();
     Log(LogSeverity.DEBUG, "CreepDaemon", `Transport creep daemon initalised`);
+    new LinkCreep();
+    Log(LogSeverity.DEBUG, "CreepDaemon", `Link creep daemon initalised`);
+    new LabCreep();
+    Log(LogSeverity.DEBUG, "CreepDaemon", `Lab creep daemon initalised`);
+    new ExtractorCreep();
+    Log(LogSeverity.DEBUG, "CreepDaemon", `Extractor creep daemon initalised`);
+
   }
 }

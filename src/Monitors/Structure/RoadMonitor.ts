@@ -7,6 +7,7 @@ export interface RoadMonitorMemory {
       total: number;
     };
     pos: RoomPosition;
+    decay: number
   };
 }
 
@@ -21,8 +22,9 @@ export class RoadMonitor {
         current: road.hits,
         total: road.hitsMax
       },
-      pos: road.pos
+      pos: road.pos,
+      decay: road.ticksToDecay
     };
-    Log(LogSeverity.DEBUG, "RoadMonitor", `road ${road.id}} monitored.`);
+    Log(LogSeverity.DEBUG, "RoadMonitor", `Road ${road.id}} monitored.`);
   }
 }

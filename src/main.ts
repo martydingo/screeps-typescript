@@ -1,7 +1,9 @@
-import { ErrorMapper } from "utils/ErrorMapper";
-import { Monitors } from "Monitors/Monitors";
 import { Daemons } from "Daemons/Daemons";
+import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
+import { Monitors } from "Monitors/Monitors";
+import { ErrorMapper } from "utils/ErrorMapper";
 import { Log, LogSeverity } from "utils/log";
+import { Pathfinding } from "utils/Pathfinding";
 
 declare global {
   /*
@@ -32,6 +34,12 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
   if (Game.cpu.generatePixel) {
     Memory.env = "prod";
+    // console.log(
+    //   Game.market
+    //     .getAllOrders(order => order.resourceType === PIXEL && order.type === ORDER_SELL)
+    //     .sort((orderA, orderB) => orderA.price - orderB.price)
+    //   .map((order)=>`Id: ${order.id} Price: ${order.price} Amount: ${order.amount} Resource ${order.resourceType}`)[0]
+    // );
     if (Game.cpu.bucket === 10000) {
       Game.cpu.generatePixel();
       Log(
@@ -49,13 +57,24 @@ export const loop = ErrorMapper.wrapLoop(() => {
   for (const name in Memory.creeps) {
     Log(LogSeverity.DEBUG, "main", `Checking ${name} in Memory.creeps.`);
     if (!(name in Game.creeps)) {
-      Log(LogSeverity.DEBUG, "main", `Deleting old creep memory ${name} in Memory.creeps.`);
+      Log(
+        LogSeverity.DEBUG,
+        "main",
+        `Deleting old creep memory ${name} in Memory.creeps.`
+      );
       delete Memory.creeps[name];
     }
   }
+
+  // const route = Game.map.findRoute("E12S17", "E14S18", { routeCallback: Pathfinding.routeCallback});
+
+  // console.log(JSON.stringify(route))
 
   new Monitors();
   Log(LogSeverity.DEBUG, "main", `Monitors initialized.`);
   new Daemons();
   Log(LogSeverity.DEBUG, "main", `Daemons initialized.`);
+
+  new GlobalMonitor();
+  Log(LogSeverity.DEBUG, "Monitors", `Global monitor initialized.`);
 });

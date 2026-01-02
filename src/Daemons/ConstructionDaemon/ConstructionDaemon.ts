@@ -1,4 +1,5 @@
 import { BuildCreep } from "Creeps/BuildCreep";
+import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { Log, LogSeverity } from "utils/log";
 
 export class ConstructionDaemon {
@@ -12,10 +13,12 @@ export class ConstructionDaemon {
             Object.keys(Memory.rooms[roomName].constructionSites!).length
           } construction sites detected within ${roomName}`
         );
+        const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+
         const buildCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "BuildCreep"
         );
-        const builderSpawnJobs = Object.values(Memory.jobs).filter(
+        const builderSpawnJobs = spawnJobs.filter(
           job => job.params.memory.room === roomName && job.params.memory.type === "BuildCreep"
         );
 
@@ -33,7 +36,7 @@ export class ConstructionDaemon {
             name: `BuildCreep-${roomName}-${Game.time}`,
             bodyPartRatio: BuildCreep.bodyPartRatio,
             status: "pending",
-            priority: 3,
+            priority: 6,
             params: {
               memory: {
                 type: "BuildCreep",

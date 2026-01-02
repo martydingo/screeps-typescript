@@ -4,6 +4,13 @@ import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
 import { RuinMonitor, RuinMonitorMemory } from "./RuinMonitor";
 import { StorageMonitor, StorageMonitorMemory } from "./StorageMonitor";
 import { TowerMonitor, TowerMonitorMemory } from "./TowerMonitor";
+import { LinkMonitor, LinkMonitorMemory } from "./LinkMonitor";
+import { ContainerMonitor, ContainerMonitorMemory } from "./ContainerMonitor";
+import { LabMonitor, LabMonitorMemory } from "./LabMonitor";
+import { TerminalMonitor, TerminalMonitorMemory } from "./TerminalMonitor";
+import { ExtractorMonitor, ExtractorMonitorMemory } from "./ExtractorMonitor";
+import { WallMonitor, WallMonitorMemory } from "./WallMonitor";
+import { RampartMonitor, RampartMonitorMemory } from "./RampartMonitor";
 
 interface StructureMonitorMemory {
   extensions: ExtensionMonitorMemory;
@@ -11,6 +18,13 @@ interface StructureMonitorMemory {
   roads: RoadMonitorMemory;
   ruins: RuinMonitorMemory;
   storage: StorageMonitorMemory;
+  links: LinkMonitorMemory;
+  containers: ContainerMonitorMemory;
+  labs: LabMonitorMemory;
+  terminal: TerminalMonitorMemory;
+  extractor: ExtractorMonitorMemory;
+  walls: WallMonitorMemory;
+  ramparts: RampartMonitorMemory;
 }
 
 declare global {
@@ -23,18 +37,20 @@ export class StructureMonitor {
   public constructor() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
       if (roomMemory.structures) {
-        Object.entries(roomMemory.structures).forEach(([structureType, structureMemory]) => {
-          Object.keys(structureMemory).forEach(structureId => {
-            if (Game.getObjectById(structureId as Id<Structure>) === null) {
-              delete structureMemory[structureId];
-              Log(
-                LogSeverity.DEBUG,
-                "StructureMonitor",
-                `Structure ${structureId} with type ${structureType} not found, deleting old structure memory`
-              );
-            }
-          });
-        });
+        Object.entries(roomMemory.structures).forEach(
+          ([structureType, structureMemory]) => {
+            Object.keys(structureMemory).forEach(structureId => {
+              if (Game.getObjectById(structureId as Id<Structure>) === null) {
+                delete structureMemory[structureId];
+                Log(
+                  LogSeverity.DEBUG,
+                  "StructureMonitor",
+                  `Structure ${structureId} with type ${structureType} not found, deleting old structure memory`
+                );
+              }
+            });
+          }
+        );
       }
     });
 
@@ -58,6 +74,22 @@ export class StructureMonitor {
           case "storage":
             new StorageMonitor(structure as StructureStorage);
             break;
+          case "link":
+            new LinkMonitor(structure as StructureLink);
+            break;
+          case "lab":
+            new LabMonitor(structure as StructureLab);
+            break;
+          case "terminal":
+            new TerminalMonitor(structure as StructureTerminal);
+            break;
+          case "extractor":
+            new ExtractorMonitor(structure as StructureExtractor);
+            break;
+          case "controller":
+            break;
+          case "spawn":
+            break;
           default:
             Log(
               LogSeverity.WARNING,
@@ -71,7 +103,9 @@ export class StructureMonitor {
     Log(
       LogSeverity.DEBUG,
       "StructureMonitor",
-      `${Object.keys(Game.structures).length} structures within Game.structures processed`
+      `${
+        Object.keys(Game.structures).length
+      } structures within Game.structures processed`
     );
 
     Object.values(Game.rooms).forEach(room => {
@@ -83,6 +117,15 @@ export class StructureMonitor {
               case "road":
                 new RoadMonitor(structure);
                 break;
+              case "container":
+                new ContainerMonitor(structure);
+                break;
+              case "constructedWall":
+                new WallMonitor(structure);
+                break;
+              case "rampart":
+                new RampartMonitor(structure);
+                break;
               case "extension":
                 break;
               case "tower":
@@ -93,6 +136,15 @@ export class StructureMonitor {
                 break;
               case "spawn":
                 break;
+              case "lab":
+                break;
+              case "link":
+                break;
+              case "extractor":
+                break;
+              case "terminal":
+                break;
+
               default:
                 Log(
                   LogSeverity.WARNING,
@@ -116,7 +168,11 @@ export class StructureMonitor {
           room.find(FIND_RUINS).forEach(structure => new RuinMonitor(structure));
         }
       }
-      Log(LogSeverity.DEBUG, "StructureMonitor", `Ruins within Game.rooms[${room.name}].find processed`);
+      Log(
+        LogSeverity.DEBUG,
+        "StructureMonitor",
+        `Ruins within Game.rooms[${room.name}].find processed`
+      );
     });
   }
 }

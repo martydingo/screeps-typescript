@@ -5,6 +5,7 @@ import { ControllerMonitor } from "./ControllerMonitor";
 import { HostileMonitor } from "./HostileMonitor";
 import { ResourceMonitor } from "./ResourceMonitor";
 import { SourceMonitor } from "./SourceMonitor";
+import { TombstoneMonitor } from "./TombstoneMonitor";
 
 interface RoomMonitorMemory {
   amount: number;
@@ -25,7 +26,7 @@ export class RoomMonitor {
       Log(LogSeverity.DEBUG, "RoomMonitor", `Room memory not found, room monitor memory initialised.`);
     }
 
-    this.rooms = [...Object.keys(Game.rooms), ...config.roomsToMine[Memory.env]];
+    this.rooms = [...Object.keys(Game.rooms), ...config[Memory.env].roomsToMine];
     Log(LogSeverity.DEBUG, "RoomMonitor", `Rooms to be monitored: ${this.rooms.join(" ")}`);
 
     this.rooms.forEach(roomName => {
@@ -46,7 +47,6 @@ export class RoomMonitor {
       };
     }
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} spawn energy levels recorded.`);
-
     new SourceMonitor(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} sources monitor initialised.`);
     new ControllerMonitor(roomName);
@@ -55,6 +55,8 @@ export class RoomMonitor {
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} resource monitor initialised.`);
     new ConstructionSiteMonitor(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} construction site monitor initialised.`);
+    new TombstoneMonitor(roomName);
+    Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} tombstone monitor initialised.`);
     new HostileMonitor(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} hostile monitor initialised.`);
   }

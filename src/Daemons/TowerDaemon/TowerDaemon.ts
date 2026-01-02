@@ -34,7 +34,11 @@ export class TowerDaemon {
     );
     const curTarget = creepsToHeal[0];
     if (curTarget) {
-      Log(LogSeverity.DEBUG, "TowerDaemon", `Tower ${tower.id} is healing ${curTarget.name} (${curTarget.owner.username}).`);
+      Log(
+        LogSeverity.DEBUG,
+        "TowerDaemon",
+        `Tower ${tower.id} is healing ${curTarget.name} (${curTarget.owner.username}).`
+      );
     }
 
     return tower.heal(curTarget);
@@ -61,19 +65,39 @@ export class TowerDaemon {
     return ERR_INVALID_TARGET;
   }
   private repairStructures(tower: StructureTower) {
+    let repairTarget: StructureRoad | StructureContainer | undefined;
     if (tower.room.memory.structures?.roads) {
       const roads = Object.keys(tower.room.memory.structures.roads)
         .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
         .filter(road => road !== null)
-        .sort((roadA, roadB) => roadA!.hits - roadB!.hits);
+        .sort((roadA, roadB) => roadA!.hits / roadA!.hitsMax - roadB!.hits / roadB!.hitsMax);
 
-      if (roads.length > 0) {
-        Log(LogSeverity.DEBUG, "TowerDaemon", `Tower ${tower.id} is repairing road ${roads[0]!.id} in ${roads[0]!.pos.roomName}`);
-        return tower.repair(roads[0]!);
-
+      if (roads[0]) {
+        repairTarget = roads[0];
       }
     }
 
+    if (tower.room.memory.structures?.containers) {
+      const containers = Object.keys(tower.room.memory.structures.containers)
+        .map(containerId => Game.getObjectById(containerId as Id<StructureContainer>))
+        .filter(container => container !== null && container.hits < container.hitsMax)
+        .sort(
+          (containerA, containerB) => containerA!.hits / containerA!.hitsMax - containerB!.hits / containerB!.hitsMax
+        );
+
+      if (containers[0]) {
+        repairTarget = containers[0];
+      }
+    }
+
+    if (repairTarget) {
+      Log(
+        LogSeverity.DEBUG,
+        "TowerDaemon",
+        `Tower ${tower.id} is repairing ${repairTarget.structureType} ${repairTarget.id} in ${repairTarget.pos.roomName}`
+      );
+      return tower.repair(repairTarget);
+    }
     return ERR_INVALID_TARGET;
   }
 }

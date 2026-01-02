@@ -12,8 +12,8 @@ declare global {
 }
 
 export class SourceCreep extends CreepTemplate {
-  public static bodyPartRatio = { work: 2, carry: 0.1, move: 1 };
-  public static maxBodyParts = { work: 7, carry: 1, move: 8 };
+  public static bodyPartRatio = { work: 2, carry: 1, move: 2 };
+  public static maxBodyParts = { work: 6, carry: 1, move: 8 };
 
   public constructor() {
     super();
@@ -29,8 +29,8 @@ export class SourceCreep extends CreepTemplate {
         if (sourceCreep.memory.curTask === "miningSource") {
           let shouldMine = false;
           const assignedSource = sourceCreep.memory.assignedSource;
-          if (Game.flags[`anchor-${assignedSource as string}`]) {
-            const anchorPoint = Game.flags[`anchor-${assignedSource as string}`];
+          if (Game.flags[`source-anchor-${assignedSource as string}`]) {
+            const anchorPoint = Game.flags[`source-anchor-${assignedSource as string}`];
             if (sourceCreep.pos.getRangeTo(anchorPoint.pos) > 0) {
               const moveResult = sourceCreep.moveTo(anchorPoint.pos);
               if (moveResult === OK) {
@@ -53,7 +53,13 @@ export class SourceCreep extends CreepTemplate {
             shouldMine = true;
           }
           if (shouldMine === true) {
-            sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
+            const mineResult = sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
+            if (mineResult === ERR_INVALID_TARGET) {
+              const room = Game.rooms[sourceCreep.memory.room!]
+              if (!room) {
+                sourceCreep.moveToUnknownRoom(sourceCreep.memory.room!);
+              }
+            }
             if (sourceCreep.store[RESOURCE_ENERGY] > 0) {
               if (sourceCreep.room.storage) {
                 const transferResult = sourceCreep.transfer(sourceCreep.room.storage, RESOURCE_ENERGY);

@@ -1,5 +1,6 @@
 import { config } from "config";
 import { SourceCreep } from "Creeps/SourceCreep";
+import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { Log, LogSeverity } from "utils/log";
 
 export class SourceDaemon {
@@ -15,16 +16,30 @@ export class SourceDaemon {
         }
       }
 
-      if (config.roomsToMine[Memory.env].includes(roomName)) {
+      if (config[Memory.env].roomsToMine.includes(roomName)) {
+        const room = Game.rooms[roomName]
+        if (room) {
+          const controller = room.controller
+          if (controller) {
+            const reservation = controller.reservation
+            if (reservation) {
+              if (reservation.ticksToEnd > 0) {
+                shouldMine = true
+              }
+            }
+          } else {
+            shouldMine = true
+          }
+        }
         shouldMine = true;
       }
-
 
       if (shouldMine === true) {
         Log(LogSeverity.DEBUG, "SourceDaemon", `Mining sources in ${roomName}`);
         Object.keys(Memory.rooms[roomName].sources!).forEach(sourceId => {
+          const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
           const assignedCreeps = Object.values(Game.creeps).filter(creep => creep.memory.assignedSource === sourceId);
-          const assignedJobs = Object.values(Memory.jobs).filter(job => job.params.memory.assignedSource === sourceId);
+          const assignedJobs = spawnJobs.filter(job => job.params.memory.assignedSource === sourceId);
           const requestedCreeps = 1;
           if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
             Log(
@@ -39,7 +54,7 @@ export class SourceDaemon {
               bodyPartRatio: SourceCreep.bodyPartRatio,
               maxBodyParts: SourceCreep.maxBodyParts,
               status: "pending",
-              priority: 1,
+              priority: this.determineSpawnCreepPriority(roomName),
               params: {
                 memory: {
                   type: "SourceCreep",
@@ -58,5 +73,48 @@ export class SourceDaemon {
         });
       }
     });
+  }
+  private determineSpawnCreepPriority(roomName: string): 1 | 2 {
+    const energyThreshold = 1000;
+    let energyInRoom = false;
+
+    const room = Game.rooms[roomName];
+
+    if (room) {
+      const storage = room.storage;
+      if (storage) {
+        if (storage.store[RESOURCE_ENERGY] > energyThreshold) {
+          energyInRoom = true;
+        }
+      }
+
+      if (energyInRoom === false) {
+        const roomMemory = Memory.rooms[roomName];
+        if (roomMemory) {
+          const resourceMemory = roomMemory.resources;
+          if (resourceMemory) {
+            const energyResources = Object.values(resourceMemory).filter(
+              resource => resource.resource === RESOURCE_ENERGY
+            );
+            if (energyResources.length > 0) {
+              let energyAmountInRoom = 0;
+              energyResources.forEach(resource => (energyAmountInRoom = energyAmountInRoom + resource.amount));
+              if (energyAmountInRoom > energyThreshold) {
+                energyInRoom = true;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const spawnCreepCount = Object.values(Game.creeps).filter(
+      creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
+    ).length;
+    if (spawnCreepCount === 0) {
+      if (energyInRoom === true) {
+        return 2;
+      } else return 1;
+    } else return 1;
   }
 }

@@ -1,17 +1,21 @@
 import { Log, LogSeverity } from "utils/log";
 
 interface ControllerMemory {
+  owner?: {
+    username: string
+    my: boolean
+  }
   upgrade: {
     progress: number;
     nextLevel: number;
   };
-  downgrade: number;
   safeMode: {
     active: boolean;
     available: number;
     timeLeft?: number;
     cooldown?: number;
   };
+  downgrade: number;
   level: number;
 }
 
@@ -43,8 +47,14 @@ export class ControllerMonitor {
           },
           downgrade: room.controller.ticksToDowngrade,
           level: room.controller.level
+
         };
 
+
+        if (room.controller.owner !== undefined) {
+          payload.owner = { username: room.controller.owner.username, my: room.controller.my }
+
+        }
         if (room.controller.safeMode !== undefined) {
           Log(
             LogSeverity.WARNING,

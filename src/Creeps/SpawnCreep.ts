@@ -3,6 +3,7 @@ import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
 interface SpawnCreepMemory extends CreepMemoryTemplate {
   assignedRoom: string;
+  assignedInfrastructure?: Id<StructureSpawn> | Id<StructureExtension> | Id<StructureTower>;
 }
 
 declare global {
@@ -46,139 +47,96 @@ export class SpawnCreep extends CreepTemplate {
   }
 
   private feedSpawns(spawnCreep: Creep) {
-    const spawnsToFeed = Object.values(Game.spawns).filter(
-      spawn =>
-        spawn.room.name === spawnCreep.memory.assignedRoom &&
-        spawn.store[RESOURCE_ENERGY] < spawn.store.getCapacity(RESOURCE_ENERGY)
-    );
-    let extensionsToFeed: StructureExtension[] = [];
-    let towersToFeed: StructureTower[] = [];
-    const structureData = Memory.rooms[spawnCreep.memory.assignedRoom!].structures;
-    if (structureData) {
-      if (structureData.extensions) {
-        extensionsToFeed = Object.keys(structureData.extensions)
-          .map(extensionId => Game.getObjectById(extensionId as Id<StructureExtension>) as StructureExtension)
-          .sort(
-            (extensionA, extensionB) => spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB)
-          )
-          .filter(extension => extension.store[RESOURCE_ENERGY] < extension.store.getCapacity(RESOURCE_ENERGY));
+    this.discernInfrastructureToFeed(spawnCreep);
+    this.feedInfrastructure(spawnCreep)
+  }
+
+  private discernInfrastructureToFeed(spawnCreep: Creep) {
+    if (!spawnCreep.memory.assignedInfrastructure) {
+      const spawnsToFeed = Object.values(Game.spawns).filter(
+        spawn =>
+          spawn.room.name === spawnCreep.memory.assignedRoom &&
+          spawn.store[RESOURCE_ENERGY] < spawn.store.getCapacity(RESOURCE_ENERGY)
+      );
+      let extensionsToFeed: StructureExtension[] = [];
+      let towersToFeed: StructureTower[] = [];
+      const structureData = Memory.rooms[spawnCreep.memory.assignedRoom!].structures;
+      if (structureData) {
+        if (structureData.extensions) {
+          extensionsToFeed = Object.keys(structureData.extensions)
+            .map(extensionId => Game.getObjectById(extensionId as Id<StructureExtension>) as StructureExtension)
+            .sort((extensionA, extensionB) => {
+              if (spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB) === 0) {
+                return spawnCreep.pos.getRangeTo(extensionA) - 1 - spawnCreep.pos.getRangeTo(extensionB);
+              } else {
+                return spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB);
+              }
+            })
+            .filter(extension => extension.store[RESOURCE_ENERGY] < extension.store.getCapacity(RESOURCE_ENERGY));
+        }
+        if (structureData.towers) {
+          towersToFeed = Object.keys(structureData.towers)
+            .map(towerId => Game.getObjectById(towerId as Id<StructureTower>) as StructureTower)
+            .filter(tower => tower.store[RESOURCE_ENERGY] < tower.store.getCapacity(RESOURCE_ENERGY) / 2);
+        }
       }
-      if (structureData.towers) {
-        towersToFeed = Object.keys(structureData.towers)
-          .map(towerId => Game.getObjectById(towerId as Id<StructureTower>) as StructureTower)
-          .filter(tower => tower.store[RESOURCE_ENERGY] < tower.store.getCapacity(RESOURCE_ENERGY));
+
+      if (towersToFeed.length > 0) {
+        spawnCreep.memory.assignedInfrastructure = towersToFeed[0].id;
+      } else if (extensionsToFeed.length > 0) {
+        spawnCreep.memory.assignedInfrastructure = extensionsToFeed[0].id;
+      } else if (spawnsToFeed.length > 0) {
+        spawnCreep.memory.assignedInfrastructure = spawnsToFeed[0].id;
       }
     }
-
-    if (spawnsToFeed.length === 0) {
-      if (extensionsToFeed.length === 0) {
-        if (towersToFeed.length > 0) {
-          const transferResult = spawnCreep.transfer(towersToFeed[0], RESOURCE_ENERGY);
-          if (transferResult === ERR_NOT_IN_RANGE) {
-            const moveResult = spawnCreep.moveTo(towersToFeed[0]);
-            if (moveResult === OK) {
-              Log(
-                LogSeverity.DEBUG,
-                "SpawnCreep",
-                `${spawnCreep.name} is not in range of tower ${towersToFeed[0].id} in ${towersToFeed[0].pos.roomName}, and has moved closer.`
-              );
-              return moveResult;
-            } else {
-              Log(
-                LogSeverity.ERROR,
-                "SpawnCreep",
-                `${spawnCreep.name} is not in range of tower ${towersToFeed[0].id} in ${towersToFeed[0].pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
-              );
-              return moveResult;
-            }
-          } else if (transferResult === OK) {
-            Log(
-              LogSeverity.DEBUG,
-              "SpawnCreep",
-              `${spawnCreep.name} has deposited energy into tower ${towersToFeed[0].id} in ${towersToFeed[0].pos.roomName}`
-            );
-            return transferResult;
-          } else {
-            Log(
-              LogSeverity.ERROR,
-              "SpawnCreep",
-              `${spawnCreep.name} has failed to deposit energy into tower ${towersToFeed[0].id} in ${towersToFeed[0].pos.roomName} with result: ${transferResult}`
-            );
-            return transferResult;
-          }
-        }
-        Log(LogSeverity.DEBUG, "SpawnCreep", `${spawnCreep.name} currently idle.`);
-        return OK;
-      } else {
-        const transferResult = spawnCreep.transfer(extensionsToFeed[0], RESOURCE_ENERGY);
-
+  }
+  private feedInfrastructure(spawnCreep: Creep) {
+    const infrastructureId = spawnCreep.memory.assignedInfrastructure;
+    if (infrastructureId) {
+      const infrastructure = Game.getObjectById(
+        spawnCreep.memory.assignedInfrastructure as Id<StructureSpawn> | Id<StructureExtension> | Id<StructureTower>
+      );
+      if (infrastructure) {
+        const transferResult = spawnCreep.transfer(infrastructure, RESOURCE_ENERGY);
         if (transferResult === ERR_NOT_IN_RANGE) {
-          const moveResult = spawnCreep.moveTo(extensionsToFeed[0]);
+          const moveResult = spawnCreep.moveTo(infrastructure);
           if (moveResult === OK) {
             Log(
               LogSeverity.DEBUG,
               "SpawnCreep",
-              `${spawnCreep.name} is not in range of extension ${extensionsToFeed[0].id} in ${extensionsToFeed[0].pos.roomName}, and has moved closer.`
+              `${spawnCreep.name} is not in range of ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName}, and has moved closer.`
             );
             return moveResult;
           } else {
             Log(
               LogSeverity.ERROR,
               "SpawnCreep",
-              `${spawnCreep.name} is not in range of extension ${extensionsToFeed[0].id} in ${extensionsToFeed[0].pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
+              `${spawnCreep.name} is not in range of ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
             );
             return moveResult;
           }
         } else if (transferResult === OK) {
+          delete spawnCreep.memory.assignedInfrastructure
           Log(
             LogSeverity.DEBUG,
             "SpawnCreep",
-            `${spawnCreep.name} has deposited energy into extension ${extensionsToFeed[0].id} in ${extensionsToFeed[0].pos.roomName}`
+            `${spawnCreep.name} has deposited energy into ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName}`
           );
           return transferResult;
         } else {
           Log(
             LogSeverity.ERROR,
             "SpawnCreep",
-            `${spawnCreep.name} has failed to deposit energy into extension ${extensionsToFeed[0].id} in ${extensionsToFeed[0].pos.roomName} with result: ${transferResult}`
+            `${spawnCreep.name} has failed to deposit energy into ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName} with result: ${transferResult}`
           );
           return transferResult;
         }
+      } else {
+        Log(LogSeverity.DEBUG, "SpawnCreep", `${spawnCreep.name} currently idle.`);
+        return OK;
       }
     } else {
-      const transferResult = spawnCreep.transfer(spawnsToFeed[0], RESOURCE_ENERGY);
-      if (transferResult === ERR_NOT_IN_RANGE) {
-        const moveResult = spawnCreep.moveTo(spawnsToFeed[0]);
-        if (moveResult === OK) {
-          Log(
-            LogSeverity.DEBUG,
-            "SpawnCreep",
-            `${spawnCreep.name} is not in range of spawn ${spawnsToFeed[0].id} in ${spawnsToFeed[0].pos.roomName}, and has moved closer.`
-          );
-          return moveResult;
-        } else {
-          Log(
-            LogSeverity.ERROR,
-            "SpawnCreep",
-            `${spawnCreep.name} is not in range of spawn ${spawnsToFeed[0].id} in ${spawnsToFeed[0].pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
-          );
-          return moveResult;
-        }
-      } else if (transferResult === OK) {
-        Log(
-          LogSeverity.DEBUG,
-          "SpawnCreep",
-          `${spawnCreep.name} has deposited energy into spawn ${spawnsToFeed[0].id} in ${spawnsToFeed[0].pos.roomName}`
-        );
-        return transferResult;
-      } else {
-        Log(
-          LogSeverity.ERROR,
-          "SpawnCreep",
-          `${spawnCreep.name} has failed to deposit energy into spawn ${spawnsToFeed[0].id} in ${spawnsToFeed[0].pos.roomName} with result: ${transferResult}`
-        );
-        return transferResult;
-      }
+      return ERR_NOT_FOUND
     }
   }
 }

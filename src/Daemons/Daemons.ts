@@ -6,10 +6,13 @@ import { ResourceDaemon } from "./ResourceDaemon/ResourceDaemon";
 import { SourceDaemon } from "./SourceDaemon/SourceDaemon";
 import { SpawnDaemon, SpawnJob } from "./SpawnDaemon/SpawnDaemon";
 import { TowerDaemon } from "./TowerDaemon/TowerDaemon";
+import { LinkDaemon } from "./LinkDaemon/LinkDaemon";
+import { LabDaemon, LabJob } from "./LabDaemon/LabDaemon";
+import { ExtractorDaemon } from "./ExtractorDaemon/ExtractorDaemon";
 
 declare global {
   interface Memory {
-    jobs: { [key: string]: SpawnJob };
+    jobs: { [key: string]: SpawnJob | LabJob };
   }
 }
 
@@ -34,5 +37,11 @@ export class Daemons {
     Log(LogSeverity.DEBUG, "Daemons", `Resource daemon initialized.`);
     new ConstructionDaemon();
     Log(LogSeverity.DEBUG, "Daemons", `Construction daemon initialized.`);
+    new LinkDaemon();
+    Log(LogSeverity.DEBUG, "Daemons", `Link daemon initialized.`);
+    new ExtractorDaemon()
+    Log(LogSeverity.DEBUG, "Daemons", `Extractor daemon initialized.`);
+    new LabDaemon()
+    Log(LogSeverity.DEBUG, "Daemons", `Lab daemon initialized.`);
   }
 }
