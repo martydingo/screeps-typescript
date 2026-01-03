@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { config } from "../../config";
 import { ConstructionSiteMonitor } from "./ConstructionSiteMonitor";
@@ -19,30 +19,38 @@ declare global {
   }
 }
 
-@profileClass()
+// )@profileClass()
 export class RoomMonitor {
-  private rooms: string[];
-  public constructor() {
+  public static run() {
+    let rooms: string[] = [];
     if (!Memory.rooms) {
       Memory.rooms = {};
-      Log(LogSeverity.DEBUG, "RoomMonitor", `Room memory not found, room monitor memory initialised.`);
+      Log(
+        LogSeverity.DEBUG,
+        "RoomMonitor",
+        `Room memory not found, room monitor memory initialised.`
+      );
     }
 
-    this.rooms = [...Object.keys(Game.rooms), ...config[Memory.env].roomsToMine];
-    Log(LogSeverity.DEBUG, "RoomMonitor", `Rooms to be monitored: ${this.rooms.join(" ")}`);
+    rooms = [...Object.keys(Game.rooms), ...config[Memory.env].roomsToMine];
+    Log(LogSeverity.DEBUG, "RoomMonitor", `Rooms to be monitored: ${rooms.join(" ")}`);
 
-    this.rooms.forEach(roomName => {
+    rooms.forEach(roomName => {
       if (!Memory.rooms[roomName]) {
         Memory.rooms[roomName] = {};
-        Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} memory not found, ${roomName} memory initialized.`);
+        Log(
+          LogSeverity.DEBUG,
+          "RoomMonitor",
+          `${roomName} memory not found, ${roomName} memory initialized.`
+        );
       }
-      this.monitorRoom(roomName);
+      RoomMonitor.monitorRoom(roomName);
       Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} monitors executed.`);
     });
   }
 
-  @profileMethod
-private monitorRoom(roomName: string) {
+  // )@profileMethod
+  private static monitorRoom(roomName: string) {
     if (Game.rooms[roomName]) {
       Memory.rooms[roomName].energy = {
         amount: Game.rooms[roomName].energyAvailable,
@@ -50,17 +58,25 @@ private monitorRoom(roomName: string) {
       };
     }
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} spawn energy levels recorded.`);
-    new SourceMonitor(roomName);
+    SourceMonitor.run(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} sources monitor initialised.`);
-    new ControllerMonitor(roomName);
-    Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} controller monitor initialised.`);
-    new ResourceMonitor(roomName);
+    ControllerMonitor.run(roomName);
+    Log(
+      LogSeverity.DEBUG,
+      "RoomMonitor",
+      `${roomName} controller monitor initialised.`
+    );
+    ResourceMonitor.run(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} resource monitor initialised.`);
-    new ConstructionSiteMonitor(roomName);
-    Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} construction site monitor initialised.`);
-    new TombstoneMonitor(roomName);
+    ConstructionSiteMonitor.run(roomName);
+    Log(
+      LogSeverity.DEBUG,
+      "RoomMonitor",
+      `${roomName} construction site monitor initialised.`
+    );
+    TombstoneMonitor.run(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} tombstone monitor initialised.`);
-    new HostileMonitor(roomName);
+    HostileMonitor.run(roomName);
     Log(LogSeverity.DEBUG, "RoomMonitor", `${roomName} hostile monitor initialised.`);
   }
 }

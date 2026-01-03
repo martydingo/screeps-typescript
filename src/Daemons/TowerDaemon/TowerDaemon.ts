@@ -1,9 +1,9 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+// )@profileClass()
 export class TowerDaemon {
-  public constructor() {
+  public static run() {
     Object.values(Memory.rooms).forEach(roomMemory => {
       if (roomMemory.structures) {
         if (roomMemory.structures.towers) {
@@ -16,8 +16,8 @@ export class TowerDaemon {
     });
   }
 
-  @profileMethod
-  private cycleTowers(tower: StructureTower) {
+  // )@profileMethod
+  private static cycleTowers(tower: StructureTower) {
     // console.log(
     //   `Tower cycleTowers Start - ${tower.pos.roomName} - ${
     //     tower.id
@@ -49,8 +49,8 @@ export class TowerDaemon {
     // );
   }
 
-  @profileMethod
-  private healCreeps(tower: StructureTower) {
+  // )@profileMethod
+  private static healCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower healCreeps Start - ${tower.pos.roomName} - ${
     //     tower.id
@@ -75,8 +75,8 @@ export class TowerDaemon {
     // );
     return tower.heal(curTarget);
   }
-  @profileMethod
-  private attackCreeps(tower: StructureTower) {
+  // )@profileMethod
+  private static attackCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower attackCreeps Start - ${tower.pos.roomName} - ${
     //     tower.id
@@ -111,8 +111,8 @@ export class TowerDaemon {
     // );
     return ERR_INVALID_TARGET;
   }
-  @profileMethod
-  private repairStructures(tower: StructureTower) {
+  // )@profileMethod
+  private static repairStructures(tower: StructureTower) {
     // console.log(
     //   `Tower repairTarget Start - ${tower.pos.roomName} - ${
     //     tower.id

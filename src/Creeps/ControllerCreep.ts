@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -13,12 +13,12 @@ declare global {
   }
 }
 
-@profileClass()
+// @profileClass()
 export class ControllerCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 3 };
 
-  public constructor() {
-    super();
+  public static run() {
+
 
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "ControllerCreep")
@@ -78,8 +78,8 @@ export class ControllerCreep extends CreepTemplate {
         }
       });
   }
-  @profileMethod
-  private fetchEnergy(ctrlCreep: Creep) {
+  // @profileMethod
+  private static fetchEnergy(ctrlCreep: Creep) {
     let controllerLinkId = null;
     const roomMemory = Memory.rooms[ctrlCreep.memory.room!];
     if (roomMemory) {
@@ -169,8 +169,8 @@ export class ControllerCreep extends CreepTemplate {
     }
   }
 
-  @profileMethod
-  private manageBoosts(
+  // @profileMethod
+  private static manageBoosts(
     ctrlCreep: Creep,
     desiredBoost: { mineral: MineralBoostConstant; bodyPart: BodyPartConstant }
   ) {
@@ -251,8 +251,8 @@ export class ControllerCreep extends CreepTemplate {
     }
   }
 
-  @profileMethod
-  private boostParts(ctrlCreep: Creep, boostLab: StructureLab) {
+  // @profileMethod
+  private static boostParts(ctrlCreep: Creep, boostLab: StructureLab) {
     const boostLabDistance = ctrlCreep.pos.getRangeTo(boostLab);
     if (boostLabDistance >= 2) {
       const moveResult = ctrlCreep.moveTo(boostLab);
@@ -278,8 +278,8 @@ export class ControllerCreep extends CreepTemplate {
     return boostResult;
   }
 
-  @profileMethod
-  private upgradeController(ctrlCreep: Creep) {
+  // @profileMethod
+  private static upgradeController(ctrlCreep: Creep) {
     const assignedController = Game.getObjectById(ctrlCreep.memory.assignedController!);
     if (assignedController) {
       const assignedControllerDistance = ctrlCreep.pos.getRangeTo(assignedController);

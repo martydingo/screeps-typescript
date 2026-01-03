@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import { Log, LogSeverity } from "utils/log";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Pathfinding } from "utils/Pathfinding";
 
 export interface CreepMemoryTemplate {
@@ -87,7 +87,7 @@ declare global {
 }
 
 class CreepPrototypes extends Creep {
-  @profileMethod
+  // @profileMethod
   public static mineSource(this: Creep, sourceId: Id<Source>) {
     const source = Game.getObjectById(sourceId);
 
@@ -133,7 +133,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchDroppedEnergy(this: Creep) {
     const resourceMatrix = Memory.rooms[this.room.name].resources;
     if (resourceMatrix) {
@@ -206,7 +206,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchDroppedResource(this: Creep) {
     const resourceMatrix = Memory.rooms[this.room.name].resources;
     if (resourceMatrix) {
@@ -267,7 +267,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  @profileMethod
+  // @profileMethod
   public static lootResourceFromTombstone(this: Creep, resourceType: ResourceConstant) {
     const tombstones = Memory.rooms[this.room.name].tombstones;
     if (tombstones) {
@@ -331,7 +331,7 @@ class CreepPrototypes extends Creep {
     return ERR_NOT_FOUND;
   }
 
-  @profileMethod
+  // @profileMethod
   public static lootEnergyFromRuin(this: Creep) {
     const ruinMatrix = Memory.rooms[this.room.name].structures?.ruins;
     if (ruinMatrix) {
@@ -391,7 +391,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchResourceFromStructure(
     this: Creep,
     structure: GenericStructureWithStore,
@@ -454,7 +454,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  @profileMethod
+  // @profileMethod
   public static depositResourceIntoStructure(
     this: Creep,
     structure: GenericStructureWithStore,
@@ -510,7 +510,7 @@ class CreepPrototypes extends Creep {
     return transferResult;
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchResourceFromStorage(
     this: Creep,
     resourceType: ResourceConstant,
@@ -523,7 +523,7 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchResourceFromTerminal(
     this: Creep,
     resourceType: ResourceConstant,
@@ -536,7 +536,7 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  @profileMethod
+  // @profileMethod
   public static fetchEnergy(this: Creep) {
     const withdrawResult = this.fetchResourceFromStorage(RESOURCE_ENERGY);
     if (withdrawResult !== OK) {
@@ -559,7 +559,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  @profileMethod
+  // @profileMethod
   public static moveToUnknownRoom(
     this: Creep,
     destinationRoomName: string,
@@ -700,7 +700,7 @@ class CreepPrototypes extends Creep {
     opts?: MoveToOpts
   ): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND;
 
-  @profileMethod
+  // @profileMethod
   public static moveTo(
     this: Creep,
     a: number | RoomPosition | { pos: RoomPosition },
@@ -793,14 +793,14 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  @profileMethod
+  // @profileMethod
   public static harvest(
     this: Creep,
     target: Source | Mineral<MineralConstant> | Deposit
   ) {
     return this._harvest(target);
   }
-  @profileMethod
+  // @profileMethod
   public static transfer(
     this: Creep,
     target: Structure<StructureConstant> | AnyCreep,
@@ -810,7 +810,7 @@ class CreepPrototypes extends Creep {
     return this._transfer(target, resourceType, amount);
   }
 
-  @profileMethod
+  // @profileMethod
   public static pickup(
     this: Creep,
     target: Resource<ResourceConstant>
@@ -818,7 +818,7 @@ class CreepPrototypes extends Creep {
     return this._pickup(target);
   }
 
-  @profileMethod
+  // @profileMethod
   public static withdraw(
     this: Creep,
     target: Structure<StructureConstant> | Tombstone | Ruin,
@@ -872,10 +872,10 @@ if (!Creep.prototype._moveTo) {
   Creep.prototype._moveTo = Creep.prototype.moveTo;
   Creep.prototype.moveTo = CreepPrototypes.moveTo;
 }
-@profileClass()
+// @profileClass()
 export class CreepTemplate {
-  // private bodyParts: BodyPartConstant[]
-  public constructor() {
+  // private static bodyParts: BodyPartConstant[]
+  public static run() {
     //
   }
 }

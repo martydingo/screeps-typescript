@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RuinMonitorMemory {
@@ -10,9 +10,9 @@ export interface RuinMonitorMemory {
   };
 }
 
-@profileClass()
+// )@profileClass()
 export class RuinMonitor {
-  public constructor(ruin: Ruin) {
+  public static run(ruin: Ruin) {
     if (!ruin.room!.memory.structures!.ruins) {
       ruin.room!.memory.structures!.ruins = {};
       Log(LogSeverity.DEBUG, "RoadMonitor", `road monitor memory not found, road monitor memory initialised.`);

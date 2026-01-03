@@ -1,6 +1,5 @@
 /* eslint-disable */
 import { SourceMapConsumer } from "source-map";
-import { profileClass } from "./Profiler";
 
 export class ErrorMapper {
   // Cache consumer
@@ -8,7 +7,7 @@ export class ErrorMapper {
 
   public static get consumer(): SourceMapConsumer {
     if (this._consumer == null) {
-      this._consumer = new SourceMapConsumer(require("main.js.map"));
+      this._consumer = SourceMapConsumer.run(require("main.js.map"));
     }
 
     return this._consumer;

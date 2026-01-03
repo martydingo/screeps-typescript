@@ -1,4 +1,4 @@
-import { profileMethod, profileClass } from "utils/Profiler";
+// import { profileMethod, profileClass } from "utils/Profiler";
 
 interface GlobalMonitorMemory {
   gcl: {
@@ -19,9 +19,9 @@ declare global {
     }
 }
 
-@profileClass()
+// )@profileClass()
 export class GlobalMonitor {
-    public constructor() {
+    public static run() {
         const payload: GlobalMonitorMemory = {
           gcl: {
             level: Game.gcl.level,

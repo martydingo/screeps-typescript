@@ -4,15 +4,15 @@ import { StructureMonitor } from "./Structure/StructureMonitor"
 import {  profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+// )@profileClass()
 export class Monitors {
-    public constructor(
+    public static run(
     ) {
-        new RoomMonitor()
+        RoomMonitor.run()
         Log(LogSeverity.DEBUG, "Monitors", `Room monitors initialized.`);
-        new StructureMonitor()
+        StructureMonitor.run()
         Log(LogSeverity.DEBUG, "Monitors", `Structure monitors initialised.`);
-        new SpawnMonitor()
+        SpawnMonitor.run()
         Log(LogSeverity.DEBUG, "Monitors", `Spawn monitors initialised.`);
     }
 }

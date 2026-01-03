@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface TerminalMonitorMemory {
@@ -12,9 +12,9 @@ export interface TerminalMonitorMemory {
   };
 }
 
-@profileClass()
+// )@profileClass()
 export class TerminalMonitor {
-  public constructor(terminal: StructureTerminal) {
+  public static run(terminal: StructureTerminal) {
     if (!terminal.room.memory.structures!.terminal) {
       terminal.room.memory.structures!.terminal = {};
       Log(

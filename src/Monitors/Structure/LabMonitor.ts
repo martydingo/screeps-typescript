@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface LabMonitorMemory {
@@ -12,9 +12,9 @@ export interface LabMonitorMemory {
   };
 }
 
-@profileClass()
+// )@profileClass()
 export class LabMonitor {
-  public constructor(lab: StructureLab) {
+  public static run(lab: StructureLab) {
     if (!lab.room.memory.structures!.labs) {
       lab.room.memory.structures!.labs = {};
       Log(LogSeverity.DEBUG, "LabMonitor", `lab monitor memory not found, lab monitor memory initialised.`);

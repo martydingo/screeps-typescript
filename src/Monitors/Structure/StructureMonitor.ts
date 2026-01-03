@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
@@ -35,9 +35,9 @@ declare global {
   }
 }
 
-@profileClass()
+// @profileClass()
 export class StructureMonitor {
-  public constructor() {
+  public static run() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
       if (roomMemory.structures) {
         Object.entries(roomMemory.structures).forEach(
@@ -69,25 +69,25 @@ export class StructureMonitor {
         }
         switch (structure.structureType) {
           case "extension":
-            new ExtensionMonitor(structure as StructureExtension);
+            ExtensionMonitor.run(structure as StructureExtension);
             break;
           case "tower":
-            new TowerMonitor(structure as StructureTower);
+            TowerMonitor.run(structure as StructureTower);
             break;
           case "storage":
-            new StorageMonitor(structure as StructureStorage);
+            StorageMonitor.run(structure as StructureStorage);
             break;
           case "link":
-            new LinkMonitor(structure as StructureLink);
+            LinkMonitor.run(structure as StructureLink);
             break;
           case "lab":
-            new LabMonitor(structure as StructureLab);
+            LabMonitor.run(structure as StructureLab);
             break;
           case "terminal":
-            new TerminalMonitor(structure as StructureTerminal);
+            TerminalMonitor.run(structure as StructureTerminal);
             break;
           case "extractor":
-            new ExtractorMonitor(structure as StructureExtractor);
+            ExtractorMonitor.run(structure as StructureExtractor);
             break;
           case "controller":
             break;
@@ -123,16 +123,16 @@ export class StructureMonitor {
             roomStructures.forEach(structure => {
               switch (structure.structureType) {
                 case "road":
-                  new RoadMonitor(structure);
+                  RoadMonitor.run(structure);
                   break;
                 case "container":
-                  new ContainerMonitor(structure);
+                  ContainerMonitor.run(structure);
                   break;
                 case "constructedWall":
-                  new WallMonitor(structure);
+                  WallMonitor.run(structure);
                   break;
                 case "rampart":
-                  new RampartMonitor(structure);
+                  RampartMonitor.run(structure);
                   break;
                 case "extension":
                   break;
@@ -182,7 +182,7 @@ export class StructureMonitor {
     Object.values(Game.rooms).forEach(room => {
       if (room) {
         if (room.controller?.my) {
-          room.find(FIND_RUINS).forEach(structure => new RuinMonitor(structure));
+          room.find(FIND_RUINS).forEach(structure => RuinMonitor.run(structure));
         }
       }
       Log(

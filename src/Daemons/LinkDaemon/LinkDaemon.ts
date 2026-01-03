@@ -1,11 +1,11 @@
 import { LinkCreep } from "Creeps/LinkCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+// )@profileClass()
 export class LinkDaemon {
-  public constructor() {
+  public static run() {
     Object.keys(Game.rooms).forEach(roomName => {
       this.discernLinkTypes(roomName);
       this.discernLinkDistances(roomName);
@@ -14,8 +14,8 @@ export class LinkDaemon {
     });
   }
 
-  @profileMethod
-private discernLinkTypes(roomName: string) {
+  // )@profileMethod
+private static discernLinkTypes(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", `Links detected in ${roomName}`);
@@ -91,8 +91,8 @@ private discernLinkTypes(roomName: string) {
     }
   }
 
-  @profileMethod
-private discernLinkDistances(roomName: string) {
+  // )@profileMethod
+private static discernLinkDistances(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         const roomLinkIds = Object.keys(Memory.rooms[roomName].structures!.links!);
@@ -133,8 +133,8 @@ private discernLinkDistances(roomName: string) {
     }
   }
 
-  @profileMethod
-private manageStorageLinkCreeps(roomName: string) {
+  // )@profileMethod
+private static manageStorageLinkCreeps(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         const storageLinkIds = Object.entries(Memory.rooms[roomName].structures!.links!)
@@ -217,8 +217,8 @@ private manageStorageLinkCreeps(roomName: string) {
     }
   }
 
-  @profileMethod
-private operateLinks(roomName: string) {
+  // )@profileMethod
+private static operateLinks(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", ``);

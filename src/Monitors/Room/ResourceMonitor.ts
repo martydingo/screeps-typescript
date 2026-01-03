@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface ResourceMonitorMemory {
@@ -13,9 +13,9 @@ declare global {
   }
 }
 
-@profileClass()
+// )@profileClass()
 export class ResourceMonitor {
-  public constructor(roomName: string) {
+  public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const resources = room.find(FIND_DROPPED_RESOURCES);

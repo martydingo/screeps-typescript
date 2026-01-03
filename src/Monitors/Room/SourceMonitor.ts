@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface SourceMemory {
@@ -15,9 +15,9 @@ declare global {
   }
 }
 
-@profileClass()
+// )@profileClass()
 export class SourceMonitor {
-  public constructor(roomName: string) {
+  public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const sources = room.find(FIND_SOURCES);

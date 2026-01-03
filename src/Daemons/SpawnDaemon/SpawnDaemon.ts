@@ -1,6 +1,6 @@
 import { MaxBodyParts, Ratio, buildBodyFromRatio } from "utils/buildBodyFromRatio";
 import { SpawnCreep } from "Creeps/SpawnCreep";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface SpawnJob {
@@ -19,14 +19,11 @@ declare global {
   interface Memory {
     spawnHeld: { [key: string]: number };
   }
-  interface SpawnMemory {
-    distances: { [key: string]: number };
-  }
 }
 
-@profileClass()
+// @profileClass()
 export class SpawnDaemon {
-  public constructor() {
+  public static run() {
     this.manageSpawnCreepJobs();
 
     Log(
@@ -158,8 +155,8 @@ export class SpawnDaemon {
     //   .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority);
   }
 
-  @profileMethod
-  private waitUntilFullCapacity(
+  // @profileMethod
+  private static waitUntilFullCapacity (
     spawn: StructureSpawn,
     desiredBodyParts: BodyPartConstant[]
   ): boolean {
@@ -245,8 +242,8 @@ export class SpawnDaemon {
     }
   }
 
-  @profileMethod
-  private findClosestSpawn(roomName: string) {
+  // @profileMethod
+  private static findClosestSpawn(roomName: string) {
     Object.values(Game.spawns).forEach(spawn => {
       if (!spawn.memory.distances) {
         spawn.memory.distances = {};
@@ -278,8 +275,8 @@ export class SpawnDaemon {
     return spawnDistanceMatrix.reverse().pop()?.spawn;
   }
 
-  @profileMethod
-  private manageSpawnCreepJobs() {
+  // @profileMethod
+  private static manageSpawnCreepJobs() {
     Object.values(Game.spawns)
       .map(spawn => spawn.room.name)
       .forEach(roomName => {
@@ -333,8 +330,8 @@ export class SpawnDaemon {
       });
   }
 
-  @profileMethod
-  private determineSpawnCreepPriority(roomName: string): 1 | 2 {
+  // @profileMethod
+  private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
     const energyThreshold = 1000;
     let energyInRoom = false;
 
@@ -380,8 +377,8 @@ export class SpawnDaemon {
     } else return 2;
   }
 
-  @profileMethod
-  private discernCost(bodyParts: BodyPartConstant[]) {
+  // @profileMethod
+  private static discernCost(bodyParts: BodyPartConstant[]) {
     const costMatrix = {
       tough: 10,
       move: 50,

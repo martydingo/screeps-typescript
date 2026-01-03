@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -12,13 +12,13 @@ declare global {
   interface CreepMemory extends Partial<ExtractorCreepMemory> {}
 }
 
-@profileClass()
+// @profileClass()
 export class ExtractorCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 2 };
   public static maxBodyParts = { work: 6, carry: 1, move: 8 };
 
-  public constructor() {
-    super();
+  public static run() {
+
 
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "ExtractorCreep")
@@ -64,14 +64,14 @@ export class ExtractorCreep extends CreepTemplate {
             shouldMine = true;
           }
           if (shouldMine === true) {
-            const harvestResult = this.mineExtractor(extractorCreep);
+            const harvestResult = ExtractorCreep.mineExtractor(extractorCreep);
           }
         }
       });
   }
 
-  @profileMethod
-  private mineExtractor(extractorCreep: Creep) {
+  // @profileMethod
+  private static mineExtractor(extractorCreep: Creep) {
     const room = Game.rooms[extractorCreep.memory.room!];
     if (room) {
       const structureMonitorMemory = room.memory.structures;

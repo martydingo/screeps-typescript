@@ -2,7 +2,7 @@ import { Daemons } from "Daemons/Daemons";
 import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
 import { Monitors } from "Monitors/Monitors";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 
@@ -74,11 +74,11 @@ export const loop = ErrorMapper.wrapLoop(
 
   // console.log(JSON.stringify(route))
 
-  new Monitors();
+  Monitors.run();
   Log(LogSeverity.DEBUG, "main", `Monitors initialized.`);
-  new Daemons();
+  Daemons.run();
   Log(LogSeverity.DEBUG, "main", `Daemons initialized.`);
 
-  new GlobalMonitor();
+  GlobalMonitor.run();
   Log(LogSeverity.DEBUG, "Monitors", `Global monitor initialized.`);
 });

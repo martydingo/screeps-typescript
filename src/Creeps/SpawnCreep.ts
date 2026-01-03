@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -15,12 +15,12 @@ declare global {
   interface CreepMemory extends Partial<SpawnCreepMemory> {}
 }
 
-@profileClass()
+// @profileClass()
 export class SpawnCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
-  public constructor() {
-    super();
+  public static run() {
+
 
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "SpawnCreep")
@@ -67,14 +67,14 @@ export class SpawnCreep extends CreepTemplate {
       });
   }
 
-  @profileMethod
-  private feedSpawns(spawnCreep: Creep) {
+  // @profileMethod
+  private static feedSpawns(spawnCreep: Creep) {
     this.discernInfrastructureToFeed(spawnCreep);
     this.feedInfrastructure(spawnCreep);
   }
 
-  @profileMethod
-  private discernInfrastructureToFeed(spawnCreep: Creep) {
+  // @profileMethod
+  private static discernInfrastructureToFeed(spawnCreep: Creep) {
     if (!spawnCreep.memory.assignedInfrastructure) {
       const spawnsToFeed = Object.values(Game.spawns).filter(
         spawn =>
@@ -140,8 +140,8 @@ export class SpawnCreep extends CreepTemplate {
       }
     }
   }
-  @profileMethod
-  private feedInfrastructure(spawnCreep: Creep) {
+  // @profileMethod
+  private static feedInfrastructure(spawnCreep: Creep) {
     const infrastructureId = spawnCreep.memory.assignedInfrastructure;
     if (infrastructureId) {
       const infrastructure = Game.getObjectById(

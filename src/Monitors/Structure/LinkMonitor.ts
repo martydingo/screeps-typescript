@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface LinkMonitorMemory {
@@ -13,9 +13,9 @@ export interface LinkMonitorMemory {
   };
 }
 
-@profileClass()
+// )@profileClass()
 export class LinkMonitor {
-  public constructor(link: StructureLink) {
+  public static run(link: StructureLink) {
     if (!link.room.memory.structures!.links) {
       link.room.memory.structures!.links = {};
       Log(LogSeverity.DEBUG, "LinkMonitor", `link monitor memory not found, link monitor memory initialised.`);

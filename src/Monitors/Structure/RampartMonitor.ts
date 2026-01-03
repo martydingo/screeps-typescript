@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RampartMonitorMemory {
@@ -12,9 +12,9 @@ export interface RampartMonitorMemory {
   };
 }
 
-@profileClass()
+// )@profileClass()
 export class RampartMonitor {
-  public constructor(rampart: StructureRampart) {
+  public static run(rampart: StructureRampart) {
     if (!rampart.room.memory.structures!.ramparts) {
       rampart.room.memory.structures!.ramparts = {};
       Log(LogSeverity.DEBUG, "RampartMonitor", `Rampart monitor memory not found, Rampart monitor memory initialised.`);

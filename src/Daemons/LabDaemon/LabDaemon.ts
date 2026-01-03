@@ -1,7 +1,7 @@
 import { LabConfig, config } from "config";
 import { LabCreep } from "Creeps/LabCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 
 export interface LabTask {
   resource: ResourceConstant;
@@ -20,9 +20,9 @@ export interface LabJob {
   type: "lab";
 }
 
-@profileClass()
+// @profileClass()
 export class LabDaemon {
-  public constructor() {
+  public static run() {
     const roomsWithLabs: string[] = [];
     Object.values(Game.structures)
       .filter(structure => structure.structureType === STRUCTURE_LAB)
@@ -33,14 +33,14 @@ export class LabDaemon {
       );
 
     roomsWithLabs.forEach(roomName => {
-      this.manageLabJobs(roomName);
-      this.manageLabCreeps(roomName);
-      this.operateLabs(roomName);
+      LabDaemon.manageLabJobs(roomName);
+      LabDaemon.manageLabCreeps(roomName);
+      LabDaemon.operateLabs(roomName);
     });
   }
 
-  @profileMethod
-private manageLabJobs(roomName: string) {
+  // @profileMethod
+  private static manageLabJobs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {
@@ -106,7 +106,7 @@ private manageLabJobs(roomName: string) {
                       priority: 5 + index,
                       status: "pending"
                     } as LabTask;
-                  }),
+                  })
                 ]
               };
 
@@ -152,8 +152,8 @@ private manageLabJobs(roomName: string) {
       });
     }
   }
-  @profileMethod
-private manageLabCreeps(roomName: string) {
+  // @profileMethod
+  private static manageLabCreeps(roomName: string) {
     const labJobs = Object.entries(Memory.jobs).filter(
       ([, job]) => job.type === "lab"
     ) as [string, LabJob][];
@@ -177,7 +177,7 @@ private manageLabCreeps(roomName: string) {
       const storage = room.storage;
       const terminal = room.terminal;
 
-      let mineralsFound = false
+      let mineralsFound = false;
       if (storage && terminal) {
         Object.values(requiredMinerals).forEach(mineral => {
           if (storage.store[mineral] > 0 || terminal.store[mineral] > 0) {
@@ -185,26 +185,24 @@ private manageLabCreeps(roomName: string) {
           }
         });
 
-        const labsUnderCapacity = Object.values(requiredMinerals).map(
-          (resourceName) => {
-            let labUnderCapacity = false;
-            let amount = 0;
-            let capacity = 0;
-            Object.values(room.memory.structures!.labs!).forEach(labMonitorMemory => {
-              if (labMonitorMemory.resources[resourceName]) {
-                amount = amount + labMonitorMemory.resources[resourceName].amount;
-                capacity = labMonitorMemory.resources[resourceName].capacity;
-              } else {
-                amount = amount + 0;
-              }
-            });
-
-            if (amount <= capacity * 0.25) {
-              labUnderCapacity = true;
+        const labsUnderCapacity = Object.values(requiredMinerals).map(resourceName => {
+          let labUnderCapacity = false;
+          let amount = 0;
+          let capacity = 0;
+          Object.values(room.memory.structures!.labs!).forEach(labMonitorMemory => {
+            if (labMonitorMemory.resources[resourceName]) {
+              amount = amount + labMonitorMemory.resources[resourceName].amount;
+              capacity = labMonitorMemory.resources[resourceName].capacity;
+            } else {
+              amount = amount + 0;
             }
-            return labUnderCapacity;
+          });
+
+          if (amount <= capacity * 0.25) {
+            labUnderCapacity = true;
           }
-        );
+          return labUnderCapacity;
+        });
         // console.log(labsUnderCapacity.includes(true));
         // console.log(mineralsFound && labsUnderCapacity.includes(true));
         if (mineralsFound && labsUnderCapacity.includes(true)) {
@@ -244,8 +242,8 @@ private manageLabCreeps(roomName: string) {
       }
     }
   }
-  @profileMethod
-private operateLabs(roomName: string) {
+  // @profileMethod
+  private static operateLabs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {

@@ -2,22 +2,22 @@ import { ExtractorCreep } from "Creeps/ExtractorCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 
-@profileClass()
+// )@profileClass()
 export class ExtractorDaemon {
-  public constructor() {
+  public static run() {
     const extractors = Object.values(Game.structures)
       .filter(structure => structure.structureType === "extractor")
       .map(extractor => extractor) as StructureExtractor[];
 
     extractors.forEach(extractor => {
-      this.manageExtractorCreeps(extractor);
+      ExtractorDaemon.manageExtractorCreeps(extractor);
     });
   }
 
-  @profileMethod
-private manageExtractorCreeps(extractor: StructureExtractor) {
+  // )@profileMethod
+private static manageExtractorCreeps(extractor: StructureExtractor) {
     const room = extractor.room;
 
     const assignedCreeps = Object.values(Game.creeps).filter(

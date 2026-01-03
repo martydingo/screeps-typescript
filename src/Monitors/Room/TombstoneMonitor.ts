@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface TombstoneMonitorMemory {
@@ -14,9 +14,9 @@ declare global {
   }
 }
 
-@profileClass()
+// )@profileClass()
 export class TombstoneMonitor {
-  public constructor(roomName: string) {
+  public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const tombstones = room.find(FIND_TOMBSTONES);

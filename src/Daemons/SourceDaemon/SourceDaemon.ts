@@ -1,12 +1,12 @@
 import { config } from "config";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+// )@profileClass()
 export class SourceDaemon {
-  public constructor() {
+  public static run() {
     Object.keys(Memory.rooms).forEach(roomName => {
       let shouldMine = false;
       if (Game.rooms[roomName]) {
@@ -76,8 +76,8 @@ export class SourceDaemon {
       }
     });
   }
-  @profileMethod
-private determineSpawnCreepPriority(roomName: string): 1 | 2 {
+  // )@profileMethod
+private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
     const energyThreshold = 1000;
     let energyInRoom = false;
 

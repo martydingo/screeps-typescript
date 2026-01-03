@@ -1,4 +1,4 @@
-import { profileClass, profileMethod } from "utils/Profiler";
+// import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 import { LabJob, LabTask } from "Daemons/LabDaemon/LabDaemon";
@@ -13,12 +13,12 @@ declare global {
   interface CreepMemory extends Partial<LabCreepMemory> {}
 }
 
-@profileClass()
+// @profileClass()
 export class LabCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
-  public constructor() {
-    super();
+  public static run() {
+
 
     const labJobs = Object.values(Memory.jobs).filter(job => job.type === "lab") as LabJob[];
 
@@ -132,8 +132,8 @@ export class LabCreep extends CreepTemplate {
       });
   }
 
-  @profileMethod
-private fetchResource(labCreep: Creep, task: LabTask) {
+  // @profileMethod
+private static fetchResource(labCreep: Creep, task: LabTask) {
     const resourceType = task.resource;
     const room = Game.rooms[labCreep.memory.room!];
     const destinationId = task.structure;
@@ -167,16 +167,16 @@ private fetchResource(labCreep: Creep, task: LabTask) {
     //
   }
 
-  @profileMethod
-private depositResource(labCreep: Creep, task: LabTask) {
+  // @profileMethod
+private static depositResource(labCreep: Creep, task: LabTask) {
     const destination = Game.getObjectById(task.structure);
     if (destination) {
       const depositResult = labCreep.depositResourceIntoStructure(destination, task.resource);
     }
   }
 
-  @profileMethod
-private emptyResources(labCreep: Creep, task: LabTask) {
+  // @profileMethod
+private static emptyResources(labCreep: Creep, task: LabTask) {
     const storage = labCreep.room.storage;
     if (storage) {
       let incorrectResourceInStore = false;
