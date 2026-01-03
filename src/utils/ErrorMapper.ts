@@ -1,5 +1,6 @@
 /* eslint-disable */
 import { SourceMapConsumer } from "source-map";
+import { profileClass } from "./Profiler";
 
 export class ErrorMapper {
   // Cache consumer

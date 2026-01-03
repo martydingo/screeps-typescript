@@ -5,7 +5,8 @@ export interface GameConfig {
   labConfig: { [key: string]: LabConfig[] };
   roomsToMine: string[];
   roomsToClaim: string[];
-  username: string
+  username: string;
+  lowCpuMode: boolean;
 }
 
 export interface LabConfig {
@@ -42,7 +43,8 @@ export const config: {
     logLevel: 7,
     roomsToMine: [],
     roomsToClaim: [],
-    username: Object.values(Game.spawns).pop()!.owner.username
+    username: Object.values(Game.spawns).pop()!.owner.username,
+    lowCpuMode: false
   },
   prod: {
     logLevel: 6,
@@ -60,11 +62,10 @@ export const config: {
         }
       ]
     },
-    roomsToMine: [
-      "E11S17"
-    ],
+    roomsToMine: ["E11S17"],
     roomsToClaim: ["E14S17"],
-    username: Object.values(Game.spawns).pop()!.owner.username
+    username: Object.values(Game.spawns).pop()!.owner.username,
+    lowCpuMode: (Game.cpu.bucket < 1000 && true) || false
   },
   //
   styles: {

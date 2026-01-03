@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface WallMonitorMemory {
@@ -10,6 +11,7 @@ export interface WallMonitorMemory {
   };
 }
 
+@profileClass()
 export class WallMonitor {
   public constructor(wall: StructureWall) {
     if (!wall.room.memory.structures!.walls) {

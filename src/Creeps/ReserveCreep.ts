@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -8,6 +9,7 @@ declare global {
   interface CreepMemory extends Partial<ReserveCreepMemory> {}
 }
 
+@profileClass()
 export class ReserveCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 0, move: 7, claim: 2 };
   public static maxBodyParts = { move: 7, claim: 2 };

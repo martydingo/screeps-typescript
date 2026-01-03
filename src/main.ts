@@ -2,6 +2,7 @@ import { Daemons } from "Daemons/Daemons";
 import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
 import { Monitors } from "Monitors/Monitors";
 import { ErrorMapper } from "utils/ErrorMapper";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 
@@ -29,7 +30,9 @@ declare const global: {
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
-export const loop = ErrorMapper.wrapLoop(() => {
+
+export const loop = ErrorMapper.wrapLoop(
+  () => {
   Log(LogSeverity.INFORMATIONAL, "main", `Current game tick is ${Game.time}.`);
 
   if (Game.cpu.generatePixel) {
@@ -40,7 +43,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     //     .sort((orderA, orderB) => orderA.price - orderB.price)
     //   .map((order)=>`Id: ${order.id} Price: ${order.price} Amount: ${order.amount} Resource ${order.resourceType}`)[0]
     // );
-    if (Game.cpu.bucket === 10000) {
+    if (Game.cpu.bucket === 10001) {
       Game.cpu.generatePixel();
       Log(
         LogSeverity.INFORMATIONAL,

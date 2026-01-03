@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
@@ -11,6 +12,7 @@ import { TerminalMonitor, TerminalMonitorMemory } from "./TerminalMonitor";
 import { ExtractorMonitor, ExtractorMonitorMemory } from "./ExtractorMonitor";
 import { WallMonitor, WallMonitorMemory } from "./WallMonitor";
 import { RampartMonitor, RampartMonitorMemory } from "./RampartMonitor";
+import { config } from "config";
 
 interface StructureMonitorMemory {
   extensions: ExtensionMonitorMemory;
@@ -33,6 +35,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class StructureMonitor {
   public constructor() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
@@ -53,7 +56,7 @@ export class StructureMonitor {
         );
       }
     });
-
+    console.log(`Game.structures poll start: ${Game.cpu.getUsed()}`);
     Object.values(Game.structures).forEach(structure => {
       if (structure.room.controller?.my) {
         if (!structure.room.memory.structures) {
@@ -100,6 +103,7 @@ export class StructureMonitor {
         }
       }
     });
+    // console.log(`Game.structures poll end: ${Game.cpu.getUsed()}`);
     Log(
       LogSeverity.DEBUG,
       "StructureMonitor",
@@ -108,60 +112,72 @@ export class StructureMonitor {
       } structures within Game.structures processed`
     );
 
-    Object.values(Game.rooms).forEach(room => {
-      if (room) {
-        if (room.controller?.my) {
-          const roomStructures = room.find(FIND_STRUCTURES);
-          roomStructures.forEach(structure => {
-            switch (structure.structureType) {
-              case "road":
-                new RoadMonitor(structure);
-                break;
-              case "container":
-                new ContainerMonitor(structure);
-                break;
-              case "constructedWall":
-                new WallMonitor(structure);
-                break;
-              case "rampart":
-                new RampartMonitor(structure);
-                break;
-              case "extension":
-                break;
-              case "tower":
-                break;
-              case "storage":
-                break;
-              case "controller":
-                break;
-              case "spawn":
-                break;
-              case "lab":
-                break;
-              case "link":
-                break;
-              case "extractor":
-                break;
-              case "terminal":
-                break;
+    // console.log(`room.find poll start: ${Game.cpu.getUsed()}`);
+    const interval = config[Memory.env].lowCpuMode === true && 4 || 1
+    if (Game.time % interval === 0) {
+      Object.values(Game.rooms).forEach(room => {
+        if (room) {
+          if (room.controller?.my) {
+            const roomStructures = room.find(FIND_STRUCTURES);
+            roomStructures.forEach(structure => {
+              switch (structure.structureType) {
+                case "road":
+                  new RoadMonitor(structure);
+                  break;
+                case "container":
+                  new ContainerMonitor(structure);
+                  break;
+                case "constructedWall":
+                  new WallMonitor(structure);
+                  break;
+                case "rampart":
+                  new RampartMonitor(structure);
+                  break;
+                case "extension":
+                  break;
+                case "tower":
+                  break;
+                case "storage":
+                  break;
+                case "controller":
+                  break;
+                case "spawn":
+                  break;
+                case "lab":
+                  break;
+                case "link":
+                  break;
+                case "extractor":
+                  break;
+                case "terminal":
+                  break;
 
-              default:
-                Log(
-                  LogSeverity.WARNING,
-                  "StructureMonitor",
-                  `Structure ${structure.id} with type ${structure.structureType} in Game.rooms[${room.name}].find not monitored`
-                );
-                break;
-            }
-          });
-          Log(
-            LogSeverity.DEBUG,
-            "StructureMonitor",
-            `${roomStructures.length} structures within Game.rooms[${room.name}].find processed`
-          );
+                default:
+                  Log(
+                    LogSeverity.WARNING,
+                    "StructureMonitor",
+                    `Structure ${structure.id} with type ${structure.structureType} in Game.rooms[${room.name}].find not monitored`
+                  );
+                  break;
+              }
+            });
+            Log(
+              LogSeverity.DEBUG,
+              "StructureMonitor",
+              `${roomStructures.length} structures within Game.rooms[${room.name}].find processed`
+            );
+          }
         }
-      }
-    });
+      });
+    } else {
+      Log(
+        LogSeverity.INFORMATIONAL,
+        "StructureMonitor",
+        `Room.find postponed due to lowCpuMode`
+      );
+    }
+    // console.log(`room.find poll end: ${Game.cpu.getUsed()}`);
+    // console.log(`ruin find poll start: ${Game.cpu.getUsed()}`);
     Object.values(Game.rooms).forEach(room => {
       if (room) {
         if (room.controller?.my) {
@@ -174,5 +190,6 @@ export class StructureMonitor {
         `Ruins within Game.rooms[${room.name}].find processed`
       );
     });
+    // console.log(`ruin find poll end: ${Game.cpu.getUsed()}`);
   }
 }

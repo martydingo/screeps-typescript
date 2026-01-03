@@ -3,8 +3,10 @@ import { ClaimCreep } from "Creeps/ClaimCreep";
 import { ControllerCreep } from "Creeps/ControllerCreep";
 import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
+@profileClass()
 export class ControllerDaemon {
   public constructor() {
     this.manageUpgradeCreeps();

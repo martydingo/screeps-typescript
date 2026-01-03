@@ -1,8 +1,10 @@
 import { config } from "config";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
+@profileClass()
 export class SourceDaemon {
   public constructor() {
     Object.keys(Memory.rooms).forEach(roomName => {

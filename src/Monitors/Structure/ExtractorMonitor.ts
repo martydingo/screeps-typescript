@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface ExtractorMonitorMemory {
@@ -13,6 +14,7 @@ export interface ExtractorMonitorMemory {
   };
 }
 
+@profileClass()
 export class ExtractorMonitor {
   public constructor(extractor: StructureExtractor) {
     if (!extractor.room.memory.structures!.extractor) {

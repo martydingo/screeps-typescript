@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RampartMonitorMemory {
@@ -11,6 +12,7 @@ export interface RampartMonitorMemory {
   };
 }
 
+@profileClass()
 export class RampartMonitor {
   public constructor(rampart: StructureRampart) {
     if (!rampart.room.memory.structures!.ramparts) {

@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { config } from "../../config";
 import { ConstructionSiteMonitor } from "./ConstructionSiteMonitor";
@@ -18,6 +19,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class RoomMonitor {
   private rooms: string[];
   public constructor() {

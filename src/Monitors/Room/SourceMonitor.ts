@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface SourceMemory {
@@ -14,6 +15,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class SourceMonitor {
   public constructor(roomName: string) {
     if (Game.rooms[roomName]) {

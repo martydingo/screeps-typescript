@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface TombstoneMonitorMemory {
@@ -13,6 +14,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class TombstoneMonitor {
   public constructor(roomName: string) {
     if (Game.rooms[roomName]) {

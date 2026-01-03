@@ -10,6 +10,7 @@
 //     }
 // }
 
+@profileClass()
 export class CreepMonitor {
     public constructor() {
         this.clearCreepMemory()

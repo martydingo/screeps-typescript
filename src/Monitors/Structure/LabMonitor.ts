@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface LabMonitorMemory {
@@ -11,6 +12,7 @@ export interface LabMonitorMemory {
   };
 }
 
+@profileClass()
 export class LabMonitor {
   public constructor(lab: StructureLab) {
     if (!lab.room.memory.structures!.labs) {

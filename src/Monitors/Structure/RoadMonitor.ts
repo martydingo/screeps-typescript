@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RoadMonitorMemory {
@@ -11,6 +12,7 @@ export interface RoadMonitorMemory {
   };
 }
 
+@profileClass()
 export class RoadMonitor {
   public constructor(road: StructureRoad) {
     if (!road.room.memory.structures!.roads) {

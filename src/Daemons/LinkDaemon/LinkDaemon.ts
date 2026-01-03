@@ -1,7 +1,9 @@
 import { LinkCreep } from "Creeps/LinkCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
+@profileClass()
 export class LinkDaemon {
   public constructor() {
     Object.keys(Game.rooms).forEach(roomName => {

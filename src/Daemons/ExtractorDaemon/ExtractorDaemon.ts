@@ -2,7 +2,9 @@ import { ExtractorCreep } from "Creeps/ExtractorCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
+import { profileClass } from "utils/Profiler";
 
+@profileClass()
 export class ExtractorDaemon {
   public constructor() {
     const extractors = Object.values(Game.structures)

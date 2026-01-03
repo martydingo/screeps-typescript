@@ -1,6 +1,7 @@
 import { LabConfig, config } from "config";
 import { LabCreep } from "Creeps/LabCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
+import { profileClass } from "utils/Profiler";
 
 export interface LabTask {
   resource: ResourceConstant;
@@ -19,6 +20,7 @@ export interface LabJob {
   type: "lab";
 }
 
+@profileClass()
 export class LabDaemon {
   public constructor() {
     const roomsWithLabs: string[] = [];

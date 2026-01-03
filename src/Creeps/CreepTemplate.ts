@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { config } from "config";
+import { parameterProfiler, profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 
@@ -126,47 +127,56 @@ Creep.prototype.fetchDroppedEnergy = function () {
         };
       });
 
-    // const closestResourceMatrix = resourceDistanceMatrix.sort(
-    //   (resourceA, resourceB) => resourceA.distance - resourceB.distance
-    // )[0];
-    // if (closestResourceMatrix) {
-    //   const closestResourceId = closestResourceMatrix.id as Id<Resource>;
-    //   const closestResource = Game.getObjectById(closestResourceId);
-    const largestResourceMatrix = resourceDistanceMatrix.sort(
-      (resourceA, resourceB) => resourceB.amount - resourceA.amount
+    const closestResourceMatrix = resourceDistanceMatrix
+      .filter((resource)=>resource.amount > this.store.getCapacity())
+    .sort(
+      (resourceA, resourceB) => resourceA.distance - resourceB.distance
     )[0];
-    if (largestResourceMatrix) {
-      const largestResourceId = largestResourceMatrix.id as Id<Resource>;
-      const largestResource = Game.getObjectById(largestResourceId);
-      if (largestResource) {
-        const pickupResult = this.pickup(largestResource);
+    if (closestResourceMatrix) {
+      const closestResourceId = closestResourceMatrix.id as Id<Resource>;
+      const closestResource = Game.getObjectById(closestResourceId);
+    // const largestResourceMatrix = resourceDistanceMatrix.sort(
+    //   (resourceA, resourceB) => resourceB.amount - resourceA.amount
+    // )[0];
+    // if (largestResourceMatrix) {
+    //   const largestResourceId = largestResourceMatrix.id as Id<Resource>;
+    //   const largestResource = Game.getObjectById(largestResourceId);
+    //   if (largestResource) {
+      if (closestResource) {
+        // const pickupResult = this.pickup(largestResource);
+        const pickupResult = this.pickup(closestResource);
 
         if (pickupResult === ERR_NOT_IN_RANGE) {
-          const moveResult = this.moveTo(largestResource);
+          // const moveResult = this.moveTo(largestResource);
+          const moveResult = this.moveTo(closestResource);
           if (moveResult === OK) {
             Log(
               LogSeverity.DEBUG,
               "CreepTemplate",
-              `${this.name} is not in range of energy resource ${largestResource.id} in ${largestResource.pos.roomName}, and has moved closer.`
+              // `${this.name} is not in range of energy resource ${largestResource.id} in ${largestResource.pos.roomName}, and has moved closer.`
+              `${this.name} is not in range of energy resource ${closestResource.id} in ${closestResource.pos.roomName}, and has moved closer.`
             );
           } else {
             Log(
               LogSeverity.ERROR,
               "CreepTemplate",
-              `${this.name} is not in range of energy resource ${largestResource.id} in ${largestResource.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
+              // `${this.name} is not in range of energy resource ${largestResource.id} in ${largestResource.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
+              `${this.name} is not in range of energy resource ${closestResource.id} in ${closestResource.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
             );
           }
         } else if (pickupResult === OK) {
           Log(
             LogSeverity.DEBUG,
             "CreepTemplate",
-            `${this.name} has picked up energy from resource ${largestResource.id} in ${largestResource.pos.roomName}`
+            // `${this.name} has picked up energy from resource ${largestResource.id} in ${largestResource.pos.roomName}`
+            `${this.name} has picked up energy from resource ${closestResource.id} in ${closestResource.pos.roomName}`
           );
         } else {
           Log(
             LogSeverity.ERROR,
             "CreepTemplate",
-            `${this.name} has failed to pick up energy from resource ${largestResource.id} in ${largestResource.pos.roomName} with result: ${pickupResult}`
+            // `${this.name} has failed to pick up energy from resource ${largestResource.id} in ${largestResource.pos.roomName} with result: ${pickupResult}`
+            `${this.name} has failed to pick up energy from resource ${closestResource.id} in ${closestResource.pos.roomName} with result: ${pickupResult}`
           );
         }
         return pickupResult;
@@ -518,25 +528,23 @@ Creep.prototype.moveToUnknownRoom = function (
       }
     };
   }
-
-  if (this.memory._pathfind.worldRoute.length === 0) {
-    const workingWorldRoute = Pathfinding.routeToRoom(
-      this.pos.roomName,
-      destinationRoomName
-    );
-    if (workingWorldRoute !== ERR_NO_PATH) {
-      this.memory._pathfind.worldRoute = workingWorldRoute;
-    } else {
-      return ERR_NO_PATH;
-    }
-    Log(
-      LogSeverity.DEBUG,
-      "CreepTemplate",
-      `Created world route for ${this.name} from ${this.pos.roomName} to ${destinationRoomName}, and stored in creep memory.`
-    );
-  }
-
   if (destinationRoomName !== this.pos.roomName) {
+    if (this.memory._pathfind.worldRoute.length === 0) {
+      const workingWorldRoute = Pathfinding.routeToRoom(
+        this.pos.roomName,
+        destinationRoomName
+      );
+      if (workingWorldRoute !== ERR_NO_PATH) {
+        this.memory._pathfind.worldRoute = workingWorldRoute;
+      } else {
+        return ERR_NO_PATH;
+      }
+      Log(
+        LogSeverity.DEBUG,
+        "CreepTemplate",
+        `Created world route for ${this.name} from ${this.pos.roomName} to ${destinationRoomName}, and stored in creep memory.`
+      );
+    }
     if (this.memory._pathfind.roomRoute.roomName !== this.pos.roomName) {
       this.memory._pathfind.roomRoute.roomName = this.pos.roomName;
       this.memory._pathfind.roomRoute.path = "";
@@ -565,7 +573,7 @@ Creep.prototype.moveToUnknownRoom = function (
       const exit = this.pos.findClosestByPath(curRoomExit.exit);
       if (exit) {
         const exitRoute = this.pos.findPathTo(exit, {
-          ignoreRoads: true
+          // ignoreRoads: true
         });
         const workingSerializedRoute = Room.serializePath(exitRoute);
         this.memory._pathfind.roomRoute.path = workingSerializedRoute;
@@ -579,6 +587,7 @@ Creep.prototype.moveToUnknownRoom = function (
 
     const route = this.memory._pathfind.roomRoute.path;
     const moveResult = this.moveByPath(route);
+
     if (moveResult === -5) {
       delete this.memory._pathfind;
     }
@@ -737,6 +746,7 @@ if (!Creep.prototype._moveTo) {
   Creep.prototype._moveTo = Creep.prototype.moveTo;
   Creep.prototype.moveTo = moveTo;
 }
+@profileClass()
 export class CreepTemplate {
   // private bodyParts: BodyPartConstant[]
   public constructor() {

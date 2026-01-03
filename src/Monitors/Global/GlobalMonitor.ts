@@ -1,3 +1,5 @@
+import { profileClass } from "utils/Profiler";
+
 interface GlobalMonitorMemory {
   gcl: {
     level: number;
@@ -17,6 +19,7 @@ declare global {
     }
 }
 
+@profileClass()
 export class GlobalMonitor {
     public constructor() {
         const payload: GlobalMonitorMemory = {

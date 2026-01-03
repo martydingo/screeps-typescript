@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface LinkMonitorMemory {
@@ -12,6 +13,7 @@ export interface LinkMonitorMemory {
   };
 }
 
+@profileClass()
 export class LinkMonitor {
   public constructor(link: StructureLink) {
     if (!link.room.memory.structures!.links) {

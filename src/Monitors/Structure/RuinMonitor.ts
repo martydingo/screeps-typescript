@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RuinMonitorMemory {
@@ -9,6 +10,7 @@ export interface RuinMonitorMemory {
   };
 }
 
+@profileClass()
 export class RuinMonitor {
   public constructor(ruin: Ruin) {
     if (!ruin.room!.memory.structures!.ruins) {

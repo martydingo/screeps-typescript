@@ -1,8 +1,10 @@
 import { config } from "config";
 import { TransportCreep } from "Creeps/TransportCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
+@profileClass()
 export class ResourceDaemon {
   public constructor() {
     this.manageLocalLootTransportCreepJobs();
@@ -138,7 +140,7 @@ export class ResourceDaemon {
                   job.params.memory.origin === "loot" &&
                   job.params.memory.destination === closestStorage.storage.id
               );
-              const requestedCreeps = 2;
+              const requestedCreeps = 1;
               if (
                 assignedCreeps.length < requestedCreeps &&
                 assignedJobs.length === 0
@@ -232,7 +234,7 @@ export class ResourceDaemon {
                     job.params.memory.origin === storageEntry.storage.id &&
                     job.params.memory.destination === nearbyStorageEntry.storage.id
                 );
-                const requestedCreeps = 3;
+                const requestedCreeps = 1;
                 if (
                   assignedCreeps.length < requestedCreeps &&
                   assignedJobs.length === 0

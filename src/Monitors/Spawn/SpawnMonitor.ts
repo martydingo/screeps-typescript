@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface SpawnMemory {
@@ -9,6 +10,7 @@ interface SpawnMemory {
   room: string;
 }
 
+@profileClass()
 export class SpawnMonitor {
   public constructor() {
     if (!Memory.spawns) {

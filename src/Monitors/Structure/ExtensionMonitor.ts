@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface ExtensionMonitorMemory {
@@ -10,6 +11,7 @@ export interface ExtensionMonitorMemory {
   };
 }
 
+@profileClass()
 export class ExtensionMonitor {
   public constructor(extension: StructureExtension) {
     if (!extension.room.memory.structures!.extensions) {

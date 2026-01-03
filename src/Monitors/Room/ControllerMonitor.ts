@@ -1,3 +1,4 @@
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface ControllerMemory {
@@ -25,6 +26,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class ControllerMonitor {
   public constructor(roomName: string) {
     if (Game.rooms[roomName]) {

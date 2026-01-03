@@ -1,5 +1,6 @@
 import { MaxBodyParts, Ratio, buildBodyFromRatio } from "utils/buildBodyFromRatio";
 import { SpawnCreep } from "Creeps/SpawnCreep";
+import { profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface SpawnJob {
@@ -20,6 +21,7 @@ declare global {
   }
 }
 
+@profileClass()
 export class SpawnDaemon {
   public constructor() {
     this.manageSpawnCreepJobs();
