@@ -8,7 +8,7 @@ import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnCreep } from "Creeps/SpawnCreep";
 import { TransportCreep } from "Creeps/TransportCreep";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 @profileClass()

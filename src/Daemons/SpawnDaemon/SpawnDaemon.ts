@@ -1,6 +1,6 @@
 import { MaxBodyParts, Ratio, buildBodyFromRatio } from "utils/buildBodyFromRatio";
 import { SpawnCreep } from "Creeps/SpawnCreep";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface SpawnJob {
@@ -19,6 +19,9 @@ declare global {
   interface Memory {
     spawnHeld: { [key: string]: number };
   }
+  interface SpawnMemory {
+    distances: { [key: string]: number };
+  }
 }
 
 @profileClass()
@@ -30,14 +33,15 @@ export class SpawnDaemon {
       LogSeverity.DEBUG,
       "SpawnDaemon",
       `There are ${
-        Object.entries(Memory.jobs).filter(([, job]) => job.type === "spawn" && job.status === "pending").length
+        Object.entries(Memory.jobs).filter(
+          ([, job]) => job.type === "spawn" && job.status === "pending"
+        ).length
       } pending spawn jobs`
     );
     const priorityLevels = new Set();
-    const spawnJobs: [string, SpawnJob][] = Object.entries(Memory.jobs).filter(([, job]) => job.type === "spawn") as [
-      string,
-      SpawnJob
-    ][];
+    const spawnJobs: [string, SpawnJob][] = Object.entries(Memory.jobs).filter(
+      ([, job]) => job.type === "spawn"
+    ) as [string, SpawnJob][];
 
     spawnJobs
       .map(([, spawnJob]) => spawnJob.priority)
@@ -45,7 +49,9 @@ export class SpawnDaemon {
       .forEach(priorityLevel => priorityLevels.add(priorityLevel));
 
     const roomNames: Set<string> = new Set();
-    spawnJobs.map(([, spawnJob]) => spawnJob.params.memory.room).forEach(roomName => roomNames.add(roomName as string));
+    spawnJobs
+      .map(([, spawnJob]) => spawnJob.params.memory.room)
+      .forEach(roomName => roomNames.add(roomName as string));
 
     roomNames.forEach(roomName => {
       let haltSpawn = false;
@@ -67,14 +73,20 @@ export class SpawnDaemon {
       });
 
       spawnerJobs.forEach(([spawnJobId, spawnJob]) => {
-        const spawnersInRoom = Object.values(Game.spawns).filter(spawner => spawner.room.name === roomName);
+        const spawnersInRoom = Object.values(Game.spawns).filter(
+          spawner => spawner.room.name === roomName
+        );
 
         let spawn;
 
         if (spawnersInRoom.length > 0) {
           spawn = spawnersInRoom.filter(spawner => spawner.spawning === null)[0];
           if (spawn) {
-            Log(LogSeverity.DEBUG, "SpawnDaemon", `Spawn ${spawn.name} found locally within room ${roomName}`);
+            Log(
+              LogSeverity.DEBUG,
+              "SpawnDaemon",
+              `Spawn ${spawn.name} found locally within room ${roomName}`
+            );
           }
         } else {
           spawn = this.findClosestSpawn(roomName);
@@ -124,8 +136,13 @@ export class SpawnDaemon {
             });
 
             const spawnCost = this.discernCost(bodyParts);
-            if (spawn.room.memory.energy!.amount >= spawnCost && spawnCost <= spawn.room.memory.energy!.capacity) {
-              const spawnResult = spawn.spawnCreep(bodyParts, spawnJob.name, { memory: spawnJob.params.memory });
+            if (
+              spawn.room.memory.energy!.amount >= spawnCost &&
+              spawnCost <= spawn.room.memory.energy!.capacity
+            ) {
+              const spawnResult = spawn.spawnCreep(bodyParts, spawnJob.name, {
+                memory: spawnJob.params.memory
+              });
 
               if (spawnResult === OK) {
                 delete Memory.jobs[spawnJobId];
@@ -141,13 +158,22 @@ export class SpawnDaemon {
     //   .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority);
   }
 
-  private waitUntilFullCapacity(spawn: StructureSpawn, desiredBodyParts: BodyPartConstant[]): boolean {
+  @profileMethod
+  private waitUntilFullCapacity(
+    spawn: StructureSpawn,
+    desiredBodyParts: BodyPartConstant[]
+  ): boolean {
     if (!Memory.spawnHeld) {
       Memory.spawnHeld = {};
-      Log(LogSeverity.DEBUG, "SpawnDaemon", `spawnHeld memory not found, spawnHeld memory initialised.`);
+      Log(
+        LogSeverity.DEBUG,
+        "SpawnDaemon",
+        `spawnHeld memory not found, spawnHeld memory initialised.`
+      );
     }
     const spawnCreeps = Object.values(Game.creeps).filter(
-      creep => creep.memory.room === spawn.pos.roomName && creep.memory.type === "SpawnCreep"
+      creep =>
+        creep.memory.room === spawn.pos.roomName && creep.memory.type === "SpawnCreep"
     );
 
     if (spawnCreeps.length === 0) {
@@ -183,7 +209,9 @@ export class SpawnDaemon {
             Log(
               LogSeverity.DEBUG,
               "SpawnDaemon",
-              `Spawn energy in room ${spawn.room.name} is under capacity, delaying spawn until ${Game.time + 300}`
+              `Spawn energy in room ${
+                spawn.room.name
+              } is under capacity, delaying spawn until ${Game.time + 300}`
             );
             return false;
           } else {
@@ -217,19 +245,40 @@ export class SpawnDaemon {
     }
   }
 
+  @profileMethod
   private findClosestSpawn(roomName: string) {
+    Object.values(Game.spawns).forEach(spawn => {
+      if (!spawn.memory.distances) {
+        spawn.memory.distances = {};
+      }
+
+      if (!spawn.memory.distances[roomName]) {
+        const distance = Object.values(
+          Game.map.findRoute(roomName, spawn.room.name)
+        ).length;
+        spawn.memory.distances[roomName] = distance;
+      }
+    });
     const spawnDistanceMatrix = Object.values(Game.spawns)
       .map(spawn => {
         return {
           spawn,
-          distance: Object.values(Game.map.findRoute(roomName, spawn.room.name)).length
+          distance: spawn.memory.distances[roomName]
         };
       })
-      .sort((spawnDistanceA, spawnDistanceB) => spawnDistanceA.distance - spawnDistanceB.distance);
+      .sort(
+        (spawnDistanceA, spawnDistanceB) =>
+          spawnDistanceA.distance - spawnDistanceB.distance
+      );
+
+    Object.values(spawnDistanceMatrix).forEach(spawnDistanceEntry => {
+      spawnDistanceEntry.spawn.memory.distances[roomName] = spawnDistanceEntry.distance;
+    });
 
     return spawnDistanceMatrix.reverse().pop()?.spawn;
   }
 
+  @profileMethod
   private manageSpawnCreepJobs() {
     Object.values(Game.spawns)
       .map(spawn => spawn.room.name)
@@ -237,10 +286,14 @@ export class SpawnDaemon {
         const assignedCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
         );
-        const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+        const spawnJobs = Object.values(Memory.jobs).filter(
+          job => job.type === "spawn"
+        ) as SpawnJob[];
 
         const assignedJobs = spawnJobs.filter(
-          job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
+          job =>
+            job.params.memory.room === roomName &&
+            job.params.memory.type === "SpawnCreep"
         );
 
         // const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
@@ -271,11 +324,16 @@ export class SpawnDaemon {
               }
             }
           };
-          Log(LogSeverity.INFORMATIONAL, "SpawnDaemon", `Spawn creep spawn job created in ${roomName} at ${Game.time}`);
+          Log(
+            LogSeverity.INFORMATIONAL,
+            "SpawnDaemon",
+            `Spawn creep spawn job created in ${roomName} at ${Game.time}`
+          );
         }
       });
   }
 
+  @profileMethod
   private determineSpawnCreepPriority(roomName: string): 1 | 2 {
     const energyThreshold = 1000;
     let energyInRoom = false;
@@ -300,7 +358,9 @@ export class SpawnDaemon {
             );
             if (energyResources.length > 0) {
               let energyAmountInRoom = 0;
-              energyResources.forEach(resource => (energyAmountInRoom = energyAmountInRoom + resource.amount));
+              energyResources.forEach(
+                resource => (energyAmountInRoom = energyAmountInRoom + resource.amount)
+              );
               if (energyAmountInRoom > energyThreshold) {
                 energyInRoom = true;
               }
@@ -320,6 +380,7 @@ export class SpawnDaemon {
     } else return 2;
   }
 
+  @profileMethod
   private discernCost(bodyParts: BodyPartConstant[]) {
     const costMatrix = {
       tough: 10,

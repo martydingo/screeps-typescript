@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 @profileClass()
@@ -16,6 +16,7 @@ export class TowerDaemon {
     });
   }
 
+  @profileMethod
   private cycleTowers(tower: StructureTower) {
     // console.log(
     //   `Tower cycleTowers Start - ${tower.pos.roomName} - ${
@@ -48,6 +49,7 @@ export class TowerDaemon {
     // );
   }
 
+  @profileMethod
   private healCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower healCreeps Start - ${tower.pos.roomName} - ${
@@ -73,6 +75,7 @@ export class TowerDaemon {
     // );
     return tower.heal(curTarget);
   }
+  @profileMethod
   private attackCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower attackCreeps Start - ${tower.pos.roomName} - ${
@@ -108,6 +111,7 @@ export class TowerDaemon {
     // );
     return ERR_INVALID_TARGET;
   }
+  @profileMethod
   private repairStructures(tower: StructureTower) {
     // console.log(
     //   `Tower repairTarget Start - ${tower.pos.roomName} - ${
@@ -115,19 +119,6 @@ export class TowerDaemon {
     //   }: ${Game.cpu.getUsed()}`
     // );
     let repairTarget: StructureRoad | StructureContainer | undefined;
-    if (tower.room.memory.structures?.roads) {
-      const roads = Object.keys(tower.room.memory.structures.roads)
-        .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
-        .filter(road => road !== null)
-        .sort(
-          (roadA, roadB) => roadA!.hits / roadA!.hitsMax - roadB!.hits / roadB!.hitsMax
-        );
-
-      if (roads[0]) {
-        repairTarget = roads[0];
-      }
-    }
-
     if (tower.room.memory.structures?.containers) {
       const containers = Object.keys(tower.room.memory.structures.containers)
         .map(containerId => Game.getObjectById(containerId as Id<StructureContainer>))
@@ -141,8 +132,23 @@ export class TowerDaemon {
       if (containers[0]) {
         repairTarget = containers[0];
       }
-    }
+    } else {
+      if (tower.room.memory.structures?.roads) {
+        const roads = Object.keys(tower.room.memory.structures.roads)
+          .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
+          .filter(road => road !== null) as StructureRoad[];
 
+        const decayedRoads = roads.filter(road => road.hits < road.hitsMax);
+
+        const sortedDecayedRoads = decayedRoads.sort(
+          (roadA, roadB) => roadA.hits / roadA.hitsMax - roadB.hits / roadB.hitsMax
+        );
+
+        if (sortedDecayedRoads[0]) {
+          repairTarget = roads[0];
+        }
+      }
+    }
     if (repairTarget) {
       Log(
         LogSeverity.DEBUG,

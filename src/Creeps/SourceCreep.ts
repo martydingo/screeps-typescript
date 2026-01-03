@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 import { StorageMonitor } from "Monitors/Structure/StorageMonitor";
@@ -26,7 +26,9 @@ export class SourceCreep extends CreepTemplate {
         if (sourceCreep.memory.curTask === "spawning" && sourceCreep.spawning === false) {
           sourceCreep.memory.curTask = "miningSource";
           Log(LogSeverity.DEBUG, "SourceCreep", `${sourceCreep.name} has spawned, task set to "fetchingEnergy"`);
+
         }
+         if(sourceCreep.spawning) return
 
         if (sourceCreep.memory.curTask === "miningSource") {
           let shouldMine = false;

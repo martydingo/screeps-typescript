@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileMethod, profileClass } from "utils/Profiler";
 
 interface GlobalMonitorMemory {
   gcl: {

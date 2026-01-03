@@ -15,19 +15,44 @@ declare global {
           total: number;
         };
       };
+      method: {
+        [key: string]: {
+          [key: number]: {
+            start: number;
+            end: number;
+            total: number;
+          };
+        };
+      };
+      pollTime: { [key: string]: number };
     };
+  }
+}
+
+function initialiseProfilerMemory() {
+  if (!Memory.profiler) {
+    Memory.profiler = {
+      class: {},
+      method: {},
+      pollTime: {}
+    };
+  }
+  if (!Memory.profiler.class) {
+    Memory.profiler.class = {};
+  }
+  if (!Memory.profiler.method) {
+    Memory.profiler.method = {};
+  }
+  if (!Memory.profiler.pollTime) {
+    Memory.profiler.pollTime = {};
   }
 }
 
 export function profileClass() {
   return function <T extends { new (...args: any[]): {} }>(constructor: T) {
-    if (!Memory.profiler) {
-      Memory.profiler = {
-        class: {}
-      };
-    }
     return class extends constructor {
       public constructor(...args: any[]) {
+        initialiseProfilerMemory();
         const start = Game.cpu.getUsed();
         super(...args);
         const end = Game.cpu.getUsed();
@@ -48,24 +73,43 @@ export function parameterProfiler(
 ) {
   const originalMethod = descriptor.value;
   descriptor.value = function (...args: any[]) {
-    console.log(originalMethod.name);
     return originalMethod.apply(this, args);
   };
   return descriptor;
 }
 
-export function methodProfiler(
+export function profileMethod(
   target: any,
   propertyKey: string,
   descriptor: PropertyDescriptor
 ) {
+  initialiseProfilerMemory();
   const originalMethod = descriptor.value as Function;
   descriptor.value = function (...args: any[]) {
-    // console.log(`Start ${originalMethod.name} - ${Game.cpu.getUsed()}`);
+    const start = Game.cpu.getUsed();
     const result = originalMethod.apply(this, args);
-    // console.log(`End ${originalMethod.name} - ${Game.cpu.getUsed()}`);
+    const end = Game.cpu.getUsed();
 
-    // console.log(`${propertyKey} executed in ${(end - start).toFixed(2)}ms`);
+    const payload = {
+      start,
+      end,
+      total: end - start
+    };
+    if (!Memory.profiler.pollTime[propertyKey]) {
+      Memory.profiler.pollTime[propertyKey] = Game.time;
+    } else {
+      if (Memory.profiler.pollTime[propertyKey] !== Game.time) {
+        delete Memory.profiler.method[propertyKey];
+        Memory.profiler.pollTime[propertyKey] = Game.time;
+      }
+    }
+
+    if (!Memory.profiler.method[propertyKey]) {
+      Memory.profiler.method[propertyKey] = {};
+    }
+    const index = Object.values(Memory.profiler.method[propertyKey]).length + 1;
+    Memory.profiler.method[propertyKey][index] = payload;
+
     return result;
   };
   return descriptor;

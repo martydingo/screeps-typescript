@@ -1,7 +1,7 @@
 import { config } from "config";
 import { TransportCreep } from "Creeps/TransportCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 @profileClass()
@@ -11,7 +11,8 @@ export class ResourceDaemon {
     this.manageMiningLootTransportCreepJobs();
     this.manageRemoteStorageTransportCreepJobs();
   }
-  private manageLocalLootTransportCreepJobs() {
+  @profileMethod
+private manageLocalLootTransportCreepJobs() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
       const roomResources = roomMemory.resources;
       if (roomResources) {
@@ -83,7 +84,8 @@ export class ResourceDaemon {
     });
   }
 
-  private manageMiningLootTransportCreepJobs() {
+  @profileMethod
+private manageMiningLootTransportCreepJobs() {
     config[Memory.env].roomsToMine.forEach(roomName => {
       const roomMemory = Memory.rooms[roomName];
       if (roomMemory) {
@@ -180,7 +182,8 @@ export class ResourceDaemon {
     });
   }
 
-  private manageRemoteStorageTransportCreepJobs() {
+  @profileMethod
+private manageRemoteStorageTransportCreepJobs() {
     const storages = Object.values(Game.structures).filter(
       structure => structure.structureType === STRUCTURE_STORAGE
     ) as StructureStorage[];

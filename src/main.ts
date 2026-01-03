@@ -2,7 +2,7 @@ import { Daemons } from "Daemons/Daemons";
 import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
 import { Monitors } from "Monitors/Monitors";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 
@@ -34,6 +34,7 @@ declare const global: {
 export const loop = ErrorMapper.wrapLoop(
   () => {
   Log(LogSeverity.INFORMATIONAL, "main", `Current game tick is ${Game.time}.`);
+
 
   if (Game.cpu.generatePixel) {
     Memory.env = "prod";

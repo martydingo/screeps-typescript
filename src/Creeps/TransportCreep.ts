@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -23,7 +23,10 @@ export class TransportCreep extends CreepTemplate {
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "TransportCreep")
       .forEach(transportCreep => {
-        if (transportCreep.memory.curTask === "spawning" && transportCreep.spawning === false) {
+        if (
+          transportCreep.memory.curTask === "spawning" &&
+          transportCreep.spawning === false
+        ) {
           transportCreep.memory.curTask = "fetchingResource";
           Log(
             LogSeverity.DEBUG,
@@ -33,7 +36,9 @@ export class TransportCreep extends CreepTemplate {
         }
 
         if (transportCreep.memory.curTask === "fetchingResource") {
-          if (transportCreep.store.getUsedCapacity() >= transportCreep.store.getCapacity()) {
+          if (
+            transportCreep.store.getUsedCapacity() >= transportCreep.store.getCapacity()
+          ) {
             transportCreep.memory.curTask = "depositingResource";
             Log(
               LogSeverity.DEBUG,
@@ -52,7 +57,7 @@ export class TransportCreep extends CreepTemplate {
           }
         }
 
-        if(transportCreep.spawning) return
+        if (transportCreep.spawning) return;
 
         switch (transportCreep.memory.curTask) {
           case "fetchingResource":
@@ -60,11 +65,14 @@ export class TransportCreep extends CreepTemplate {
               Log(
                 LogSeverity.DEBUG,
                 "TransportCreep",
-                `${transportCreep.name}'s origin is set to "loot", looting resources in ${transportCreep.memory.room!}`
+                `${
+                  transportCreep.name
+                }'s origin is set to "loot", looting resources in ${transportCreep
+                  .memory.room!}`
               );
               this.lootEnergyInRoom(transportCreep);
             } else {
-              this.fetchResource(transportCreep)
+              this.fetchResource(transportCreep);
             }
             break;
           case "depositingResource":
@@ -73,8 +81,9 @@ export class TransportCreep extends CreepTemplate {
       });
   }
 
+  @profileMethod
   private lootEnergyInRoom(transportCreep: Creep) {
-    const assignedRoom = transportCreep.memory.room
+    const assignedRoom = transportCreep.memory.room;
     if (assignedRoom) {
       if (transportCreep.pos.roomName === assignedRoom) {
         const lootTombstoneResult =
@@ -83,49 +92,71 @@ export class TransportCreep extends CreepTemplate {
           const lootDroppedEnergyResult = transportCreep.fetchDroppedEnergy();
         }
       } else {
-        transportCreep.moveToUnknownRoom(assignedRoom)
+        transportCreep.moveToUnknownRoom(assignedRoom);
       }
     }
   }
+  @profileMethod
   private fetchResource(transportCreep: Creep) {
-    const origin = Game.getObjectById(transportCreep.memory.origin as Id<StructureStorage>)
+    const origin = Game.getObjectById(
+      transportCreep.memory.origin as Id<StructureStorage>
+    );
     if (origin) {
-      transportCreep.fetchResourceFromStructure(origin, transportCreep.memory.resourceType!)
+      transportCreep.fetchResourceFromStructure(
+        origin,
+        transportCreep.memory.resourceType!
+      );
     }
   }
 
+  @profileMethod
   private depositResource(transportCreep: Creep) {
-    const storage = Game.getObjectById(transportCreep.memory.destination as Id<StructureStorage>);
+    const storage = Game.getObjectById(
+      transportCreep.memory.destination as Id<StructureStorage>
+    );
     if (storage) {
-        const depositResult = transportCreep.transfer(storage, transportCreep.memory.resourceType as ResourceConstant);
-        if (depositResult === ERR_NOT_IN_RANGE) {
-          const moveResult = transportCreep.moveTo(storage);
-          if (moveResult === OK) {
-            Log(
-              LogSeverity.DEBUG,
-              "SpawnCreep",
-              `${transportCreep.name} is not in range of storage ${storage.id} in ${storage.pos.roomName}, and has moved closer.`
-            );
-          } else {
-            Log(
-              LogSeverity.ERROR,
-              "SpawnCreep",
-              `${transportCreep.name} is not in range of storage ${storage.id} in ${storage.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
-            );
-          }
-        } else if (depositResult === OK) {
+      const storageDistance = transportCreep.pos.getRangeTo(storage);
+      if (storageDistance >= 2) {
+        const moveResult = transportCreep.moveTo(storage);
+        if (moveResult === OK) {
           Log(
             LogSeverity.DEBUG,
-            "SpawnCreep",
-            `${transportCreep.name} has deposited resource ${transportCreep.memory.resourceType!} into storage ${storage.id} in ${storage.pos.roomName}`
+            "CreepTemplate",
+            `${transportCreep.name} is not in range of storage ${storage.id} in ${storage.pos.roomName}, and has moved closer.`
           );
         } else {
           Log(
             LogSeverity.ERROR,
-            "SpawnCreep",
-            `${transportCreep.name} has failed to deposit resource ${transportCreep.memory.resourceType!} into storage ${storage.id} in ${storage.pos.roomName} with result: ${depositResult}`
+            "CreepTemplate",
+            `${transportCreep.name} is not in range of storage ${storage.id} in ${storage.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
           );
         }
+        if (transportCreep.pos.getRangeTo(storage) > 1) return moveResult;
+      }
+
+      const depositResult = transportCreep.transfer(
+        storage,
+        transportCreep.memory.resourceType as ResourceConstant
+      );
+      if (depositResult === OK) {
+        Log(
+          LogSeverity.DEBUG,
+          "SpawnCreep",
+          `${transportCreep.name} has deposited resource ${transportCreep.memory
+            .resourceType!} into storage ${storage.id} in ${storage.pos.roomName}`
+        );
+      } else {
+        Log(
+          LogSeverity.ERROR,
+          "SpawnCreep",
+          `${transportCreep.name} has failed to deposit resource ${transportCreep.memory
+            .resourceType!} into storage ${storage.id} in ${
+            storage.pos.roomName
+          } with result: ${depositResult}`
+        );
+      }
+      return depositResult;
     }
+    return ERR_INVALID_TARGET;
   }
 }

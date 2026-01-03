@@ -1,7 +1,7 @@
 import { LabConfig, config } from "config";
 import { LabCreep } from "Creeps/LabCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 
 export interface LabTask {
   resource: ResourceConstant;
@@ -39,7 +39,8 @@ export class LabDaemon {
     });
   }
 
-  private manageLabJobs(roomName: string) {
+  @profileMethod
+private manageLabJobs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {
@@ -79,16 +80,22 @@ export class LabDaemon {
                 normal: [],
                 booster: [
                   {
-                    resource: RESOURCE_ENERGY,
+                    resource: recipe,
                     structure: primaryLab.id,
                     priority: 1,
+                    status: "pending"
+                  },
+                  {
+                    resource: RESOURCE_ENERGY,
+                    structure: primaryLab.id,
+                    priority: 2,
                     status: "pending"
                   },
                   ...Object.values(secondaryLabs).map((lab, index) => {
                     return {
                       resource: RESOURCE_ENERGY,
                       structure: lab!.id,
-                      priority: 2 + index,
+                      priority: 3 + index,
                       status: "pending"
                     } as LabTask;
                   }),
@@ -96,16 +103,10 @@ export class LabDaemon {
                     return {
                       resource: component,
                       structure: secondaryLabs[index]!.id,
-                      priority: 4 + index,
+                      priority: 5 + index,
                       status: "pending"
                     } as LabTask;
                   }),
-                  {
-                    resource: recipe,
-                    structure: primaryLab.id,
-                    priority: 6,
-                    status: "pending"
-                  }
                 ]
               };
 
@@ -151,7 +152,8 @@ export class LabDaemon {
       });
     }
   }
-  private manageLabCreeps(roomName: string) {
+  @profileMethod
+private manageLabCreeps(roomName: string) {
     const labJobs = Object.entries(Memory.jobs).filter(
       ([, job]) => job.type === "lab"
     ) as [string, LabJob][];
@@ -175,11 +177,11 @@ export class LabDaemon {
       const storage = room.storage;
       const terminal = room.terminal;
 
+      let mineralsFound = false
       if (storage && terminal) {
-        let mineralsFound = true;
         Object.values(requiredMinerals).forEach(mineral => {
-          if (storage.store[mineral] === 0 && terminal.store[mineral] === 0) {
-            mineralsFound = false;
+          if (storage.store[mineral] > 0 || terminal.store[mineral] > 0) {
+            mineralsFound = true;
           }
         });
 
@@ -203,6 +205,8 @@ export class LabDaemon {
             return labUnderCapacity;
           }
         );
+        // console.log(labsUnderCapacity.includes(true));
+        // console.log(mineralsFound && labsUnderCapacity.includes(true));
         if (mineralsFound && labsUnderCapacity.includes(true)) {
           const labCreeps = Object.values(Game.creeps).filter(
             creep => creep.memory.type === "LabCreep"
@@ -240,7 +244,8 @@ export class LabDaemon {
       }
     }
   }
-  private operateLabs(roomName: string) {
+  @profileMethod
+private operateLabs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {

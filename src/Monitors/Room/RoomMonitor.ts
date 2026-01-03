@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { config } from "../../config";
 import { ConstructionSiteMonitor } from "./ConstructionSiteMonitor";
@@ -41,7 +41,8 @@ export class RoomMonitor {
     });
   }
 
-  private monitorRoom(roomName: string) {
+  @profileMethod
+private monitorRoom(roomName: string) {
     if (Game.rooms[roomName]) {
       Memory.rooms[roomName].energy = {
         amount: Game.rooms[roomName].energyAvailable,

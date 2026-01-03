@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -24,7 +24,9 @@ export class LinkCreep extends CreepTemplate {
         if (linkCreep.memory.curTask === "spawning" && linkCreep.spawning === false) {
           linkCreep.memory.curTask = "fetchingEnergy";
           Log(LogSeverity.DEBUG, "LinkCreep", `${linkCreep.name} has spawned, task set to "fetchingEnergy"`);
+
         }
+         if(linkCreep.spawning) return
 
         if (linkCreep.memory.curTask === "fetchingEnergy") {
           if (linkCreep.store.getUsedCapacity() >= linkCreep.store.getCapacity()) {
@@ -48,7 +50,8 @@ export class LinkCreep extends CreepTemplate {
       });
   }
 
-  private fetchEnergy(linkCreep: Creep) {
+  @profileMethod
+private fetchEnergy(linkCreep: Creep) {
     const linkAnchor = Game.flags[`link-anchor-${linkCreep.memory.assignedLink as string}`];
     if (linkAnchor) {
       if (linkCreep.pos.getRangeTo(linkAnchor) > 0) {
@@ -72,7 +75,8 @@ export class LinkCreep extends CreepTemplate {
     }
   }
 
-  private depositEnergy(linkCreep: Creep) {
+  @profileMethod
+private depositEnergy(linkCreep: Creep) {
     const linkIds: Id<StructureLink>[] = []
     const room = Game.rooms[linkCreep.memory.room!]
     if (room) {

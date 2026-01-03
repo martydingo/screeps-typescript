@@ -1,6 +1,6 @@
 import { LinkCreep } from "Creeps/LinkCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 @profileClass()
@@ -14,7 +14,8 @@ export class LinkDaemon {
     });
   }
 
-  private discernLinkTypes(roomName: string) {
+  @profileMethod
+private discernLinkTypes(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", `Links detected in ${roomName}`);
@@ -90,7 +91,8 @@ export class LinkDaemon {
     }
   }
 
-  private discernLinkDistances(roomName: string) {
+  @profileMethod
+private discernLinkDistances(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         const roomLinkIds = Object.keys(Memory.rooms[roomName].structures!.links!);
@@ -131,7 +133,8 @@ export class LinkDaemon {
     }
   }
 
-  private manageStorageLinkCreeps(roomName: string) {
+  @profileMethod
+private manageStorageLinkCreeps(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         const storageLinkIds = Object.entries(Memory.rooms[roomName].structures!.links!)
@@ -214,7 +217,8 @@ export class LinkDaemon {
     }
   }
 
-  private operateLinks(roomName: string) {
+  @profileMethod
+private operateLinks(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", ``);

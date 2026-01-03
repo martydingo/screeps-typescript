@@ -16,7 +16,8 @@ export class CreepMonitor {
         this.clearCreepMemory()
     }
 
-    private clearCreepMemory() {
+    @profileMethod
+private clearCreepMemory() {
         Object.keys(Memory.creeps).forEach((creepId) => Game.creeps[creepId] === undefined && delete Memory.creeps[creepId])
     }
 

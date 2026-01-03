@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
@@ -56,7 +56,7 @@ export class StructureMonitor {
         );
       }
     });
-    console.log(`Game.structures poll start: ${Game.cpu.getUsed()}`);
+    // console.log(`Game.structures poll start: ${Game.cpu.getUsed()}`);
     Object.values(Game.structures).forEach(structure => {
       if (structure.room.controller?.my) {
         if (!structure.room.memory.structures) {
@@ -113,7 +113,8 @@ export class StructureMonitor {
     );
 
     // console.log(`room.find poll start: ${Game.cpu.getUsed()}`);
-    const interval = config[Memory.env].lowCpuMode === true && 4 || 1
+    // const interval = config[Memory.env].lowCpuMode === true && 4 || 1
+    const interval = 10
     if (Game.time % interval === 0) {
       Object.values(Game.rooms).forEach(room => {
         if (room) {
@@ -173,7 +174,7 @@ export class StructureMonitor {
       Log(
         LogSeverity.INFORMATIONAL,
         "StructureMonitor",
-        `Room.find postponed due to lowCpuMode`
+        `find-type room monitoring postponed until ${Game.time + (interval - (Game.time % interval))} (${interval - (Game.time % interval)} ticks)`
       );
     }
     // console.log(`room.find poll end: ${Game.cpu.getUsed()}`);

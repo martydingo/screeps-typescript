@@ -1,10 +1,13 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
 interface SpawnCreepMemory extends CreepMemoryTemplate {
   assignedRoom: string;
-  assignedInfrastructure?: Id<StructureSpawn> | Id<StructureExtension> | Id<StructureTower>;
+  assignedInfrastructure?:
+    | Id<StructureSpawn>
+    | Id<StructureExtension>
+    | Id<StructureTower>;
 }
 
 declare global {
@@ -24,17 +27,33 @@ export class SpawnCreep extends CreepTemplate {
       .forEach(spawnCreep => {
         if (spawnCreep.memory.curTask === "spawning" && spawnCreep.spawning === false) {
           spawnCreep.memory.curTask = "fetchingEnergy";
-          Log(LogSeverity.DEBUG, "SpawnCreep", `${spawnCreep.name} has spawned, task set to "fetchingEnergy"`);
+          Log(
+            LogSeverity.DEBUG,
+            "SpawnCreep",
+            `${spawnCreep.name} has spawned, task set to "fetchingEnergy"`
+          );
         }
+        if (spawnCreep.spawning) return;
         if (spawnCreep.memory.curTask === "fetchingEnergy") {
-          if (spawnCreep.store[RESOURCE_ENERGY] >= spawnCreep.store.getCapacity(RESOURCE_ENERGY)) {
+          if (
+            spawnCreep.store[RESOURCE_ENERGY] >=
+            spawnCreep.store.getCapacity(RESOURCE_ENERGY)
+          ) {
             spawnCreep.memory.curTask = "feedingSpawns";
-            Log(LogSeverity.DEBUG, "SpawnCreep", `${spawnCreep.name}'s store is full, task set to "feedingSpawns"`);
+            Log(
+              LogSeverity.DEBUG,
+              "SpawnCreep",
+              `${spawnCreep.name}'s store is full, task set to "feedingSpawns"`
+            );
           }
         } else {
           if (spawnCreep.store[RESOURCE_ENERGY] === 0) {
             spawnCreep.memory.curTask = "fetchingEnergy";
-            Log(LogSeverity.DEBUG, "SpawnCreep", `${spawnCreep.name}'s store is empty, task set to "fetchingEnergy"`);
+            Log(
+              LogSeverity.DEBUG,
+              "SpawnCreep",
+              `${spawnCreep.name}'s store is empty, task set to "fetchingEnergy"`
+            );
           }
         }
 
@@ -48,11 +67,13 @@ export class SpawnCreep extends CreepTemplate {
       });
   }
 
+  @profileMethod
   private feedSpawns(spawnCreep: Creep) {
     this.discernInfrastructureToFeed(spawnCreep);
-    this.feedInfrastructure(spawnCreep)
+    this.feedInfrastructure(spawnCreep);
   }
 
+  @profileMethod
   private discernInfrastructureToFeed(spawnCreep: Creep) {
     if (!spawnCreep.memory.assignedInfrastructure) {
       const spawnsToFeed = Object.values(Game.spawns).filter(
@@ -66,20 +87,47 @@ export class SpawnCreep extends CreepTemplate {
       if (structureData) {
         if (structureData.extensions) {
           extensionsToFeed = Object.keys(structureData.extensions)
-            .map(extensionId => Game.getObjectById(extensionId as Id<StructureExtension>) as StructureExtension)
+            .map(
+              extensionId =>
+                Game.getObjectById(
+                  extensionId as Id<StructureExtension>
+                ) as StructureExtension
+            )
             .sort((extensionA, extensionB) => {
-              if (spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB) === 0) {
-                return spawnCreep.pos.getRangeTo(extensionA) - 1 - spawnCreep.pos.getRangeTo(extensionB);
+              if (
+                spawnCreep.pos.getRangeTo(extensionA) -
+                  spawnCreep.pos.getRangeTo(extensionB) ===
+                0
+              ) {
+                return (
+                  spawnCreep.pos.getRangeTo(extensionA) -
+                  1 -
+                  spawnCreep.pos.getRangeTo(extensionB)
+                );
               } else {
-                return spawnCreep.pos.getRangeTo(extensionA) - spawnCreep.pos.getRangeTo(extensionB);
+                return (
+                  spawnCreep.pos.getRangeTo(extensionA) -
+                  spawnCreep.pos.getRangeTo(extensionB)
+                );
               }
             })
-            .filter(extension => extension.store[RESOURCE_ENERGY] < extension.store.getCapacity(RESOURCE_ENERGY));
+            .filter(
+              extension =>
+                extension.store[RESOURCE_ENERGY] <
+                extension.store.getCapacity(RESOURCE_ENERGY)
+            );
         }
         if (structureData.towers) {
           towersToFeed = Object.keys(structureData.towers)
-            .map(towerId => Game.getObjectById(towerId as Id<StructureTower>) as StructureTower)
-            .filter(tower => tower.store[RESOURCE_ENERGY] < tower.store.getCapacity(RESOURCE_ENERGY) / 2);
+            .map(
+              towerId =>
+                Game.getObjectById(towerId as Id<StructureTower>) as StructureTower
+            )
+            .filter(
+              tower =>
+                tower.store[RESOURCE_ENERGY] <
+                tower.store.getCapacity(RESOURCE_ENERGY) / 2
+            );
         }
       }
 
@@ -92,33 +140,38 @@ export class SpawnCreep extends CreepTemplate {
       }
     }
   }
+  @profileMethod
   private feedInfrastructure(spawnCreep: Creep) {
     const infrastructureId = spawnCreep.memory.assignedInfrastructure;
     if (infrastructureId) {
       const infrastructure = Game.getObjectById(
-        spawnCreep.memory.assignedInfrastructure as Id<StructureSpawn> | Id<StructureExtension> | Id<StructureTower>
+        spawnCreep.memory.assignedInfrastructure as
+          | Id<StructureSpawn>
+          | Id<StructureExtension>
+          | Id<StructureTower>
       );
       if (infrastructure) {
-        const transferResult = spawnCreep.transfer(infrastructure, RESOURCE_ENERGY);
-        if (transferResult === ERR_NOT_IN_RANGE) {
+        const infrastructureDistance = spawnCreep.pos.getRangeTo(infrastructure);
+        if (infrastructureDistance >= 2) {
           const moveResult = spawnCreep.moveTo(infrastructure);
           if (moveResult === OK) {
             Log(
               LogSeverity.DEBUG,
-              "SpawnCreep",
-              `${spawnCreep.name} is not in range of ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName}, and has moved closer.`
+              "CreepTemplate",
+              `${spawnCreep.name} is not in range of infrastructure ${infrastructure.id} in ${infrastructure.pos.roomName}, and has moved closer.`
             );
-            return moveResult;
           } else {
             Log(
               LogSeverity.ERROR,
-              "SpawnCreep",
-              `${spawnCreep.name} is not in range of ${infrastructure.structureType} ${infrastructure.id} in ${infrastructure.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
+              "CreepTemplate",
+              `${spawnCreep.name} is not in range of infrastructure ${infrastructure.id} in ${infrastructure.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
             );
-            return moveResult;
           }
-        } else if (transferResult === OK) {
-          delete spawnCreep.memory.assignedInfrastructure
+          if (spawnCreep.pos.getRangeTo(infrastructure) > 1) return moveResult;
+        }
+        const transferResult = spawnCreep.transfer(infrastructure, RESOURCE_ENERGY);
+        if (transferResult === OK) {
+          delete spawnCreep.memory.assignedInfrastructure;
           Log(
             LogSeverity.DEBUG,
             "SpawnCreep",
@@ -138,7 +191,7 @@ export class SpawnCreep extends CreepTemplate {
         return OK;
       }
     } else {
-      return ERR_NOT_FOUND
+      return ERR_NOT_FOUND;
     }
   }
 }

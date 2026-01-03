@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -23,16 +23,25 @@ export class ExtractorCreep extends CreepTemplate {
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "ExtractorCreep")
       .forEach(extractorCreep => {
-        if (extractorCreep.memory.curTask === "spawning" && extractorCreep.spawning === false) {
+        if (
+          extractorCreep.memory.curTask === "spawning" &&
+          extractorCreep.spawning === false
+        ) {
           extractorCreep.memory.curTask = "miningExtractor";
-          Log(LogSeverity.DEBUG, "ExtractorCreep", `${extractorCreep.name} has spawned, task set to "miningExtractor"`);
+          Log(
+            LogSeverity.DEBUG,
+            "ExtractorCreep",
+            `${extractorCreep.name} has spawned, task set to "miningExtractor"`
+          );
         }
+        if (extractorCreep.spawning) return;
 
         if (extractorCreep.memory.curTask === "miningExtractor") {
           let shouldMine = false;
           const assignedExtractor = extractorCreep.memory.assignedExtractor;
           if (Game.flags[`extractor-anchor-${assignedExtractor as string}`]) {
-            const anchorPoint = Game.flags[`extractor-anchor-${assignedExtractor as string}`];
+            const anchorPoint =
+              Game.flags[`extractor-anchor-${assignedExtractor as string}`];
             if (extractorCreep.pos.getRangeTo(anchorPoint.pos) > 0) {
               const moveResult = extractorCreep.moveTo(anchorPoint.pos);
               if (moveResult === OK) {
@@ -61,6 +70,7 @@ export class ExtractorCreep extends CreepTemplate {
       });
   }
 
+  @profileMethod
   private mineExtractor(extractorCreep: Creep) {
     const room = Game.rooms[extractorCreep.memory.room!];
     if (room) {
@@ -69,31 +79,39 @@ export class ExtractorCreep extends CreepTemplate {
         const extractorMonitorMemory = structureMonitorMemory.extractor;
         if (extractorMonitorMemory) {
           const extractorId = extractorCreep.memory.assignedExtractor!;
-          const extractor = Game.getObjectById(extractorId)
+          const extractor = Game.getObjectById(extractorId);
           const mineralId = extractorMonitorMemory[extractorId].mineral.id;
           const mineral = Game.getObjectById(mineralId);
           if (mineral && extractor) {
             if (extractor.cooldown === 0) {
-              const harvestResult = extractorCreep.harvest(mineral);
-              if (harvestResult === ERR_NOT_IN_RANGE) {
-                const moveResult = extractorCreep.moveTo(mineral);
+              const extractorDistance = extractorCreep.pos.getRangeTo(extractor);
+              if (extractorDistance >= 2) {
+                const moveResult = extractorCreep.moveTo(extractor);
                 if (moveResult === OK) {
                   Log(
                     LogSeverity.DEBUG,
-                    "SpawnCreep",
-                    `${extractorCreep.name} is not in range of mineral ${mineral.id} in ${mineral.pos.roomName}, and has moved closer.`
+                    "CreepTemplate",
+                    `${extractorCreep.name} is not in range of extractor ${extractor.id} in ${extractor.pos.roomName}, and has moved closer.`
                   );
                 } else {
                   Log(
                     LogSeverity.ERROR,
-                    "SpawnCreep",
-                    `${extractorCreep.name} is not in range of mineral ${mineral.id} in ${mineral.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
+                    "CreepTemplate",
+                    `${extractorCreep.name} is not in range of extractor ${extractor.id} in ${extractor.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
                   );
                 }
-              } else if (harvestResult === OK) {
-                const container = Game.getObjectById(extractorCreep.memory.assignedContainer as Id<StructureContainer>);
+                if (extractorCreep.pos.getRangeTo(extractor) > 1) return;
+              }
+              const harvestResult = extractorCreep.harvest(mineral);
+              if (harvestResult === OK) {
+                const container = Game.getObjectById(
+                  extractorCreep.memory.assignedContainer as Id<StructureContainer>
+                );
                 if (container) {
-                  const depositResult = extractorCreep.depositResourceIntoStructure(container, mineral.mineralType);
+                  const depositResult = extractorCreep.depositResourceIntoStructure(
+                    container,
+                    mineral.mineralType
+                  );
                   if (depositResult === OK) {
                     Log(
                       LogSeverity.DEBUG,

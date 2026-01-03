@@ -3,7 +3,7 @@ import { ClaimCreep } from "Creeps/ClaimCreep";
 import { ControllerCreep } from "Creeps/ControllerCreep";
 import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 @profileClass()
@@ -14,7 +14,8 @@ export class ControllerDaemon {
     this.manageClaimCreeps();
   }
 
-  private manageUpgradeCreeps() {
+  @profileMethod
+private manageUpgradeCreeps() {
     Object.keys(Memory.rooms).forEach(roomName => {
       if (Memory.rooms[roomName].controller) {
         Object.keys(Memory.rooms[roomName].controller!).forEach(
@@ -79,7 +80,8 @@ export class ControllerDaemon {
       }
     });
   }
-  private manageClaimCreeps() {
+  @profileMethod
+private manageClaimCreeps() {
     const roomsToClaim = config[Memory.env].roomsToClaim;
     roomsToClaim.forEach(roomName => {
       let claimRoom = false;
@@ -142,7 +144,8 @@ export class ControllerDaemon {
       }
     });
   }
-  private manageReserveCreeps() {
+  @profileMethod
+private manageReserveCreeps() {
     const roomsToMine = config[Memory.env].roomsToMine;
     roomsToMine.forEach(roomName => {
       let reserveRoom = false;

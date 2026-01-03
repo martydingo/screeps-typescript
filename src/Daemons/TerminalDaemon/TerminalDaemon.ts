@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 
 @profileClass()
 export class TerminalDaemon {
@@ -6,7 +6,8 @@ export class TerminalDaemon {
     this.manageXGH2O();
   }
 
-  private manageXGH2O() {
+  @profileMethod
+private manageXGH2O() {
     const orders = Game.market
       .getAllOrders(
         order =>

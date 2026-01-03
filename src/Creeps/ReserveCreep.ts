@@ -1,4 +1,4 @@
-import { profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -20,10 +20,18 @@ export class ReserveCreep extends CreepTemplate {
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "ReserveCreep")
       .forEach(reserveCreep => {
-        if (reserveCreep.memory.curTask === "spawning" && reserveCreep.spawning === false) {
+        if (
+          reserveCreep.memory.curTask === "spawning" &&
+          reserveCreep.spawning === false
+        ) {
           reserveCreep.memory.curTask = "movingToRoom";
-          Log(LogSeverity.DEBUG, "`ReserveCreep", `${reserveCreep.name} has spawned, task set to "movingToRoom".`);
+          Log(
+            LogSeverity.DEBUG,
+            "`ReserveCreep",
+            `${reserveCreep.name} has spawned, task set to "movingToRoom".`
+          );
         }
+        if (reserveCreep.spawning) return;
 
         switch (reserveCreep.memory.curTask) {
           case "movingToRoom":
@@ -35,15 +43,23 @@ export class ReserveCreep extends CreepTemplate {
         }
       });
   }
+  @profileMethod
   private moveToRoom(reserveCreep: Creep) {
-    const moveResult = reserveCreep.moveTo(new RoomPosition(25, 25, reserveCreep.memory.room!));
+    const moveResult = reserveCreep.moveTo(
+      new RoomPosition(25, 25, reserveCreep.memory.room!)
+    );
     if (moveResult === OK) {
-      Log(LogSeverity.DEBUG, "ReserveCreep", `${reserveCreep.name} has moved towards ${reserveCreep.memory.room!}`);
+      Log(
+        LogSeverity.DEBUG,
+        "ReserveCreep",
+        `${reserveCreep.name} has moved towards ${reserveCreep.memory.room!}`
+      );
     } else {
       Log(
         LogSeverity.ERROR,
         "ReserveCreep",
-        `${reserveCreep.name} has failed to move while moving towards ${reserveCreep.memory.room!}: ${moveResult}.`
+        `${reserveCreep.name} has failed to move while moving towards ${reserveCreep
+          .memory.room!}: ${moveResult}.`
       );
     }
     if (reserveCreep.room.name === reserveCreep.memory.room) {
@@ -56,48 +72,50 @@ export class ReserveCreep extends CreepTemplate {
     }
   }
 
+  @profileMethod
   private reserveController(reserveCreep: Creep) {
     const room = Game.rooms[reserveCreep.memory.room!];
     if (room) {
       const controller = room.controller;
       if (controller) {
         if (!controller.my) {
-          const reserveResult = reserveCreep.reserveController(controller);
-          if (reserveResult === ERR_NOT_IN_RANGE) {
+          const controllerDistance = reserveCreep.pos.getRangeTo(controller);
+          if (controllerDistance >= 2) {
             const moveResult = reserveCreep.moveTo(controller);
             if (moveResult === OK) {
               Log(
                 LogSeverity.DEBUG,
-                "ReserveCreep",
-                `${reserveCreep.name} is not in range of controller ${controller.id} in ${reserveCreep.memory
-                  .room!}, and is moving towards the controller.`
-              );
-            } else {
-              Log(
-                LogSeverity.DEBUG,
-                "ReserveCreep",
-                `${reserveCreep.name} is not in range of controller ${controller.id} in ${reserveCreep.memory
-                  .room!}, and has failed attempting to move towards the controller with the result: ${moveResult}.`
-              );
-            }
-            return moveResult;
-          } else {
-            if (reserveResult === OK) {
-              if(controller.reservation!.ticksToEnd <= 1)
-              Log(
-                LogSeverity.NOTICE,
-                "ReserveCreep",
-                `${reserveCreep.name} has successfully reserved ${reserveCreep.memory.room!}!`
+                "CreepTemplate",
+                `${reserveCreep.name} is not in range of controller ${controller.id} in ${controller.pos.roomName}, and has moved closer.`
               );
             } else {
               Log(
                 LogSeverity.ERROR,
-                "ReserveCreep",
-                `${reserveCreep.name} has failed to reserve ${reserveCreep.memory
-                  .room!} with the error code ${reserveResult}.`
+                "CreepTemplate",
+                `${reserveCreep.name} is not in range of controller ${controller.id} in ${controller.pos.roomName}, and has failed to moved closer with a result of ${moveResult}.`
               );
             }
+            if (reserveCreep.pos.getRangeTo(controller) > 1) return moveResult;
           }
+          const reserveResult = reserveCreep.reserveController(controller);
+
+          if (reserveResult === OK) {
+            if (controller.reservation!.ticksToEnd <= 1)
+              Log(
+                LogSeverity.NOTICE,
+                "ReserveCreep",
+                `${reserveCreep.name} has successfully reserved ${reserveCreep.memory
+                  .room!}!`
+              );
+          } else {
+            Log(
+              LogSeverity.ERROR,
+              "ReserveCreep",
+              `${reserveCreep.name} has failed to reserve ${reserveCreep.memory
+                .room!} with the error code ${reserveResult}.`
+            );
+          }
+
           return reserveResult;
         }
         return ERR_INVALID_TARGET;
@@ -110,7 +128,8 @@ export class ReserveCreep extends CreepTemplate {
         LogSeverity.WARNING,
         "ReserveCreep",
         `${reserveCreep.name} has attempted to reserve ${reserveCreep.memory
-          .room!}, but needs to move intp ${reserveCreep.memory.room!}. Setting task to "movingToRoom".`
+          .room!}, but needs to move intp ${reserveCreep.memory
+          .room!}. Setting task to "movingToRoom".`
       );
       return ERR_NOT_IN_RANGE;
     }
