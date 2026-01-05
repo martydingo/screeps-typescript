@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RoadMonitorMemory {
@@ -12,7 +12,7 @@ export interface RoadMonitorMemory {
   };
 }
 
-// )@profileClass()
+@profileClass()
 export class RoadMonitor {
   public static run(road: StructureRoad) {
     if (!road.room.memory.structures!.roads) {

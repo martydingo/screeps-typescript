@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface ExtensionMonitorMemory {
@@ -11,7 +11,7 @@ export interface ExtensionMonitorMemory {
   };
 }
 
-// )@profileClass()
+@profileClass()
 export class ExtensionMonitor {
   public static run(extension: StructureExtension) {
     if (!extension.room.memory.structures!.extensions) {

@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { config } from "../../config";
 import { ConstructionSiteMonitor } from "./ConstructionSiteMonitor";
@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-// )@profileClass()
+@profileClass()
 export class RoomMonitor {
   public static run() {
     let rooms: string[] = [];
@@ -49,7 +49,7 @@ export class RoomMonitor {
     });
   }
 
-  // )@profileMethod
+  @profileMethod
   private static monitorRoom(roomName: string) {
     if (Game.rooms[roomName]) {
       Memory.rooms[roomName].energy = {

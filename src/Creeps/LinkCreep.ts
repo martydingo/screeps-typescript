@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -11,7 +11,7 @@ declare global {
   interface CreepMemory extends Partial<LinkCreepMemory> {}
 }
 
-// )@profileClass()
+@profileClass()
 export class LinkCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
@@ -50,7 +50,7 @@ export class LinkCreep extends CreepTemplate {
       });
   }
 
-  // )@profileMethod
+  @profileMethod
 private static fetchEnergy(linkCreep: Creep) {
     const linkAnchor = Game.flags[`link-anchor-${linkCreep.memory.assignedLink as string}`];
     if (linkAnchor) {
@@ -75,7 +75,7 @@ private static fetchEnergy(linkCreep: Creep) {
     }
   }
 
-  // )@profileMethod
+  @profileMethod
 private static depositEnergy(linkCreep: Creep) {
     const linkIds: Id<StructureLink>[] = []
     const room = Game.rooms[linkCreep.memory.room!]

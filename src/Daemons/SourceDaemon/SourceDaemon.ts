@@ -1,47 +1,62 @@
 import { config } from "config";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class SourceDaemon {
   public static run() {
     Object.keys(Memory.rooms).forEach(roomName => {
       let shouldMine = false;
-      if (Game.rooms[roomName]) {
-        if (Game.rooms[roomName].controller) {
-          const roomControlled = Game.rooms[roomName].controller!.my;
+      const room = Game.rooms[roomName];
+      if (room) {
+        const controller = room.controller;
+        if (controller) {
+          const roomControlled = controller.my;
           if (roomControlled === true) {
+            shouldMine = true;
+          } else {
+            if (config[Memory.env].roomsToMine.includes(roomName)) {
+              const reservation = controller.reservation;
+              if (reservation) {
+                if (reservation.ticksToEnd > 0) {
+                  shouldMine = true;
+                }
+              } else {
+                shouldMine = true;
+              }
+            }
+          }
+        } else {
+          if (config[Memory.env].roomsToMine.includes(roomName)) {
             shouldMine = true;
           }
         }
-      }
-
-      if (config[Memory.env].roomsToMine.includes(roomName)) {
-        const room = Game.rooms[roomName]
-        if (room) {
-          const controller = room.controller
-          if (controller) {
-            const reservation = controller.reservation
-            if (reservation) {
-              if (reservation.ticksToEnd > 0) {
-                shouldMine = true
-              }
-            }
-          } else {
-            shouldMine = true
+        const hostiles = room.memory.hostiles;
+        if (hostiles) {
+          if (Object.keys(hostiles).length > 0) {
+            shouldMine = false;
           }
         }
-        shouldMine = true;
+      } else {
+        if (config[Memory.env].roomsToMine.includes(roomName)) {
+          shouldMine = true;
+        }
       }
 
       if (shouldMine === true) {
         Log(LogSeverity.DEBUG, "SourceDaemon", `Mining sources in ${roomName}`);
         Object.keys(Memory.rooms[roomName].sources!).forEach(sourceId => {
-          const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
-          const assignedCreeps = Object.values(Game.creeps).filter(creep => creep.memory.assignedSource === sourceId);
-          const assignedJobs = spawnJobs.filter(job => job.params.memory.assignedSource === sourceId);
+          const spawnJobs = Object.values(Memory.jobs).filter(
+            job => job.type === "spawn"
+          ) as SpawnJob[];
+          const assignedCreeps = Object.values(Game.creeps).filter(
+            creep => creep.memory.assignedSource === sourceId
+          );
+          const assignedJobs = spawnJobs.filter(
+            job => job.params.memory.assignedSource === sourceId
+          );
           const requestedCreeps = 1;
           if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
             Log(
@@ -76,8 +91,8 @@ export class SourceDaemon {
       }
     });
   }
-  // )@profileMethod
-private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
+  @profileMethod
+  private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
     const energyThreshold = 1000;
     let energyInRoom = false;
 
@@ -101,7 +116,9 @@ private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
             );
             if (energyResources.length > 0) {
               let energyAmountInRoom = 0;
-              energyResources.forEach(resource => (energyAmountInRoom = energyAmountInRoom + resource.amount));
+              energyResources.forEach(
+                resource => (energyAmountInRoom = energyAmountInRoom + resource.amount)
+              );
               if (energyAmountInRoom > energyThreshold) {
                 energyInRoom = true;
               }

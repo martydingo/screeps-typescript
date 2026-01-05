@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface RuinMonitorMemory {
@@ -10,7 +10,7 @@ export interface RuinMonitorMemory {
   };
 }
 
-// )@profileClass()
+@profileClass()
 export class RuinMonitor {
   public static run(ruin: Ruin) {
     if (!ruin.room!.memory.structures!.ruins) {

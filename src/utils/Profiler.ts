@@ -7,33 +7,42 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 // eslint-disable-next-line max-classes-per-file
+
+// eslint-disable-next-line max-classes-per-file
+interface ProfilerMemory {
+  class: ClassProfilerMemory;
+  method: MethodProfilerMemory;
+}
+
+interface ClassProfilerMemory {
+  [key: string]: ClassProfilerEntry;
+}
+
+interface ClassProfilerEntry {
+  start: number;
+  end: number;
+  total: number;
+}
+
+interface MethodProfilerMemory {
+  [key: string]: MethodProfilerEntry;
+}
+
+interface MethodProfilerEntry {
+  time: number;
+  calls: number;
+  total: number;
+  max: number;
+}
+
 declare global {
   interface Memory {
-    profiler: {
-      class: {
-        [key: string]: {
-          start: number;
-          end: number;
-          total: number;
-        };
-      };
-      method: {
-        [key: string]: {
-          [key: number]: {
-            start: number;
-            end: number;
-            total: number;
-          };
-        };
-      };
-      pollTime: { [key: string]: number };
-    };
+    profiler: ProfilerMemory;
   }
 }
 
-
 class Profiler {
-  public static run() {
+  public constructor() {
     this.initialiseProfilerMemory();
   }
 
@@ -41,8 +50,7 @@ class Profiler {
     if (!Memory.profiler) {
       Memory.profiler = {
         class: {},
-        method: {},
-        pollTime: {}
+        method: {}
       };
     }
     if (!Memory.profiler.class) {
@@ -51,19 +59,16 @@ class Profiler {
     if (!Memory.profiler.method) {
       Memory.profiler.method = {};
     }
-    if (!Memory.profiler.pollTime) {
-      Memory.profiler.pollTime = {};
-    }
   }
 
   public profileClass() {
-    return function <T extends { new (...args: any[]): {} }>(static run: T) {
-      return class extends static run {
-        public static run(...args: any[]) {
+    return function <T extends { new (...args: any[]): {} }>(constructor: T) {
+      return class extends constructor {
+        public constructor(...args: any[]) {
           const start = Game.cpu.getUsed();
           super(...args);
           const end = Game.cpu.getUsed();
-          Memory.profiler.class[static run.name] = {
+          Memory.profiler.class[constructor.name] = {
             start,
             end,
             total: end - start
@@ -83,26 +88,24 @@ class Profiler {
       const start = Game.cpu.getUsed();
       const result = originalMethod.apply(this, args);
       const end = Game.cpu.getUsed();
+      const usedCpu = end - start;
 
-      const payload = {
-        start,
-        end,
-        total: end - start
-      };
-      if (!Memory.profiler.pollTime[propertyKey]) {
-        Memory.profiler.pollTime[propertyKey] = Game.time;
+      const curPayload = Memory.profiler.method[propertyKey];
+      if (curPayload && curPayload.time === Game.time) {
+                curPayload.calls += 1;
+                curPayload.total += usedCpu;
+                if (usedCpu > curPayload.max) curPayload.max = usedCpu;
+
       } else {
-        if (Memory.profiler.pollTime[propertyKey] !== Game.time) {
-          delete Memory.profiler.method[propertyKey];
-          Memory.profiler.pollTime[propertyKey] = Game.time;
-        }
+        Memory.profiler.method[propertyKey] = {
+          time: Game.time,
+          total: usedCpu,
+          max: usedCpu,
+          calls: 1
+        };
       }
 
-      if (!Memory.profiler.method[propertyKey]) {
-        Memory.profiler.method[propertyKey] = {};
-      }
-      const index = Object.values(Memory.profiler.method[propertyKey]).length + 1;
-      Memory.profiler.method[propertyKey][index] = payload;
+      //  = payload as MethodProfilerEntry;
 
       return result;
     };
@@ -110,6 +113,6 @@ class Profiler {
   }
 }
 
-const ProfilerObj = Profiler.run()
+const ProfilerObj = new Profiler();
 export const profileMethod = ProfilerObj.profileMethod;
 export const profileClass = ProfilerObj.profileClass;

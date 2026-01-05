@@ -1,9 +1,9 @@
+import { Log, LogSeverity } from "utils/log";
 import { BuildCreep } from "Creeps/BuildCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
-import { Log, LogSeverity } from "utils/log";
+import { profileClass, profileMethod } from "utils/Profiler";
 
-// )@profileClass()
+@profileClass()
 export class ConstructionDaemon {
   public static run() {
     {
@@ -26,7 +26,7 @@ export class ConstructionDaemon {
 
           //   console.log(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5 )
           //   console.log(Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3));
-          const requestedCreeps = Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 1)
+          const requestedCreeps = Math.min(Math.ceil(Object.keys(Memory.rooms[roomName].constructionSites!).length / 5), 3)
           if (buildCreeps.length < requestedCreeps && builderSpawnJobs.length === 0) {
             Log(
               LogSeverity.DEBUG,

@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -9,7 +9,7 @@ declare global {
   interface CreepMemory extends Partial<ClaimCreepMemory> {}
 }
 
-// @profileClass()
+@profileClass()
 export class ClaimCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 0, move: 5, claim: 1 };
   public static maxBodyParts = { move: 5, claim: 1 };
@@ -40,7 +40,7 @@ export class ClaimCreep extends CreepTemplate {
         }
       });
   }
-  // @profileMethod
+ @profileMethod
   private static moveToRoom(claimCreep: Creep) {
     const moveResult = claimCreep.moveTo(
       new RoomPosition(25, 25, claimCreep.memory.room!)
@@ -69,7 +69,7 @@ export class ClaimCreep extends CreepTemplate {
     }
   }
 
-  // @profileMethod
+ @profileMethod
   private static claimController(claimCreep: Creep) {
     const room = Game.rooms[claimCreep.memory.room!];
     if (room) {

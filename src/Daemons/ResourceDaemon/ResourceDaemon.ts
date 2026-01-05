@@ -1,18 +1,18 @@
 import { config } from "config";
 import { TransportCreep } from "Creeps/TransportCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class ResourceDaemon {
   public static run() {
     this.manageLocalLootTransportCreepJobs();
     this.manageMiningLootTransportCreepJobs();
     this.manageRemoteStorageTransportCreepJobs();
   }
-  // )@profileMethod
-private static manageLocalLootTransportCreepJobs() {
+  @profileMethod
+  private static manageLocalLootTransportCreepJobs() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
       const roomResources = roomMemory.resources;
       if (roomResources) {
@@ -43,7 +43,7 @@ private static manageLocalLootTransportCreepJobs() {
                     job.params.memory.room === room.name &&
                     job.params.memory.origin === "loot"
                 );
-                const requestedCreeps = 1;
+                const requestedCreeps = 2;
                 if (
                   assignedCreeps.length < requestedCreeps &&
                   assignedJobs.length === 0
@@ -84,96 +84,106 @@ private static manageLocalLootTransportCreepJobs() {
     });
   }
 
-  // )@profileMethod
-private static manageMiningLootTransportCreepJobs() {
+  @profileMethod
+  private static manageMiningLootTransportCreepJobs() {
     config[Memory.env].roomsToMine.forEach(roomName => {
       const roomMemory = Memory.rooms[roomName];
       if (roomMemory) {
-        const droppedResources = roomMemory.resources;
-        if (droppedResources) {
-          let totalAmount = 0;
-          const totalAmounts = Object.values(droppedResources).map(
-            resourceMonitorMemory => resourceMonitorMemory.amount
-          );
-          totalAmounts.forEach(amount => (totalAmount = totalAmount + amount));
+        let hostilesInRoom = false;
+        const hostiles = roomMemory.hostiles;
+        if (hostiles) {
+          if (Object.keys(hostiles).length > 0) {
+            hostilesInRoom = true;
+          }
+        }
+        // console.log(roomName)
+        // console.log(hostilesInRoom)
+        if (hostilesInRoom === false) {
+          const droppedResources = roomMemory.resources;
+          if (droppedResources) {
+            let totalAmount = 0;
+            const totalAmounts = Object.values(droppedResources).map(
+              resourceMonitorMemory => resourceMonitorMemory.amount
+            );
+            totalAmounts.forEach(amount => (totalAmount = totalAmount + amount));
 
-          if (totalAmount > 500) {
-            const allStorages = Object.values(Game.structures).filter(
-              structure => structure.structureType === STRUCTURE_STORAGE
-            ) as StructureStorage[];
+            if (totalAmount > 500) {
+              const allStorages = Object.values(Game.structures).filter(
+                structure => structure.structureType === STRUCTURE_STORAGE
+              ) as StructureStorage[];
 
-            const storageDistanceMatrix = allStorages
-              .map(storage => {
-                const distance = Game.map.findRoute(roomName, storage.pos.roomName);
-                if (distance !== -2) {
-                  return {
-                    storage,
-                    distance: distance.length
+              const storageDistanceMatrix = allStorages
+                .map(storage => {
+                  const distance = Game.map.findRoute(roomName, storage.pos.roomName);
+                  if (distance !== -2) {
+                    return {
+                      storage,
+                      distance: distance.length
+                    };
+                  } else {
+                    return {
+                      storage,
+                      distance: 65535
+                    };
                   }
-                } else {
-                  return {
-                    storage,
-                    distance: 65535
-                  }
-                }
-
-              })
-              .sort((storageA, storageB) => storageA.distance - storageB.distance);
-            if (storageDistanceMatrix.length > 0) {
-              const closestStorage = storageDistanceMatrix[0];
-              Log(
-                LogSeverity.DEBUG,
-                "ResourceDaemon",
-                `Storage but no anchor points detected in ${roomName}, assuming the room needs a transport creep`
-              );
-              const assignedCreeps = Object.values(Game.creeps).filter(
-                creep =>
-                  creep.memory.room === roomName &&
-                  creep.memory.origin === "loot" &&
-                  creep.memory.destination === closestStorage.storage.id
-              );
-              const spawnJobs = Object.values(Memory.jobs).filter(
-                job => job.type === "spawn"
-              ) as SpawnJob[];
-
-              const assignedJobs = spawnJobs.filter(
-                job =>
-                  job.params.memory.room === roomName &&
-                  job.params.memory.origin === "loot" &&
-                  job.params.memory.destination === closestStorage.storage.id
-              );
-              const requestedCreeps = 1;
-              if (
-                assignedCreeps.length < requestedCreeps &&
-                assignedJobs.length === 0
-              ) {
+                })
+                .sort((storageA, storageB) => storageA.distance - storageB.distance);
+              if (storageDistanceMatrix.length > 0) {
+                const closestStorage = storageDistanceMatrix[0];
                 Log(
                   LogSeverity.DEBUG,
                   "ResourceDaemon",
-                  `Number of transport creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+                  `Storage but no anchor points detected in ${roomName}, assuming the room needs a transport creep`
                 );
-                Memory.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
-                  type: "spawn",
-                  name: `TransportCreep-${roomName}-${Game.time}`,
-                  bodyPartRatio: TransportCreep.bodyPartRatio,
-                  status: "pending",
-                  priority: 4 + assignedCreeps.length,
-                  params: {
-                    memory: {
-                      type: "TransportCreep",
-                      room: roomName,
-                      origin: "loot",
-                      destination: closestStorage.storage.id,
-                      resourceType: RESOURCE_ENERGY,
-                      curTask: "spawning"
+                const assignedCreeps = Object.values(Game.creeps).filter(
+                  creep =>
+                    creep.memory.room === roomName &&
+                    creep.memory.origin === "loot" &&
+                    creep.memory.destination === closestStorage.storage.id
+                );
+                const spawnJobs = Object.values(Memory.jobs).filter(
+                  job => job.type === "spawn"
+                ) as SpawnJob[];
+
+                const assignedJobs = spawnJobs.filter(
+                  job =>
+                    job.params.memory.room === roomName &&
+                    job.params.memory.origin === "loot" &&
+                    job.params.memory.destination === closestStorage.storage.id
+                );
+                const requestedCreeps = 2;
+                if (
+                  assignedCreeps.length < requestedCreeps &&
+                  assignedJobs.length === 0
+                ) {
+                  Log(
+                    LogSeverity.DEBUG,
+                    "ResourceDaemon",
+                    `Number of transport creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
+                  );
+                  Memory.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
+                    type: "spawn",
+                    name: `TransportCreep-${roomName}-${Game.time}`,
+                    bodyPartRatio: TransportCreep.bodyPartRatio,
+                    status: "pending",
+                    priority: 4 + assignedCreeps.length,
+                    params: {
+                      memory: {
+                        type: "TransportCreep",
+                        room: roomName,
+                        origin: "loot",
+                        destination: closestStorage.storage.id,
+                        resourceType: RESOURCE_ENERGY,
+                        curTask: "spawning"
+                      }
                     }
-                  }
-                };
-                Log(
-                  LogSeverity.INFORMATIONAL,
-                  "ResourceDaemon",
-                  `Transport creep spawn job created in ${roomName} at ${Game.time}`
-                );
+                  };
+                  Log(
+                    LogSeverity.INFORMATIONAL,
+                    "ResourceDaemon",
+                    `Transport creep spawn job created in ${roomName} at ${Game.time}`
+                  );
+                }
               }
             }
           }
@@ -182,8 +192,8 @@ private static manageMiningLootTransportCreepJobs() {
     });
   }
 
-  // )@profileMethod
-private static manageRemoteStorageTransportCreepJobs() {
+  @profileMethod
+  private static manageRemoteStorageTransportCreepJobs() {
     const storages = Object.values(Game.structures).filter(
       structure => structure.structureType === STRUCTURE_STORAGE
     ) as StructureStorage[];
@@ -237,7 +247,7 @@ private static manageRemoteStorageTransportCreepJobs() {
                     job.params.memory.origin === storageEntry.storage.id &&
                     job.params.memory.destination === nearbyStorageEntry.storage.id
                 );
-                const requestedCreeps = 1;
+                const requestedCreeps = 0;
                 if (
                   assignedCreeps.length < requestedCreeps &&
                   assignedJobs.length === 0

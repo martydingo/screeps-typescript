@@ -43,7 +43,7 @@ export function buildBodyFromRatio(opts: {
   minSpend?: number; // default 300
   maxParts?: number; // default 50
   // Ordering:
-  workFirst?: boolean; // default true
+  firstParts?: PartKey[]; // default ["work"]
   alternateOrder?: PartKey[]; // default ["carry","move"]
 }): PartKey[] {
   const {
@@ -62,7 +62,7 @@ export function buildBodyFromRatio(opts: {
     energyAvailable,
     minSpend = 300,
     maxParts = 50,
-    workFirst = true,
+    firstParts = ["work"],
     alternateOrder = ["carry", "move"]
   } = opts;
 
@@ -148,10 +148,12 @@ export function buildBodyFromRatio(opts: {
   const out: PartKey[] = [];
 
   // 1) WORK at the front (if requested)
-  if (workFirst && (counts.work ?? 0) > 0) {
-    for (let i = 0; i < (counts.work ?? 0); i++) out.push("work");
-    counts.work = 0;
-  }
+  Object.values(firstParts).forEach(part => {
+    if (part && (counts[part] ?? 0) > 0) {
+      for (let i = 0; i < (counts[part] ?? 0); i++) out.push(part);
+      counts[part] = 0;
+    }
+  });
 
   // 2) Alternating the rest in the requested order (default: carry/move)
   const alt = alternateOrder.filter(p => (counts[p] ?? 0) > 0 || partsInRatio.includes(p));

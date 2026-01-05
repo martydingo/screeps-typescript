@@ -3,10 +3,10 @@ import { ClaimCreep } from "Creeps/ClaimCreep";
 import { ControllerCreep } from "Creeps/ControllerCreep";
 import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class ControllerDaemon {
   public static run() {
     ControllerDaemon.manageUpgradeCreeps();
@@ -14,75 +14,69 @@ export class ControllerDaemon {
     ControllerDaemon.manageClaimCreeps();
   }
 
-
-  // )@profileMethod
-private static manageUpgradeCreeps() {
+  @profileMethod
+  private static manageUpgradeCreeps() {
     Object.keys(Memory.rooms).forEach(roomName => {
       if (Memory.rooms[roomName].controller) {
-        Object.keys(Memory.rooms[roomName].controller!).forEach(
-          controllerId => {
-            const controller = Game.getObjectById(
-              controllerId as Id<StructureController>
-            );
-            if (controller) {
-              if (controller.my) {
-                const assignedCreeps = Object.values(Game.creeps).filter(
-                  creep => creep.memory.assignedController === controllerId
-                );
-                const spawnJobs = Object.values(Memory.jobs).filter(
-                  job => job.type === "spawn"
-                ) as SpawnJob[];
+        Object.keys(Memory.rooms[roomName].controller!).forEach(controllerId => {
+          const controller = Game.getObjectById(
+            controllerId as Id<StructureController>
+          );
+          if (controller) {
+            if (controller.my) {
+              const assignedCreeps = Object.values(Game.creeps).filter(
+                creep => creep.memory.assignedController === controllerId
+              );
+              const spawnJobs = Object.values(Memory.jobs).filter(
+                job => job.type === "spawn"
+              ) as SpawnJob[];
 
-                const assignedJobs = spawnJobs.filter(
-                  job => job.params.memory.assignedController === controllerId
+              const assignedJobs = spawnJobs.filter(
+                job => job.params.memory.assignedController === controllerId
+              );
+              const storage = controller.room.storage;
+              // const requestedCreeps = (storage && Math.max(1, ceil(storage.store[RESOURCE_ENERGY] / 200000))) || 1;
+              const requestedCreeps =
+                (storage && storage.store[RESOURCE_ENERGY] > 200000 && 2) || 1;
+              if (
+                assignedCreeps.length < requestedCreeps &&
+                assignedJobs.length === 0
+              ) {
+                Log(
+                  LogSeverity.DEBUG,
+                  "ControllerDaemon",
+                  `Number of controller creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
                 );
-                const storage = controller.room.storage;
-                // const requestedCreeps = (storage && Math.max(1, ceil(storage.store[RESOURCE_ENERGY] / 200000))) || 1;
-                const requestedCreeps =
-                  (storage && storage.store[RESOURCE_ENERGY] > 200000 && 2) ||
-                  1;
-                if (
-                  assignedCreeps.length < requestedCreeps &&
-                  assignedJobs.length === 0
-                ) {
-                  Log(
-                    LogSeverity.DEBUG,
-                    "ControllerDaemon",
-                    `Number of controller creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
-                  );
 
-                  Memory.jobs[`ControllerCreep-${controllerId}-${Game.time}`] =
-                    {
-                      type: "spawn",
-                      name: `ControllerCreep-${controllerId}-${Game.time}`,
-                      bodyPartRatio: ControllerCreep.bodyPartRatio,
-                      status: "pending",
-                      priority: 3,
-                      params: {
-                        memory: {
-                          type: "ControllerCreep",
-                          room: roomName,
-                          assignedController:
-                            controllerId as Id<StructureController>,
-                          curTask: "spawning"
-                        }
-                      }
-                    };
-                  Log(
-                    LogSeverity.INFORMATIONAL,
-                    "ControllerDaemon",
-                    `Controller creep spawn job created for ${controller.id} in ${roomName} at ${Game.time}`
-                  );
-                }
+                Memory.jobs[`ControllerCreep-${controllerId}-${Game.time}`] = {
+                  type: "spawn",
+                  name: `ControllerCreep-${controllerId}-${Game.time}`,
+                  bodyPartRatio: ControllerCreep.bodyPartRatio,
+                  status: "pending",
+                  priority: 3,
+                  params: {
+                    memory: {
+                      type: "ControllerCreep",
+                      room: roomName,
+                      assignedController: controllerId as Id<StructureController>,
+                      curTask: "spawning"
+                    }
+                  }
+                };
+                Log(
+                  LogSeverity.INFORMATIONAL,
+                  "ControllerDaemon",
+                  `Controller creep spawn job created for ${controller.id} in ${roomName} at ${Game.time}`
+                );
               }
             }
           }
-        );
+        });
       }
     });
   }
-  // )@profileMethod
-private static manageClaimCreeps() {
+  @profileMethod
+  private static manageClaimCreeps() {
     const roomsToClaim = config[Memory.env].roomsToClaim;
     roomsToClaim.forEach(roomName => {
       let claimRoom = false;
@@ -99,8 +93,7 @@ private static manageClaimCreeps() {
 
       if (claimRoom === true) {
         const assignedCreeps = Object.values(Game.creeps).filter(
-          creep =>
-            creep.memory.type === "ClaimCreep" && creep.memory.room === roomName
+          creep => creep.memory.type === "ClaimCreep" && creep.memory.room === roomName
         );
         const spawnJobs = Object.values(Memory.jobs).filter(
           job => job.type === "spawn"
@@ -112,10 +105,7 @@ private static manageClaimCreeps() {
             job.params.memory.room === roomName
         );
         const requestedCreeps = 1;
-        if (
-          assignedCreeps.length < requestedCreeps &&
-          assignedJobs.length === 0
-        ) {
+        if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
           Log(
             LogSeverity.DEBUG,
             "ControllerDaemon",
@@ -145,29 +135,36 @@ private static manageClaimCreeps() {
       }
     });
   }
-  // )@profileMethod
-private static manageReserveCreeps() {
+  @profileMethod
+  private static manageReserveCreeps() {
     const roomsToMine = config[Memory.env].roomsToMine;
     roomsToMine.forEach(roomName => {
       let reserveRoom = false;
       const room = Game.rooms[roomName];
       if (room) {
-        if (room.controller) {
-          if (!room.controller.my) {
-            reserveRoom = true;
-          }
-          if (!room.controller.reservation) {
-            reserveRoom = true;
+        const hostilesInRoom = false;
+        const hostiles = room.memory.hostiles;
+        if (hostiles) {
+          if (Object.keys(hostiles).length > 0) {
+            reserveRoom = false;
           } else {
-            if (
-              room.controller.reservation.username ===
-              config[Memory.env].username
-            ) {
-              if (room.controller.reservation.ticksToEnd < 1000) {
+            if (room.controller) {
+              if (!room.controller.my) {
                 reserveRoom = true;
               }
-            } else {
-              reserveRoom = true;
+              if (!room.controller.reservation) {
+                reserveRoom = true;
+              } else {
+                if (
+                  room.controller.reservation.username === config[Memory.env].username
+                ) {
+                  if (room.controller.reservation.ticksToEnd < 1000) {
+                    reserveRoom = true;
+                  }
+                } else {
+                  reserveRoom = true;
+                }
+              }
             }
           }
         }
@@ -177,8 +174,7 @@ private static manageReserveCreeps() {
       if (reserveRoom === true) {
         const assignedCreeps = Object.values(Game.creeps).filter(
           creep =>
-            creep.memory.type === "ReserveCreep" &&
-            creep.memory.room === roomName
+            creep.memory.type === "ReserveCreep" && creep.memory.room === roomName
         );
         const spawnJobs = Object.values(Memory.jobs).filter(
           job => job.type === "spawn"
@@ -191,10 +187,7 @@ private static manageReserveCreeps() {
         );
         const requestedCreeps = 1;
 
-        if (
-          assignedCreeps.length < requestedCreeps &&
-          assignedJobs.length === 0
-        ) {
+        if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
           Log(
             LogSeverity.DEBUG,
             "ControllerDaemon",

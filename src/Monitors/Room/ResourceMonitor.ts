@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface ResourceMonitorMemory {
@@ -13,7 +13,7 @@ declare global {
   }
 }
 
-// )@profileClass()
+@profileClass()
 export class ResourceMonitor {
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {

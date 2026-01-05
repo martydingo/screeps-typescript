@@ -42,7 +42,7 @@ module.exports = {
     "@typescript-eslint/no-parameter-properties": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-shadow": [
-      "error",
+      "off",
       {
         hoist: "all"
       }

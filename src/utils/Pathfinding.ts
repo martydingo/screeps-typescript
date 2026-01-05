@@ -1,3 +1,19 @@
+export interface RoomPathCache {
+  exits: {
+    [key: string]: {
+      [key: string]: string;
+    };
+  };
+}
+
+declare global {
+  interface Memory {
+    pathCache: {
+      [key: string]: RoomPathCache;
+    };
+  }
+}
+
 type StructureMonitorTypes = "containers";
 
 export const Pathfinding = {
@@ -21,18 +37,25 @@ export const Pathfinding = {
     //
   },
 
-  lookAround: (originPos: RoomPosition, structureMonitorType: StructureMonitorTypes, range: number): Structure<StructureConstant> | null => {
+  lookAround: (
+    originPos: RoomPosition,
+    structureMonitorType: StructureMonitorTypes,
+    range: number
+  ): Structure<StructureConstant> | null => {
     const roomMemory = Memory.rooms[originPos.roomName];
     if (roomMemory) {
       const structureMonitorMemory = roomMemory.structures;
       if (structureMonitorMemory) {
         const targetMonitorMemory = structureMonitorMemory[structureMonitorType];
         if (targetMonitorMemory) {
-          let targetStructure = null
+          let targetStructure = null;
           Object.keys(targetMonitorMemory).forEach(structureId => {
             const workingStructure = Game.getObjectById(structureId as Id<Structure>);
             if (workingStructure) {
-              const structurePos = { x: workingStructure.pos.x, y: workingStructure.pos.y };
+              const structurePos = {
+                x: workingStructure.pos.x,
+                y: workingStructure.pos.y
+              };
 
               const posDifferences = {
                 x:
@@ -49,10 +72,48 @@ export const Pathfinding = {
               }
             }
           });
-          return targetStructure
-        } else return null
-      } else return null
+          return targetStructure;
+        } else return null;
+      } else return null;
     }
-    return null
+    return null;
+  },
+
+  cacheExit: (
+    origin: RoomPosition,
+    destinationRoom: string,
+    path: PathStep[]
+  ) => {
+    const serializedPath = Room.serializePath(path);
+    if (serializedPath !== "") {
+      if (!Memory.pathCache) {
+        Memory.pathCache = {};
+      }
+
+      if (!Memory.pathCache[origin.roomName]) {
+        Memory.pathCache[origin.roomName] = {
+          exits: {}
+        };
+      }
+      if (!Memory.pathCache[origin.roomName].exits[destinationRoom]) {
+        Memory.pathCache[origin.roomName].exits[destinationRoom] = {};
+      }
+
+      if (
+        !Memory.pathCache[origin.roomName].exits[destinationRoom][
+          `${origin.x}-${origin.y}`
+        ]
+      ) {
+        Memory.pathCache[origin.roomName].exits[destinationRoom][
+          `${origin.x}-${origin.y}`
+        ] = serializedPath;
+      }
+    }
+
+    // if (!Memory.pathCache[origin.roomName][`${destination.x}-${destination.y}`]) {
+    //   Memory.pathCache[origin.roomName][`${destination.x}-${destination.y}`].exits = {
+    //     path: Room.serializePath(path)
+    //   };
+    // }
   }
 };

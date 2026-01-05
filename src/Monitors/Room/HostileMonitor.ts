@@ -1,5 +1,5 @@
 import { config } from "config";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface HostileMemory {
@@ -21,7 +21,7 @@ declare global {
   }
 }
 
-// )@profileClass()
+@profileClass()
 export class HostileMonitor {
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {

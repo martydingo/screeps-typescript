@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -11,10 +11,11 @@ declare global {
   interface CreepMemory extends Partial<BuildCreepMemory> {}
 }
 
-// @profileClass()
+@profileClass()
 export class BuildCreep extends CreepTemplate {
-  public static bodyPartRatio = { work: 1, carry: 1, move: 2 };
-  public static run() {
+  public static bodyPartRatio = { work: 2, carry: 1, move: 1 };
+  public constructor() {
+    super()
 
 
     Object.values(Game.creeps)
@@ -65,7 +66,7 @@ export class BuildCreep extends CreepTemplate {
       });
   }
 
-  // @profileMethod
+ @profileMethod
   private static constructSite(buildCreep: Creep) {
     const constructionSiteMatrix =
       Memory.rooms[buildCreep.memory.assignedRoom!].constructionSites;

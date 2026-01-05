@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface ContainerMonitorMemory {
@@ -16,7 +16,7 @@ export interface ContainerMonitorMemory {
   };
 }
 
-// )@profileClass()
+@profileClass()
 export class ContainerMonitor {
     public static run(container: StructureContainer) {
     if (!container.room.memory.structures!.containers) {

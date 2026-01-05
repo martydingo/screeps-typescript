@@ -8,10 +8,10 @@ import { ReserveCreep } from "Creeps/ReserveCreep";
 import { SourceCreep } from "Creeps/SourceCreep";
 import { SpawnCreep } from "Creeps/SpawnCreep";
 import { TransportCreep } from "Creeps/TransportCreep";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class CreepDaemon {
   public static run() {
     // console.log(`SourceCreep - Start: ${Game.cpu.getUsed()}`);

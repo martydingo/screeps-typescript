@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
@@ -12,7 +12,7 @@ declare global {
   interface CreepMemory extends Partial<ExtractorCreepMemory> {}
 }
 
-// @profileClass()
+@profileClass()
 export class ExtractorCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 2 };
   public static maxBodyParts = { work: 6, carry: 1, move: 8 };
@@ -70,7 +70,7 @@ export class ExtractorCreep extends CreepTemplate {
       });
   }
 
-  // @profileMethod
+ @profileMethod
   private static mineExtractor(extractorCreep: Creep) {
     const room = Game.rooms[extractorCreep.memory.room!];
     if (room) {

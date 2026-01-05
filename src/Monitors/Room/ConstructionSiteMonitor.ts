@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 interface ConstructionSiteMemory {
@@ -15,7 +15,7 @@ declare global {
   }
 }
 
-// )@profileClass()
+@profileClass()
 export class ConstructionSiteMonitor {
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {

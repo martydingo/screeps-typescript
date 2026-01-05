@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { ConstructionDaemon } from "./ConstructionDaemon/ConstructionDaemon";
 import { ControllerDaemon } from "./ControllerDaemon/ControllerDaemon";
@@ -18,7 +18,7 @@ declare global {
   }
 }
 
-// )@profileClass()
+@profileClass()
 export class Daemons {
   public static run() {
       if (!Memory.jobs) {
@@ -66,8 +66,8 @@ export class Daemons {
       Log(LogSeverity.DEBUG, "Daemons", `Lab daemon initialized.`);
       // console.log(`LabDaemon - End: ${Game.cpu.getUsed()}`);
       // console.log(`TerminalDaemon - Start: ${Game.cpu.getUsed()}`);
-      // TerminalDaemon.run();
-      // Log(LogSeverity.DEBUG, "Daemons", `Terminal daemon initialized.`);
+      TerminalDaemon.run();
+      Log(LogSeverity.DEBUG, "Daemons", `Terminal daemon initialized.`);
       // console.log(`TerminalDaemon - End: ${Game.cpu.getUsed()}`);
       // console.log(`CreepDaemon - Start: ${Game.cpu.getUsed()}`);
       CreepDaemon.run();

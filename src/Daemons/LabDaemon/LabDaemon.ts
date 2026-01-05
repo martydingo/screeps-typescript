@@ -1,7 +1,7 @@
 import { LabConfig, config } from "config";
 import { LabCreep } from "Creeps/LabCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 
 export interface LabTask {
   resource: ResourceConstant;
@@ -20,7 +20,7 @@ export interface LabJob {
   type: "lab";
 }
 
-// @profileClass()
+@profileClass()
 export class LabDaemon {
   public static run() {
     const roomsWithLabs: string[] = [];
@@ -39,7 +39,7 @@ export class LabDaemon {
     });
   }
 
-  // @profileMethod
+ @profileMethod
   private static manageLabJobs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {
@@ -152,7 +152,7 @@ export class LabDaemon {
       });
     }
   }
-  // @profileMethod
+ @profileMethod
   private static manageLabCreeps(roomName: string) {
     const labJobs = Object.entries(Memory.jobs).filter(
       ([, job]) => job.type === "lab"
@@ -242,7 +242,7 @@ export class LabDaemon {
       }
     }
   }
-  // @profileMethod
+ @profileMethod
   private static operateLabs(roomName: string) {
     const roomlabConfigs = config[Memory.env].labConfig[roomName];
     if (roomlabConfigs) {

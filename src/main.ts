@@ -2,7 +2,7 @@ import { Daemons } from "Daemons/Daemons";
 import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
 import { Monitors } from "Monitors/Monitors";
 import { ErrorMapper } from "utils/ErrorMapper";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 
@@ -44,7 +44,7 @@ export const loop = ErrorMapper.wrapLoop(
     //     .sort((orderA, orderB) => orderA.price - orderB.price)
     //   .map((order)=>`Id: ${order.id} Price: ${order.price} Amount: ${order.amount} Resource ${order.resourceType}`)[0]
     // );
-    if (Game.cpu.bucket === 10001) {
+    if (Game.cpu.bucket === 10000) {
       Game.cpu.generatePixel();
       Log(
         LogSeverity.INFORMATIONAL,

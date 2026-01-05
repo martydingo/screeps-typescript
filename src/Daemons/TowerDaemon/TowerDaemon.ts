@@ -1,7 +1,7 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class TowerDaemon {
   public static run() {
     Object.values(Memory.rooms).forEach(roomMemory => {
@@ -10,14 +10,14 @@ export class TowerDaemon {
           const towers = Object.keys(roomMemory.structures.towers)
             .map(towerId => Game.getObjectById(towerId as Id<StructureTower>))
             .filter(tower => tower !== null);
-          towers.forEach(tower => this.cycleTowers(tower!));
+          towers.forEach((tower, towerIndex) => this.cycleTowers(tower!, towerIndex));
         }
       }
     });
   }
 
-  // )@profileMethod
-  private static cycleTowers(tower: StructureTower) {
+  @profileMethod
+  private static cycleTowers(tower: StructureTower, towerIndex: number) {
     // console.log(
     //   `Tower cycleTowers Start - ${tower.pos.roomName} - ${
     //     tower.id
@@ -34,7 +34,7 @@ export class TowerDaemon {
       const healCreepResult = this.healCreeps(tower);
       Log(LogSeverity.DEBUG, "TowerDaemon", `Tower ${tower.id} heal routine finished.`);
       if (healCreepResult !== OK) {
-        const repairStructureResult = this.repairStructures(tower);
+        const repairStructureResult = this.repairStructures(tower, towerIndex);
         Log(
           LogSeverity.DEBUG,
           "TowerDaemon",
@@ -49,7 +49,7 @@ export class TowerDaemon {
     // );
   }
 
-  // )@profileMethod
+  @profileMethod
   private static healCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower healCreeps Start - ${tower.pos.roomName} - ${
@@ -62,20 +62,31 @@ export class TowerDaemon {
     );
     const curTarget = creepsToHeal[0];
     if (curTarget) {
-      Log(
-        LogSeverity.DEBUG,
-        "TowerDaemon",
-        `Tower ${tower.id} is healing ${curTarget.name} (${curTarget.owner.username}).`
-      );
+      if (tower.store[RESOURCE_ENERGY] >= 10) {
+        Log(
+          LogSeverity.DEBUG,
+          "TowerDaemon",
+          `Tower ${tower.id} is healing ${curTarget.name} (${curTarget.owner.username}).`
+        );
+        return tower.heal(curTarget);
+      } else {
+        Log(
+          LogSeverity.EMERGENCY,
+          "TowerDaemon",
+          `Tower ${tower.id} is out of energy, and cannot heal ${curTarget.name} (${curTarget.owner.username}) in ${tower.pos.roomName}!`
+        );
+        return ERR_NOT_ENOUGH_ENERGY
+      }
+      // console.log(
+      //   `Tower healCreeps End - ${tower.pos.roomName} - ${
+      //     tower.id
+      //   }: ${Game.cpu.getUsed()}`
+      // );
+    } else {
+      return ERR_INVALID_TARGET;
     }
-    // console.log(
-    //   `Tower healCreeps End - ${tower.pos.roomName} - ${
-    //     tower.id
-    //   }: ${Game.cpu.getUsed()}`
-    // );
-    return tower.heal(curTarget);
   }
-  // )@profileMethod
+  @profileMethod
   private static attackCreeps(tower: StructureTower) {
     // console.log(
     //   `Tower attackCreeps Start - ${tower.pos.roomName} - ${
@@ -91,48 +102,68 @@ export class TowerDaemon {
       const curTarget = hostileCreeps[0];
 
       if (curTarget) {
-        Log(
-          LogSeverity.DEBUG,
-          "TowerDaemon",
-          `Tower ${tower.id} is attacking ${curTarget.name} (${curTarget.owner.username}).`
-        );
+        if (tower.store[RESOURCE_ENERGY] >= 10) {
+          return tower.attack(curTarget);
+        } else {
+          Log(
+            LogSeverity.EMERGENCY,
+            "TowerDaemon",
+            `Tower ${tower.id} is out of energy, and cannot attack ${curTarget.name} (${curTarget.owner.username}) in ${tower.pos.roomName}!`
+          );
+          return ERR_NOT_ENOUGH_ENERGY
+        }
+        // console.log(
+        //   `Tower attackCreeps End - ${tower.pos.roomName} - ${
+        //     tower.id
+        //   }: ${Game.cpu.getUsed()}`
+        // );
+      } else {
+        return ERR_INVALID_TARGET;
       }
-      // console.log(
-      //   `Tower attackCreeps End - ${tower.pos.roomName} - ${
-      //     tower.id
-      //   }: ${Game.cpu.getUsed()}`
-      // );
-      return tower.attack(curTarget!);
+    } else {
+      return ERR_INVALID_TARGET;
     }
     // console.log(
     //   `Tower attackCreeps End - ${tower.pos.roomName} - ${
     //     tower.id
     //   }: ${Game.cpu.getUsed()}`
     // );
-    return ERR_INVALID_TARGET;
   }
-  // )@profileMethod
-  private static repairStructures(tower: StructureTower) {
+  @profileMethod
+  private static repairStructures(tower: StructureTower, towerIndex: number) {
     // console.log(
     //   `Tower repairTarget Start - ${tower.pos.roomName} - ${
     //     tower.id
     //   }: ${Game.cpu.getUsed()}`
     // );
-    let repairTarget: StructureRoad | StructureContainer | undefined;
+    let repairTarget: StructureRoad | StructureContainer | undefined | null;
     if (tower.room.memory.structures?.containers) {
-      const containers = Object.keys(tower.room.memory.structures.containers)
+      const containersInMemory = Object.keys(tower.room.memory.structures.containers)
         .map(containerId => Game.getObjectById(containerId as Id<StructureContainer>))
-        .filter(container => container !== null && container.hits < container.hitsMax)
+        .filter(container => container !== null);
+
+      const containers = containersInMemory
         .sort(
           (containerA, containerB) =>
             containerA!.hits / containerA!.hitsMax -
             containerB!.hits / containerB!.hitsMax
-        );
+        )
+        .filter(container => container!.hits < container!.hitsMax);
 
-      if (containers[0]) {
-        repairTarget = containers[0];
+      if (containers.length >= 1) {
+        if (containers.length > 1) {
+          const repairCandidate = containers[towerIndex - 1];
+          if (repairCandidate) {
+            repairTarget = repairCandidate;
+          } else {
+            repairTarget = containers[0];
+          }
+        } else {
+          repairTarget = containers[0];
+        }
       }
-    } else {
+    }
+    if (!repairTarget) {
       if (tower.room.memory.structures?.roads) {
         const roads = Object.keys(tower.room.memory.structures.roads)
           .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
@@ -144,23 +175,36 @@ export class TowerDaemon {
           (roadA, roadB) => roadA.hits / roadA.hitsMax - roadB.hits / roadB.hitsMax
         );
 
-        if (sortedDecayedRoads[0]) {
-          repairTarget = roads[0];
+        if (sortedDecayedRoads.length >= 1) {
+          if (sortedDecayedRoads.length > 1) {
+            const repairCandidate = sortedDecayedRoads[towerIndex];
+            if (repairCandidate) {
+              repairTarget = repairCandidate;
+            } else {
+              repairTarget = sortedDecayedRoads[0];
+            }
+          } else {
+            repairTarget = sortedDecayedRoads[0];
+          }
         }
       }
     }
+
     if (repairTarget) {
-      Log(
-        LogSeverity.DEBUG,
-        "TowerDaemon",
-        `Tower ${tower.id} is repairing ${repairTarget.structureType} ${repairTarget.id} in ${repairTarget.pos.roomName}`
-      );
-      // console.log(
-      //   `Tower repairTarget End - ${tower.pos.roomName} - ${
-      //     tower.id
-      //   }: ${Game.cpu.getUsed()}`
-      // );
-      return tower.repair(repairTarget);
+      if (tower.store[RESOURCE_ENERGY] >= 10) {
+        Log(
+          LogSeverity.NOTICE,
+          "TowerDaemon",
+          `Tower ${tower.id} is repairing ${repairTarget.structureType} ${repairTarget.id} in ${repairTarget.pos.roomName}`
+        );
+        // console.log(
+        //   `Tower repairTarget End - ${tower.pos.roomName} - ${
+        //     tower.id
+        //   }: ${Game.cpu.getUsed()}`
+        // );
+        const repairResult = tower.repair(repairTarget);
+        return repairResult;
+      }
     }
     // console.log(
     //   `Tower repairTarget End - ${tower.pos.roomName} - ${

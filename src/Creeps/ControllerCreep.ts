@@ -1,25 +1,22 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { CreepMemoryTemplate, CreepTemplate } from "./CreepTemplate";
 
 interface ControllerCreepMemory extends CreepMemoryTemplate {
   assignedController: Id<StructureController>;
-  assignedBoostLab?: Id<StructureLab>;
+  // assignedBoostLab?: Id<StructureLab>;
 }
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
-  interface CreepMemory extends Partial<ControllerCreepMemory> {
-  }
+  interface CreepMemory extends Partial<ControllerCreepMemory> {}
 }
 
-// @profileClass()
+@profileClass()
 export class ControllerCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 3 };
 
   public static run() {
-
-
     Object.values(Game.creeps)
       .filter(creep => creep.memory.type === "ControllerCreep")
       .forEach(ctrlCreep => {
@@ -78,7 +75,7 @@ export class ControllerCreep extends CreepTemplate {
         }
       });
   }
-  // @profileMethod
+ @profileMethod
   private static fetchEnergy(ctrlCreep: Creep) {
     let controllerLinkId = null;
     const roomMemory = Memory.rooms[ctrlCreep.memory.room!];
@@ -169,7 +166,7 @@ export class ControllerCreep extends CreepTemplate {
     }
   }
 
-  // @profileMethod
+ @profileMethod
   private static manageBoosts(
     ctrlCreep: Creep,
     desiredBoost: { mineral: MineralBoostConstant; bodyPart: BodyPartConstant }
@@ -205,6 +202,10 @@ export class ControllerCreep extends CreepTemplate {
             const labsWithEnoughResources = labsWithResources
               .filter(
                 ([, lab]) =>
+                  lab.resources[desiredBoost.mineral] && lab.resources[RESOURCE_ENERGY]
+              )
+              .filter(
+                ([, lab]) =>
                   lab.resources[desiredBoost.mineral].amount >= requiredMineralAmount &&
                   lab.resources[RESOURCE_ENERGY].amount >= requiredEnergyAmount
               )
@@ -238,20 +239,20 @@ export class ControllerCreep extends CreepTemplate {
       });
     } else return true;
     if (boostLabs.length > 0) {
-      const creepsAlreadyBoosting = Object.values(Game.creeps).filter(((creep) => creep.memory.assignedBoostLab === boostLabs[0].id))
-      if (creepsAlreadyBoosting.length === 0) {
-        ctrlCreep.memory.assignedBoostLab = boostLabs[0].id
-        const boostResult = this.boostParts(ctrlCreep, boostLabs[0]);
-        return false;
-      } else {
-        return true
-      }
+      // const creepsAlreadyBoosting = Object.values(Game.creeps).filter(((creep) => creep.memory.assignedBoostLab === boostLabs[0].id))
+      // if (creepsAlreadyBoosting.length === 0) {
+      // ctrlCreep.memory.assignedBoostLab = boostLabs[0].id
+      const boostResult = this.boostParts(ctrlCreep, boostLabs[0]);
+      return false;
+      // } else {
+      //   return true
+      // }
     } else {
       return true;
     }
   }
 
-  // @profileMethod
+ @profileMethod
   private static boostParts(ctrlCreep: Creep, boostLab: StructureLab) {
     const boostLabDistance = ctrlCreep.pos.getRangeTo(boostLab);
     if (boostLabDistance >= 2) {
@@ -273,12 +274,12 @@ export class ControllerCreep extends CreepTemplate {
     }
     const boostResult = boostLab.boostCreep(ctrlCreep);
     if (boostResult === OK) {
-      delete ctrlCreep.memory.assignedBoostLab
+      // delete ctrlCreep.memory.assignedBoostLab
     }
     return boostResult;
   }
 
-  // @profileMethod
+ @profileMethod
   private static upgradeController(ctrlCreep: Creep) {
     const assignedController = Game.getObjectById(ctrlCreep.memory.assignedController!);
     if (assignedController) {

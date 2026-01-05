@@ -1,7 +1,7 @@
+import { Log, LogSeverity } from "utils/log";
 import { MaxBodyParts, Ratio, buildBodyFromRatio } from "utils/buildBodyFromRatio";
 import { SpawnCreep } from "Creeps/SpawnCreep";
-// import { profileClass, profileMethod } from "utils/Profiler";
-import { Log, LogSeverity } from "utils/log";
+import { profileClass, profileMethod } from "utils/Profiler";
 
 export interface SpawnJob {
   type: "spawn";
@@ -21,7 +21,7 @@ declare global {
   }
 }
 
-// @profileClass()
+@profileClass()
 export class SpawnDaemon {
   public static run() {
     this.manageSpawnCreepJobs();
@@ -155,8 +155,8 @@ export class SpawnDaemon {
     //   .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority);
   }
 
-  // @profileMethod
-  private static waitUntilFullCapacity (
+  @profileMethod
+  private static waitUntilFullCapacity(
     spawn: StructureSpawn,
     desiredBodyParts: BodyPartConstant[]
   ): boolean {
@@ -242,7 +242,7 @@ export class SpawnDaemon {
     }
   }
 
-  // @profileMethod
+  @profileMethod
   private static findClosestSpawn(roomName: string) {
     Object.values(Game.spawns).forEach(spawn => {
       if (!spawn.memory.distances) {
@@ -275,11 +275,12 @@ export class SpawnDaemon {
     return spawnDistanceMatrix.reverse().pop()?.spawn;
   }
 
-  // @profileMethod
+  @profileMethod
   private static manageSpawnCreepJobs() {
     Object.values(Game.spawns)
       .map(spawn => spawn.room.name)
       .forEach(roomName => {
+        const room = Game.rooms[roomName];
         const assignedCreeps = Object.values(Game.creeps).filter(
           creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
         );
@@ -297,8 +298,32 @@ export class SpawnDaemon {
         // const assignedJobs = spawnJobs.filter(
         //   job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
         // );
+        let requestedCreeps = 1;
 
-        const requestedCreeps = 1;
+        // const spawnHeldTime = Memory.spawnHeld[roomName];
+        // if (spawnHeldTime) {
+        //   if (spawnHeldTime < Game.time - 150) {
+        //     requestedCreeps = 2;
+        //   }
+        // }
+
+        let anyTowerLow = false;
+        const structuresMemory = room.memory.structures;
+        if (structuresMemory) {
+          const towersMemory = structuresMemory.towers;
+          if (towersMemory) {
+            Object.values(towersMemory).forEach(towerMemory => {
+              if (towerMemory.energy.amount < towerMemory.energy.capacity / 4) {
+                anyTowerLow = true;
+              }
+            });
+          }
+        }
+
+        if (anyTowerLow) {
+          requestedCreeps = requestedCreeps + 1;
+        }
+
         if (assignedCreeps.length < requestedCreeps && assignedJobs.length === 0) {
           //
           Log(
@@ -330,7 +355,7 @@ export class SpawnDaemon {
       });
   }
 
-  // @profileMethod
+  @profileMethod
   private static determineSpawnCreepPriority(roomName: string): 1 | 2 {
     const energyThreshold = 1000;
     let energyInRoom = false;
@@ -367,17 +392,31 @@ export class SpawnDaemon {
       }
     }
 
+    let anyTowerLow = false;
+    const structuresMemory = room.memory.structures;
+    if (structuresMemory) {
+      const towersMemory = structuresMemory.towers;
+      if (towersMemory) {
+        Object.values(towersMemory).forEach(towerMemory => {
+          if (towerMemory.energy.amount < towerMemory.energy.capacity / 4) {
+            anyTowerLow = true;
+          }
+        });
+      }
+    }
     const spawnCreepCount = Object.values(Game.creeps).filter(
       creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
     ).length;
-    if (spawnCreepCount === 0) {
-      if (energyInRoom === true) {
-        return 1;
-      } else return 2;
-    } else return 2;
+    if (spawnCreepCount > 0) {
+      if (energyInRoom === false) {
+        if (anyTowerLow === false) {
+          return 2;
+        } else return 1;
+      } else return 1;
+    } else return 1;
   }
 
-  // @profileMethod
+  @profileMethod
   private static discernCost(bodyParts: BodyPartConstant[]) {
     const costMatrix = {
       tough: 10,

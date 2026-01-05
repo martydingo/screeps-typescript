@@ -3,7 +3,7 @@
 /* eslint-disable no-underscore-dangle */
 
 import { Log, LogSeverity } from "utils/log";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Pathfinding } from "utils/Pathfinding";
 
 export interface CreepMemoryTemplate {
@@ -15,7 +15,7 @@ export interface CreepMemoryTemplate {
       exit: ExitConstant;
       room: string;
     }[];
-    roomRoute: { roomName: string; path: string };
+    roomRoute: { roomName: string; path: string, cached: boolean };
   };
 }
 
@@ -87,7 +87,7 @@ declare global {
 }
 
 class CreepPrototypes extends Creep {
-  // @profileMethod
+  @profileMethod
   public static mineSource(this: Creep, sourceId: Id<Source>) {
     const source = Game.getObjectById(sourceId);
 
@@ -133,7 +133,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchDroppedEnergy(this: Creep) {
     const resourceMatrix = Memory.rooms[this.room.name].resources;
     if (resourceMatrix) {
@@ -151,7 +151,7 @@ class CreepPrototypes extends Creep {
         });
 
       const closestResourceMatrix = resourceDistanceMatrix
-        .filter(resource => resource.amount > this.store.getCapacity())
+        .filter(resource => resource.amount > 0)
         .sort((resourceA, resourceB) => resourceA.distance - resourceB.distance)[0];
       if (closestResourceMatrix) {
         const closestResourceId = closestResourceMatrix.id as Id<Resource>;
@@ -206,7 +206,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchDroppedResource(this: Creep) {
     const resourceMatrix = Memory.rooms[this.room.name].resources;
     if (resourceMatrix) {
@@ -267,7 +267,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  // @profileMethod
+  @profileMethod
   public static lootResourceFromTombstone(this: Creep, resourceType: ResourceConstant) {
     const tombstones = Memory.rooms[this.room.name].tombstones;
     if (tombstones) {
@@ -331,7 +331,7 @@ class CreepPrototypes extends Creep {
     return ERR_NOT_FOUND;
   }
 
-  // @profileMethod
+  @profileMethod
   public static lootEnergyFromRuin(this: Creep) {
     const ruinMatrix = Memory.rooms[this.room.name].structures?.ruins;
     if (ruinMatrix) {
@@ -391,7 +391,7 @@ class CreepPrototypes extends Creep {
     } else return ERR_NOT_FOUND;
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchResourceFromStructure(
     this: Creep,
     structure: GenericStructureWithStore,
@@ -454,7 +454,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  // @profileMethod
+  @profileMethod
   public static depositResourceIntoStructure(
     this: Creep,
     structure: GenericStructureWithStore,
@@ -510,7 +510,7 @@ class CreepPrototypes extends Creep {
     return transferResult;
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchResourceFromStorage(
     this: Creep,
     resourceType: ResourceConstant,
@@ -523,7 +523,7 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchResourceFromTerminal(
     this: Creep,
     resourceType: ResourceConstant,
@@ -536,7 +536,7 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  // @profileMethod
+  @profileMethod
   public static fetchEnergy(this: Creep) {
     const withdrawResult = this.fetchResourceFromStorage(RESOURCE_ENERGY);
     if (withdrawResult !== OK) {
@@ -559,7 +559,7 @@ class CreepPrototypes extends Creep {
     return ERR_INVALID_TARGET;
   }
 
-  // @profileMethod
+  @profileMethod
   public static moveToUnknownRoom(
     this: Creep,
     destinationRoomName: string,
@@ -575,7 +575,8 @@ class CreepPrototypes extends Creep {
         worldRoute: [],
         roomRoute: {
           roomName: this.pos.roomName,
-          path: ""
+          path: "",
+          cached: false
         }
       };
     }
@@ -621,18 +622,42 @@ class CreepPrototypes extends Creep {
           curRoomExit = worldRoute[0];
         }
 
-        const exit = this.pos.findClosestByPath(curRoomExit.exit);
-        if (exit) {
-          const exitRoute = this.pos.findPathTo(exit, {
-            // ignoreRoads: true
-          });
-          const workingSerializedRoute = Room.serializePath(exitRoute);
-          this.memory._pathfind.roomRoute.path = workingSerializedRoute;
-          Log(
-            LogSeverity.DEBUG,
-            "CreepTemplate",
-            `Room route generated for the room route for ${this.name} in ${this.pos.roomName} towards ${destinationRoomName}.`
-          );
+        let useCache = false;
+        const roomPathCache = Memory.pathCache[this.pos.roomName];
+        if (roomPathCache) {
+          const exitCache = roomPathCache.exits[curRoomExit.room];
+          if (exitCache) {
+            const cachedPath = exitCache[`${this.pos.x}-${this.pos.y}`];
+            if (cachedPath) {
+              if (cachedPath !== "") {
+                useCache = true;
+              }
+            }
+          }
+        }
+
+        if (useCache === false) {
+          const exit = this.pos.findClosestByPath(curRoomExit.exit);
+          if (exit) {
+            const exitRoute = this.pos.findPathTo(exit, {
+              // ignoreRoads: true
+            });
+            Pathfinding.cacheExit(this.pos, curRoomExit.room, exitRoute);
+            const workingSerializedRoute = Room.serializePath(exitRoute);
+            this.memory._pathfind.roomRoute.path = workingSerializedRoute;
+            this.memory._pathfind.roomRoute.cached = false
+            Log(
+              LogSeverity.DEBUG,
+              "CreepTemplate",
+              `Room route generated for the room route for ${this.name} in ${this.pos.roomName} towards ${destinationRoomName}.`
+            );
+          }
+        } else {
+          this.memory._pathfind.roomRoute.path =
+          Memory.pathCache[this.pos.roomName].exits[curRoomExit.room][
+            `${this.pos.x}-${this.pos.y}`
+          ];
+          this.memory._pathfind.roomRoute.cached = true
         }
       }
 
@@ -640,7 +665,15 @@ class CreepPrototypes extends Creep {
       const moveResult = this.moveByPath(route);
 
       if (moveResult === -5) {
-        delete this.memory._pathfind;
+        if (this.memory._pathfind.roomRoute.cached) {
+          Log(
+            LogSeverity.EMERGENCY,
+            "CreepTemplate",
+            `Cached path from ${this.pos.roomName} to ${destinationRoomName} has failed with -5, moving ${this.pos.x}-${this.pos.y}`
+          );
+        } else {
+          // delete this.memory._pathfind;
+        }
       }
       if (moveResult === OK) {
         Log(
@@ -700,7 +733,7 @@ class CreepPrototypes extends Creep {
     opts?: MoveToOpts
   ): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND;
 
-  // @profileMethod
+  @profileMethod
   public static moveTo(
     this: Creep,
     a: number | RoomPosition | { pos: RoomPosition },
@@ -723,11 +756,14 @@ class CreepPrototypes extends Creep {
       // do stuff with x/y/opts here
       return this._moveTo(x, y, opts);
     } else {
+      let roomPosition: RoomPosition | undefined;
+
       target = a;
       let roomName: string;
       const roomPositionTarget = target as RoomPosition;
       if (roomPositionTarget.roomName) {
         roomName = roomPositionTarget.roomName;
+        roomPosition = roomPositionTarget;
         // if (!Memory.heatMaps.creep[roomName]) {
         //   Memory.heatMaps.creep[roomName] = {};
         // }
@@ -755,6 +791,7 @@ class CreepPrototypes extends Creep {
       } else {
         const posTarget = target as { pos: RoomPosition };
         roomName = posTarget.pos.roomName;
+        roomPosition = posTarget.pos;
         // if (!Memory.heatMaps.creep[roomName]) {
         //   Memory.heatMaps.creep[roomName] = {}
         // }
@@ -793,14 +830,14 @@ class CreepPrototypes extends Creep {
     }
   }
 
-  // @profileMethod
+  @profileMethod
   public static harvest(
     this: Creep,
     target: Source | Mineral<MineralConstant> | Deposit
   ) {
     return this._harvest(target);
   }
-  // @profileMethod
+  @profileMethod
   public static transfer(
     this: Creep,
     target: Structure<StructureConstant> | AnyCreep,
@@ -810,7 +847,7 @@ class CreepPrototypes extends Creep {
     return this._transfer(target, resourceType, amount);
   }
 
-  // @profileMethod
+  @profileMethod
   public static pickup(
     this: Creep,
     target: Resource<ResourceConstant>
@@ -818,7 +855,7 @@ class CreepPrototypes extends Creep {
     return this._pickup(target);
   }
 
-  // @profileMethod
+  @profileMethod
   public static withdraw(
     this: Creep,
     target: Structure<StructureConstant> | Tombstone | Ruin,
@@ -872,7 +909,7 @@ if (!Creep.prototype._moveTo) {
   Creep.prototype._moveTo = Creep.prototype.moveTo;
   Creep.prototype.moveTo = CreepPrototypes.moveTo;
 }
-// @profileClass()
+@profileClass()
 export class CreepTemplate {
   // private static bodyParts: BodyPartConstant[]
   public static run() {

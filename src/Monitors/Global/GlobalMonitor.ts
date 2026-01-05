@@ -1,4 +1,4 @@
-// import { profileMethod, profileClass } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 
 interface GlobalMonitorMemory {
   gcl: {
@@ -10,33 +10,33 @@ interface GlobalMonitorMemory {
     current: number;
     bucket: number;
   };
-    // memory: number
+  time: number;
+  // memory: number
 }
 
 declare global {
-    interface Memory {
-        global: Partial<GlobalMonitorMemory>
-    }
+  interface Memory {
+    global: Partial<GlobalMonitorMemory>;
+  }
 }
 
-// )@profileClass()
+@profileClass()
 export class GlobalMonitor {
-    public static run() {
-        const payload: GlobalMonitorMemory = {
-          gcl: {
-            level: Game.gcl.level,
-            progress: Game.gcl.progress,
-            nextLevel: Game.gcl.progressTotal
-            },
-            cpu: {
-                current: Game.cpu.getUsed(),
-                bucket: Game.cpu.bucket
-            },
-            // memory: Game.cpu.getHeapStatistics!()
-        };
+  public static run() {
+    const payload: GlobalMonitorMemory = {
+      gcl: {
+        level: Game.gcl.level,
+        progress: Game.gcl.progress,
+        nextLevel: Game.gcl.progressTotal
+      },
+      cpu: {
+        current: Game.cpu.getUsed(),
+        bucket: Game.cpu.bucket
+      },
+      time: Game.time
+      // memory: Game.cpu.getHeapStatistics!()
+    };
 
-        Memory.global = payload
-    }
-
-
+    Memory.global = payload;
+  }
 }

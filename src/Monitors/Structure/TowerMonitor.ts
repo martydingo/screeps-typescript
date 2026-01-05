@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 export interface TowerMonitorMemory {
@@ -15,7 +15,7 @@ export interface TowerMonitorMemory {
   };
 }
 
-// )@profileClass()
+@profileClass()
 export class TowerMonitor {
   public static run(tower: StructureTower) {
     if (!tower.room.memory.structures!.towers) {

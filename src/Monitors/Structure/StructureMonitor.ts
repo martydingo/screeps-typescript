@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { ExtensionMonitor, ExtensionMonitorMemory } from "./ExtensionMonitor";
 import { RoadMonitor, RoadMonitorMemory } from "./RoadMonitor";
@@ -35,7 +35,7 @@ declare global {
   }
 }
 
-// @profileClass()
+@profileClass()
 export class StructureMonitor {
   public static run() {
     Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
@@ -172,7 +172,7 @@ export class StructureMonitor {
       });
     } else {
       Log(
-        LogSeverity.INFORMATIONAL,
+        LogSeverity.DEBUG,
         "StructureMonitor",
         `find-type room monitoring postponed until ${Game.time + (interval - (Game.time % interval))} (${interval - (Game.time % interval)} ticks)`
       );

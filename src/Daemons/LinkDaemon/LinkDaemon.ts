@@ -1,9 +1,9 @@
 import { LinkCreep } from "Creeps/LinkCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-// )@profileClass()
+@profileClass()
 export class LinkDaemon {
   public static run() {
     Object.keys(Game.rooms).forEach(roomName => {
@@ -14,7 +14,7 @@ export class LinkDaemon {
     });
   }
 
-  // )@profileMethod
+  @profileMethod
 private static discernLinkTypes(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
@@ -91,7 +91,7 @@ private static discernLinkTypes(roomName: string) {
     }
   }
 
-  // )@profileMethod
+  @profileMethod
 private static discernLinkDistances(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
@@ -133,7 +133,7 @@ private static discernLinkDistances(roomName: string) {
     }
   }
 
-  // )@profileMethod
+  @profileMethod
 private static manageStorageLinkCreeps(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {
@@ -217,7 +217,7 @@ private static manageStorageLinkCreeps(roomName: string) {
     }
   }
 
-  // )@profileMethod
+  @profileMethod
 private static operateLinks(roomName: string) {
     if (Memory.rooms[roomName].structures) {
       if (Memory.rooms[roomName].structures!.links) {

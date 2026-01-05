@@ -1,4 +1,4 @@
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
 declare global {
@@ -12,7 +12,7 @@ declare global {
     distances: { [key: string]: number };
   }
 }
-// @profileClass()
+@profileClass()
 export class SpawnMonitor {
   public static run() {
     {

@@ -2,9 +2,9 @@ import { ExtractorCreep } from "Creeps/ExtractorCreep";
 import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
-// import { profileClass, profileMethod } from "utils/Profiler";
+import { profileClass, profileMethod } from "utils/Profiler";
 
-// )@profileClass()
+@profileClass()
 export class ExtractorDaemon {
   public static run() {
     const extractors = Object.values(Game.structures)
@@ -16,7 +16,7 @@ export class ExtractorDaemon {
     });
   }
 
-  // )@profileMethod
+  @profileMethod
 private static manageExtractorCreeps(extractor: StructureExtractor) {
     const room = extractor.room;
 
