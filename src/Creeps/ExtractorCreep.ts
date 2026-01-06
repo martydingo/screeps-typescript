@@ -12,22 +12,23 @@ declare global {
   interface CreepMemory extends Partial<ExtractorCreepMemory> {}
 }
 
-@profileClass()
+
 export class ExtractorCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 2 };
   public static maxBodyParts = { work: 6, carry: 1, move: 8 };
 
+  @profileClass("ExtractorCreep")
   public static run() {
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "ExtractorCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "ExtractorCreep")
       .forEach(extractorCreep => {
         if (
-          extractorCreep.memory.curTask === "spawning" &&
+          global.store.creeps[extractorCreep.name].curTask === "spawning" &&
           extractorCreep.spawning === false
         ) {
-          extractorCreep.memory.curTask = "miningExtractor";
+          global.store.creeps[extractorCreep.name].curTask = "miningExtractor";
           Log(
             LogSeverity.DEBUG,
             "ExtractorCreep",
@@ -36,9 +37,9 @@ export class ExtractorCreep extends CreepTemplate {
         }
         if (extractorCreep.spawning) return;
 
-        if (extractorCreep.memory.curTask === "miningExtractor") {
+        if (global.store.creeps[extractorCreep.name].curTask === "miningExtractor") {
           let shouldMine = false;
-          const assignedExtractor = extractorCreep.memory.assignedExtractor;
+          const assignedExtractor = global.store.creeps[extractorCreep.name].assignedExtractor;
           if (Game.flags[`extractor-anchor-${assignedExtractor as string}`]) {
             const anchorPoint =
               Game.flags[`extractor-anchor-${assignedExtractor as string}`];
@@ -72,13 +73,13 @@ export class ExtractorCreep extends CreepTemplate {
 
  @profileMethod
   private static mineExtractor(extractorCreep: Creep) {
-    const room = Game.rooms[extractorCreep.memory.room!];
+    const room = Game.rooms[global.store.creeps[extractorCreep.name].room!];
     if (room) {
-      const structureMonitorMemory = room.memory.structures;
+      const structureMonitorMemory = global.store.rooms[room.name].structures;
       if (structureMonitorMemory) {
         const extractorMonitorMemory = structureMonitorMemory.extractor;
         if (extractorMonitorMemory) {
-          const extractorId = extractorCreep.memory.assignedExtractor!;
+          const extractorId = global.store.creeps[extractorCreep.name].assignedExtractor!;
           const extractor = Game.getObjectById(extractorId);
           const mineralId = extractorMonitorMemory[extractorId].mineral.id;
           const mineral = Game.getObjectById(mineralId);
@@ -105,7 +106,7 @@ export class ExtractorCreep extends CreepTemplate {
               const harvestResult = extractorCreep.harvest(mineral);
               if (harvestResult === OK) {
                 const container = Game.getObjectById(
-                  extractorCreep.memory.assignedContainer as Id<StructureContainer>
+                  global.store.creeps[extractorCreep.name].assignedContainer as Id<StructureContainer>
                 );
                 if (container) {
                   const depositResult = extractorCreep.depositResourceIntoStructure(

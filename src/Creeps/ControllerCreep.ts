@@ -12,16 +12,17 @@ declare global {
   interface CreepMemory extends Partial<ControllerCreepMemory> {}
 }
 
-@profileClass()
+
 export class ControllerCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 3 };
 
+  @profileClass("ControllerCreep")
   public static run() {
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "ControllerCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "ControllerCreep")
       .forEach(ctrlCreep => {
-        if (ctrlCreep.memory.curTask === "spawning" && ctrlCreep.spawning === false) {
-          ctrlCreep.memory.curTask = "fetchingEnergy";
+        if (global.store.creeps[ctrlCreep.name].curTask === "spawning" && ctrlCreep.spawning === false) {
+          global.store.creeps[ctrlCreep.name].curTask = "fetchingEnergy";
           Log(
             LogSeverity.DEBUG,
             "ControllerCreep",
@@ -43,10 +44,10 @@ export class ControllerCreep extends CreepTemplate {
         // console.log("---");
         // }
         if (boostCheck === true) {
-          if (ctrlCreep.memory.curTask === "fetchingEnergy") {
+          if (global.store.creeps[ctrlCreep.name].curTask === "fetchingEnergy") {
             // if()
             if (ctrlCreep.store[RESOURCE_ENERGY] > 0) {
-              ctrlCreep.memory.curTask = "upgradingController";
+              global.store.creeps[ctrlCreep.name].curTask = "upgradingController";
               Log(
                 LogSeverity.DEBUG,
                 "ControllerCreep",
@@ -55,7 +56,7 @@ export class ControllerCreep extends CreepTemplate {
             }
           } else {
             if (ctrlCreep.store[RESOURCE_ENERGY] === 0) {
-              ctrlCreep.memory.curTask = "fetchingEnergy";
+              global.store.creeps[ctrlCreep.name].curTask = "fetchingEnergy";
               Log(
                 LogSeverity.DEBUG,
                 "ControllerCreep",
@@ -64,7 +65,7 @@ export class ControllerCreep extends CreepTemplate {
             }
           }
 
-          switch (ctrlCreep.memory.curTask) {
+          switch (global.store.creeps[ctrlCreep.name].curTask) {
             case "fetchingEnergy":
               this.fetchEnergy(ctrlCreep);
               break;
@@ -78,7 +79,7 @@ export class ControllerCreep extends CreepTemplate {
  @profileMethod
   private static fetchEnergy(ctrlCreep: Creep) {
     let controllerLinkId = null;
-    const roomMemory = Memory.rooms[ctrlCreep.memory.room!];
+    const roomMemory = global.store.rooms[global.store.creeps[ctrlCreep.name].room!];
     if (roomMemory) {
       const structuresMemory = roomMemory.structures;
       if (structuresMemory) {
@@ -191,7 +192,7 @@ export class ControllerCreep extends CreepTemplate {
       const requiredEnergyAmount =
         (desiredBoostParts.length - boostedParts.length) * 20;
       Object.keys(Game.rooms).forEach(roomName => {
-        const structureMonitorMemory = Memory.rooms[roomName].structures;
+        const structureMonitorMemory = global.store.rooms[roomName].structures;
         if (structureMonitorMemory) {
           const labsMonitorMemory = structureMonitorMemory.labs;
           if (labsMonitorMemory) {
@@ -239,9 +240,9 @@ export class ControllerCreep extends CreepTemplate {
       });
     } else return true;
     if (boostLabs.length > 0) {
-      // const creepsAlreadyBoosting = Object.values(Game.creeps).filter(((creep) => creep.memory.assignedBoostLab === boostLabs[0].id))
+      // const creepsAlreadyBoosting = Object.values(Game.creeps).filter(((creep) => global.store.creeps[creep.name].assignedBoostLab === boostLabs[0].id))
       // if (creepsAlreadyBoosting.length === 0) {
-      // ctrlCreep.memory.assignedBoostLab = boostLabs[0].id
+      // global.store.creeps[ctrlCreep.name].assignedBoostLab = boostLabs[0].id
       const boostResult = this.boostParts(ctrlCreep, boostLabs[0]);
       return false;
       // } else {
@@ -274,14 +275,14 @@ export class ControllerCreep extends CreepTemplate {
     }
     const boostResult = boostLab.boostCreep(ctrlCreep);
     if (boostResult === OK) {
-      // delete ctrlCreep.memory.assignedBoostLab
+      // delete global.store.creeps[ctrlCreep.name].assignedBoostLab
     }
     return boostResult;
   }
 
  @profileMethod
   private static upgradeController(ctrlCreep: Creep) {
-    const assignedController = Game.getObjectById(ctrlCreep.memory.assignedController!);
+    const assignedController = Game.getObjectById(global.store.creeps[ctrlCreep.name].assignedController!);
     if (assignedController) {
       const assignedControllerDistance = ctrlCreep.pos.getRangeTo(assignedController);
       if (assignedControllerDistance >= 4) {

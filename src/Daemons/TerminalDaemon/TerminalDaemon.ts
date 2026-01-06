@@ -2,11 +2,12 @@ import { profileClass, profileMethod } from "utils/Profiler";
 
 import { LabConfig, config } from "config";
 
-@profileClass()
+
 export class TerminalDaemon {
+  @profileClass("TerminalDaemon")
   public static run() {
     const roomNameLabConfigs: [string, LabConfig][] = [];
-    const labConfigs = config[Memory.env].labConfig;
+    const labConfigs = config[global.store.env].labConfig;
     Object.entries(labConfigs).forEach(([roomName, labConfig]) => {
       labConfig.forEach(roomLabConfig => {
         if (roomLabConfig.labs.primary.boost) {

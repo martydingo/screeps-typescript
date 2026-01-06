@@ -135,7 +135,7 @@ class CreepPrototypes extends Creep {
 
   @profileMethod
   public static fetchDroppedEnergy(this: Creep) {
-    const resourceMatrix = Memory.rooms[this.room.name].resources;
+    const resourceMatrix = global.store.rooms[this.room.name].resources;
     if (resourceMatrix) {
       const resourceDistanceMatrix = Object.entries(resourceMatrix)
         .filter(
@@ -208,7 +208,7 @@ class CreepPrototypes extends Creep {
 
   @profileMethod
   public static fetchDroppedResource(this: Creep) {
-    const resourceMatrix = Memory.rooms[this.room.name].resources;
+    const resourceMatrix = global.store.rooms[this.room.name].resources;
     if (resourceMatrix) {
       const resourceDistanceMatrix = Object.entries(resourceMatrix).map(
         ([resourceId, resourceMemory]) => {
@@ -269,7 +269,7 @@ class CreepPrototypes extends Creep {
 
   @profileMethod
   public static lootResourceFromTombstone(this: Creep, resourceType: ResourceConstant) {
-    const tombstones = Memory.rooms[this.room.name].tombstones;
+    const tombstones = global.store.rooms[this.room.name].tombstones;
     if (tombstones) {
       if (Object.keys(tombstones).length > 0) {
         const tombstonesWithEnergy = Object.entries(tombstones)
@@ -333,7 +333,7 @@ class CreepPrototypes extends Creep {
 
   @profileMethod
   public static lootEnergyFromRuin(this: Creep) {
-    const ruinMatrix = Memory.rooms[this.room.name].structures?.ruins;
+    const ruinMatrix = global.store.rooms[this.room.name].structures?.ruins;
     if (ruinMatrix) {
       const ruinDistanceMatrix = Object.entries(ruinMatrix)
         .filter(([, ruinMemory]) => ruinMemory.energy.amount > 0)
@@ -402,7 +402,7 @@ class CreepPrototypes extends Creep {
       resourceType !== RESOURCE_ENERGY ||
       structure.structureType !== STRUCTURE_STORAGE ||
       structure.store[resourceType] > 2000 ||
-      (this.memory.type === "SpawnCreep" &&
+      (global.store.creeps[this.name].type === "SpawnCreep" &&
         structure.store[resourceType] > this.store.getCapacity())
     ) {
       const structureDistance = this.pos.getRangeTo(structure);
@@ -565,13 +565,13 @@ class CreepPrototypes extends Creep {
     destinationRoomName: string,
     opts?: MoveToOpts
   ) {
-    if (!this.memory._pathfind) {
+    if (!global.store.creeps[this.name]._pathfind) {
       Log(
         LogSeverity.DEBUG,
         "CreepTemplate",
         `${this.name} has requested pathfinding but no _pathfind memory found, _pathfind memory has been initalised`
       );
-      this.memory._pathfind = {
+      global.store.creeps[this.name]._pathfind = {
         worldRoute: [],
         roomRoute: {
           roomName: this.pos.roomName,
@@ -581,39 +581,39 @@ class CreepPrototypes extends Creep {
       };
     }
     if (destinationRoomName !== this.pos.roomName) {
-      if (this.memory._pathfind.worldRoute.length === 0) {
+      if (global.store.creeps[this.name]._pathfind!.worldRoute.length === 0) {
         const workingWorldRoute = Pathfinding.routeToRoom(
           this.pos.roomName,
           destinationRoomName
         );
         if (workingWorldRoute !== ERR_NO_PATH) {
-          this.memory._pathfind.worldRoute = workingWorldRoute;
+          global.store.creeps[this.name]._pathfind!.worldRoute = workingWorldRoute;
         } else {
           return ERR_NO_PATH;
         }
         Log(
           LogSeverity.DEBUG,
           "CreepTemplate",
-          `Created world route for ${this.name} from ${this.pos.roomName} to ${destinationRoomName}, and stored in creep memory.`
+          `Created world route for ${this.name} from ${this.pos.roomName} to ${destinationRoomName}, and stored in global.store.creeps[creep.name].`
         );
       }
-      if (this.memory._pathfind.roomRoute.roomName !== this.pos.roomName) {
-        this.memory._pathfind.roomRoute.roomName = this.pos.roomName;
-        this.memory._pathfind.roomRoute.path = "";
+      if (global.store.creeps[this.name]._pathfind!.roomRoute.roomName !== this.pos.roomName) {
+        global.store.creeps[this.name]._pathfind!.roomRoute.roomName = this.pos.roomName;
+        global.store.creeps[this.name]._pathfind!.roomRoute.path = "";
         Log(
           LogSeverity.INFORMATIONAL,
           "CreepTemplate",
           `Room has changed for the room route for ${this.name} in ${this.pos.roomName} towards ${destinationRoomName}, room route memory reset.`
         );
       }
-      if (this.memory._pathfind.roomRoute.path === "") {
-        const worldRoute = this.memory._pathfind.worldRoute;
+      if (global.store.creeps[this.name]._pathfind!.roomRoute.path === "") {
+        const worldRoute = global.store.creeps[this.name]._pathfind!.worldRoute;
 
         let curRoomExit;
 
-        // const curRoomExits = worldRoute.filter(roomPath => roomPath.room === this.memory._pathfind?.roomRoute.roomName);
+        // const curRoomExits = worldRoute.filter(roomPath => roomPath.room === global.store.creeps[this.name]._pathfind?.roomRoute.roomName);
         worldRoute.forEach((roomPath, index) => {
-          if (roomPath.room === this.memory._pathfind?.roomRoute.roomName) {
+          if (roomPath.room === global.store.creeps[this.name]._pathfind?.roomRoute.roomName) {
             curRoomExit = worldRoute[index + 1];
           }
         });
@@ -623,7 +623,7 @@ class CreepPrototypes extends Creep {
         }
 
         let useCache = false;
-        const roomPathCache = Memory.pathCache[this.pos.roomName];
+        const roomPathCache = global.store.pathCache[this.pos.roomName];
         if (roomPathCache) {
           const exitCache = roomPathCache.exits[curRoomExit.room];
           if (exitCache) {
@@ -644,8 +644,8 @@ class CreepPrototypes extends Creep {
             });
             Pathfinding.cacheExit(this.pos, curRoomExit.room, exitRoute);
             const workingSerializedRoute = Room.serializePath(exitRoute);
-            this.memory._pathfind.roomRoute.path = workingSerializedRoute;
-            this.memory._pathfind.roomRoute.cached = false
+            global.store.creeps[this.name]._pathfind!.roomRoute.path = workingSerializedRoute;
+            global.store.creeps[this.name]._pathfind!.roomRoute.cached = false
             Log(
               LogSeverity.DEBUG,
               "CreepTemplate",
@@ -653,26 +653,26 @@ class CreepPrototypes extends Creep {
             );
           }
         } else {
-          this.memory._pathfind.roomRoute.path =
-          Memory.pathCache[this.pos.roomName].exits[curRoomExit.room][
+          global.store.creeps[this.name]._pathfind!.roomRoute.path =
+          global.store.pathCache[this.pos.roomName].exits[curRoomExit.room][
             `${this.pos.x}-${this.pos.y}`
           ];
-          this.memory._pathfind.roomRoute.cached = true
+          global.store.creeps[this.name]._pathfind!.roomRoute.cached = true
         }
       }
 
-      const route = this.memory._pathfind.roomRoute.path;
+      const route = global.store.creeps[this.name]._pathfind!.roomRoute.path;
       const moveResult = this.moveByPath(route);
 
       if (moveResult === -5) {
-        if (this.memory._pathfind.roomRoute.cached) {
+        if (global.store.creeps[this.name]._pathfind!.roomRoute.cached) {
           Log(
             LogSeverity.EMERGENCY,
             "CreepTemplate",
             `Cached path from ${this.pos.roomName} to ${destinationRoomName} has failed with -5, moving ${this.pos.x}-${this.pos.y}`
           );
         } else {
-          // delete this.memory._pathfind;
+          // delete global.store.creeps[this.name]._pathfind;
         }
       }
       if (moveResult === OK) {
@@ -698,7 +698,7 @@ class CreepPrototypes extends Creep {
       const direction = this.pos.getDirectionTo(centerOfDestinationRoom);
       const moveResult = this.move(direction);
       if (moveResult === OK) {
-        delete this.memory._pathfind;
+        delete global.store.creeps[this.name]._pathfind;
         Log(
           LogSeverity.INFORMATIONAL,
           "CreepTemplate",
@@ -740,8 +740,8 @@ class CreepPrototypes extends Creep {
     b?: number | MoveToOpts,
     c?: MoveToOpts
   ) {
-    // if (!Memory.heatMaps) {
-    //   Memory.heatMaps = {
+    // if (!global.store.heatMaps) {
+    //   global.store.heatMaps = {
     //     creep: {}
     //   };
     // }
@@ -764,11 +764,11 @@ class CreepPrototypes extends Creep {
       if (roomPositionTarget.roomName) {
         roomName = roomPositionTarget.roomName;
         roomPosition = roomPositionTarget;
-        // if (!Memory.heatMaps.creep[roomName]) {
-        //   Memory.heatMaps.creep[roomName] = {};
+        // if (!global.store.heatMaps.creep[roomName]) {
+        //   global.store.heatMaps.creep[roomName] = {}
         // }
 
-        // if (!Memory.heatMaps.creep[roomName][Game.time]) {
+        // if (!global.store.heatMaps.creep[roomName][Game.time]) {
         //   const xArray = Array.from({ length: 50 }, (_, i) => i + 1);
         //   const yArray = Array.from({ length: 50 }, (_, i) => i + 1);
 
@@ -778,24 +778,24 @@ class CreepPrototypes extends Creep {
         //     yArray.forEach(y => (heatMap[x][y] = 0));
         //   });
 
-        //   Memory.heatMaps.creep[roomName][Game.time] = heatMap;
-        //   console.log(JSON.stringify(Memory.heatMaps.creep[roomName][Game.time]));
+        //   global.store.heatMaps.creep[roomName][Game.time] = heatMap
+        //   console.log(JSON.stringify(global.store.heatMaps.creep[roomName][Game.time]));
         // }
 
-        // Object.keys(Memory.heatMaps.creep[roomName][Game.time]).forEach(
-        //   (time) => parseInt(time, 10) < (Game.time - 1500) && delete Memory.heatMaps.creep[roomName][Game.time]
+        // Object.keys(global.store.heatMaps.creep[roomName][Game.time]).forEach(
+        //   (time) => parseInt(time, 10) < (Game.time - 1500) && delete global.store.heatMaps.creep[roomName][Game.time]
         // );
 
-        // Memory.heatMaps.creep[roomName][Game.time][roomPositionTarget.x][roomPositionTarget.y] =
-        //   Memory.heatMaps.creep[roomName][Game.time][roomPositionTarget.x][roomPositionTarget.y] + 1;
+        // global.store.heatMaps.creep[roomName][Game.time][roomPositionTarget.x][roomPositionTarget.y] =
+        //   global.store.heatMaps.creep[roomName][Game.time][roomPositionTarget.x][roomPositionTarget.y] + 1;
       } else {
         const posTarget = target as { pos: RoomPosition };
         roomName = posTarget.pos.roomName;
         roomPosition = posTarget.pos;
-        // if (!Memory.heatMaps.creep[roomName]) {
-        //   Memory.heatMaps.creep[roomName] = {}
+        // if (!global.store.heatMaps.creep[roomName]) {
+        //   global.store.heatMaps.creep[roomName] = {}
         // }
-        // if (!Memory.heatMaps.creep[roomName][Game.time]) {
+        // if (!global.store.heatMaps.creep[roomName][Game.time]) {
 
         //   const xArray = Array.from({ length: 50 }, (_, i) => i + 1);
         //   const yArray = Array.from({ length: 50 }, (_, i) => i + 1);
@@ -806,20 +806,20 @@ class CreepPrototypes extends Creep {
         //     yArray.forEach(y => (heatMap[x][y] = 0));
         //   });
 
-        //   Memory.heatMaps.creep[roomName][Game.time] = heatMap;
-        //   console.log(JSON.stringify(Memory.heatMaps.creep[roomName][Game.time]));
+        //   global.store.heatMaps.creep[roomName][Game.time] = heatMap
+        //   console.log(JSON.stringify(global.store.heatMaps.creep[roomName][Game.time]));
         // }
 
-        //  Object.keys(Memory.heatMaps.creep[roomName][Game.time]).forEach(
-        // (time) => parseInt(time, 10) < (Game.time - 1500) && delete Memory.heatMaps.creep[roomName][Game.time])
-        // Memory.heatMaps.creep[roomName][Game.time][posTarget.pos.x][posTarget.pos.y] =
-        //   Memory.heatMaps.creep[roomName][Game.time][posTarget.pos.x][posTarget.pos.y] + 1;
+        //  Object.keys(global.store.heatMaps.creep[roomName][Game.time]).forEach(
+        // (time) => parseInt(time, 10) < (Game.time - 1500) && delete global.store.heatMaps.creep[roomName][Game.time])
+        // global.store.heatMaps.creep[roomName][Game.time][posTarget.pos.x][posTarget.pos.y] =
+        //   global.store.heatMaps.creep[roomName][Game.time][posTarget.pos.x][posTarget.pos.y] + 1;
       }
 
       opts = b as MoveToOpts | undefined;
       // do stuff with target/opts here
       if (this.pos.roomName === roomName) {
-        if (this.memory._pathfind) {
+        if (global.store.creeps[this.name]._pathfind) {
           return this.moveToUnknownRoom(roomName, opts);
         } else {
           return this._moveTo(target, opts);
@@ -909,9 +909,10 @@ if (!Creep.prototype._moveTo) {
   Creep.prototype._moveTo = Creep.prototype.moveTo;
   Creep.prototype.moveTo = CreepPrototypes.moveTo;
 }
-@profileClass()
+
 export class CreepTemplate {
   // private static bodyParts: BodyPartConstant[]
+  @profileClass("CreepTemplate")
   public static run() {
     //
   }

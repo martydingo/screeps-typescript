@@ -15,16 +15,17 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class SourceMonitor {
+  @profileClass("SourceMonitor")
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const sources = room.find(FIND_SOURCES);
 
       if (sources.length > 0) {
-        if (!room.memory.sources) {
-          room.memory.sources = {};
+        if (!global.store.rooms[room.name].sources!) {
+          global.store.rooms[room.name].sources = {};
           Log(
             LogSeverity.DEBUG,
             "SourceMonitor",
@@ -33,7 +34,7 @@ export class SourceMonitor {
         }
 
         sources.forEach(source => {
-          room.memory.sources![source.id] = {
+          global.store.rooms[room.name].sources![source.id] = {
             energy: {
               amount: source.energy,
               capacity: source.energyCapacity

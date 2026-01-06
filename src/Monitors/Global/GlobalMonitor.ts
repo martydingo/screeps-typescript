@@ -20,8 +20,9 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class GlobalMonitor {
+  @profileClass("GlobalMonitor")
   public static run() {
     const payload: GlobalMonitorMemory = {
       gcl: {
@@ -36,7 +37,7 @@ export class GlobalMonitor {
       time: Game.time
       // memory: Game.cpu.getHeapStatistics!()
     };
-
-    Memory.global = payload;
+    // global.__store[] = {}
+    global.store.global = payload;
   }
 }

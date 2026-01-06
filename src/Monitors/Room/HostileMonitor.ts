@@ -21,14 +21,15 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class HostileMonitor {
+  @profileClass("HostileMonitor")
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       if (room) {
-        if (!room.memory.hostiles) {
-          room.memory.hostiles = {};
+        if (!global.store.rooms[room.name].hostiles!) {
+          global.store.rooms[room.name].hostiles = {};
           Log(
             LogSeverity.DEBUG,
             "HostileMonitor",
@@ -36,10 +37,10 @@ export class HostileMonitor {
           );
         }
 
-        Object.keys(room.memory.hostiles).forEach(
+        Object.keys(global.store.rooms[room.name].hostiles!).forEach(
           hostileId =>
             Game.getObjectById(hostileId as Id<Creep>) == null &&
-            delete room.memory.hostiles![hostileId]
+            delete global.store.rooms[room.name].hostiles![hostileId]
         );
 
         let shouldMonitor = true;
@@ -49,7 +50,7 @@ export class HostileMonitor {
               shouldMonitor = false;
             } else {
               if (
-                room.controller.reservation.username !== config[Memory.env].username
+                room.controller.reservation.username !== config[global.store.env].username
               ) {
                 shouldMonitor = false;
               }
@@ -68,7 +69,7 @@ export class HostileMonitor {
             );
 
             hostiles.forEach(hostile => {
-              room.memory.hostiles![hostile.id] = {
+              global.store.rooms[room.name].hostiles![hostile.id] = {
                 hits: {
                   current: hostile.hits,
                   total: hostile.hitsMax

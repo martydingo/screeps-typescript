@@ -11,8 +11,9 @@ import { TransportCreep } from "Creeps/TransportCreep";
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class CreepDaemon {
+  @profileClass("CreepDaemon")
   public static run() {
     // console.log(`SourceCreep - Start: ${Game.cpu.getUsed()}`);
     SourceCreep.run();

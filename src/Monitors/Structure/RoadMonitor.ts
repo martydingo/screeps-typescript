@@ -12,14 +12,15 @@ export interface RoadMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class RoadMonitor {
+  @profileClass("RoadMonitor")
   public static run(road: StructureRoad) {
-    if (!road.room.memory.structures!.roads) {
-      road.room.memory.structures!.roads = {};
+    if (!global.store.rooms[road.room.name].structures!.roads!) {
+      global.store.rooms[road.room.name].structures!.roads = {};
       Log(LogSeverity.DEBUG, "RoadMonitor", `Road monitor memory not found, Road monitor memory initialised.`);
     }
-    road.room.memory.structures!.roads[road.id] = {
+    global.store.rooms[road.room.name].structures!.roads![road.id] = {
       hits: {
         current: road.hits,
         total: road.hitsMax

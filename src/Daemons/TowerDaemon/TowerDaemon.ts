@@ -1,10 +1,11 @@
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class TowerDaemon {
+  @profileClass("TowerDaemon")
   public static run() {
-    Object.values(Memory.rooms).forEach(roomMemory => {
+    Object.values(global.store.rooms).forEach(roomMemory => {
       if (roomMemory.structures) {
         if (roomMemory.structures.towers) {
           const towers = Object.keys(roomMemory.structures.towers)
@@ -93,8 +94,8 @@ export class TowerDaemon {
     //     tower.id
     //   }: ${Game.cpu.getUsed()}`
     // );
-    if (Memory.rooms[tower.room.name].hostiles) {
-      const hostileCreeps = Object.keys(tower.room.memory.hostiles!).map(creepId =>
+    if (global.store.rooms[tower.room.name].hostiles) {
+      const hostileCreeps = Object.keys(global.store.rooms[tower.room.name].hostiles!).map(creepId =>
         Game.getObjectById(creepId as Id<Creep>)
       );
       // .filter(creep => creep !== null);
@@ -137,8 +138,8 @@ export class TowerDaemon {
     //   }: ${Game.cpu.getUsed()}`
     // );
     let repairTarget: StructureRoad | StructureContainer | undefined | null;
-    if (tower.room.memory.structures?.containers) {
-      const containersInMemory = Object.keys(tower.room.memory.structures.containers)
+    if (global.store.rooms[tower.room.name].structures!.containers!) {
+      const containersInMemory = Object.keys(global.store.rooms[tower.room.name].structures!.containers!)
         .map(containerId => Game.getObjectById(containerId as Id<StructureContainer>))
         .filter(container => container !== null);
 
@@ -164,8 +165,8 @@ export class TowerDaemon {
       }
     }
     if (!repairTarget) {
-      if (tower.room.memory.structures?.roads) {
-        const roads = Object.keys(tower.room.memory.structures.roads)
+      if (global.store.rooms[tower.room.name].structures!.roads) {
+        const roads = Object.keys(global.store.rooms[tower.room.name].structures!.roads!)
           .map(roadId => Game.getObjectById(roadId as Id<StructureRoad>))
           .filter(road => road !== null) as StructureRoad[];
 

@@ -9,19 +9,20 @@ declare global {
   interface CreepMemory extends Partial<ClaimCreepMemory> {}
 }
 
-@profileClass()
+
 export class ClaimCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 0, move: 5, claim: 1 };
   public static maxBodyParts = { move: 5, claim: 1 };
 
+  @profileClass("ClaimCreep")
   public static run() {
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "ClaimCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "ClaimCreep")
       .forEach(claimCreep => {
-        if (claimCreep.memory.curTask === "spawning" && claimCreep.spawning === false) {
-          claimCreep.memory.curTask = "movingToRoom";
+        if (global.store.creeps[claimCreep.name].curTask === "spawning" && claimCreep.spawning === false) {
+          global.store.creeps[claimCreep.name].curTask = "movingToRoom";
           Log(
             LogSeverity.DEBUG,
             "claimCreep",
@@ -30,7 +31,7 @@ export class ClaimCreep extends CreepTemplate {
         }
         if (claimCreep.spawning) return;
 
-        switch (claimCreep.memory.curTask) {
+        switch (global.store.creeps[claimCreep.name].curTask) {
           case "movingToRoom":
             this.moveToRoom(claimCreep);
             break;
@@ -43,35 +44,35 @@ export class ClaimCreep extends CreepTemplate {
  @profileMethod
   private static moveToRoom(claimCreep: Creep) {
     const moveResult = claimCreep.moveTo(
-      new RoomPosition(25, 25, claimCreep.memory.room!)
+      new RoomPosition(25, 25, global.store.creeps[claimCreep.name].room!)
     );
     if (moveResult === OK) {
       Log(
         LogSeverity.DEBUG,
         "claimCreep",
-        `${claimCreep.name} has moved towards ${claimCreep.memory.room!}`
+        `${claimCreep.name} has moved towards ${global.store.creeps[claimCreep.name].room!}`
       );
     } else {
       Log(
         LogSeverity.ERROR,
         "claimCreep",
-        `${claimCreep.name} has failed to move while moving towards ${claimCreep.memory
+        `${claimCreep.name} has failed to move while moving towards ${global.store.creeps[claimCreep.name]
           .room!}: ${moveResult}.`
       );
     }
-    if (claimCreep.room.name === claimCreep.memory.room) {
-      claimCreep.memory.curTask = "claimingController";
+    if (claimCreep.room.name === global.store.creeps[claimCreep.name].room) {
+      global.store.creeps[claimCreep.name].curTask = "claimingController";
       Log(
         LogSeverity.DEBUG,
         "claimCreep",
-        `${claimCreep.name} has moved into ${claimCreep.memory.room}, task set to "claimingController".`
+        `${claimCreep.name} has moved into ${global.store.creeps[claimCreep.name].room}, task set to "claimingController".`
       );
     }
   }
 
  @profileMethod
   private static claimController(claimCreep: Creep) {
-    const room = Game.rooms[claimCreep.memory.room!];
+    const room = Game.rooms[global.store.creeps[claimCreep.name].room!];
     if (room) {
       const controller = room.controller;
       if (controller) {
@@ -100,13 +101,13 @@ export class ClaimCreep extends CreepTemplate {
             Log(
               LogSeverity.NOTICE,
               "claimCreep",
-              `${claimCreep.name} has successfully claimed ${claimCreep.memory.room!}!`
+              `${claimCreep.name} has successfully claimed ${global.store.creeps[claimCreep.name].room!}!`
             );
           } else {
             Log(
               LogSeverity.ERROR,
               "claimCreep",
-              `${claimCreep.name} has failed to claim ${claimCreep.memory
+              `${claimCreep.name} has failed to claim ${global.store.creeps[claimCreep.name]
                 .room!} with the error code ${claimResult}.`
             );
           }
@@ -116,7 +117,7 @@ export class ClaimCreep extends CreepTemplate {
           Log(
             LogSeverity.WARNING,
             "claimCreep",
-            `${claimCreep.name} has attempted to claim ${claimCreep.memory
+            `${claimCreep.name} has attempted to claim ${global.store.creeps[claimCreep.name]
               .room!}, but we already have claimed it!`
           );
         }
@@ -125,12 +126,12 @@ export class ClaimCreep extends CreepTemplate {
         return ERR_NOT_FOUND;
       }
     } else {
-      claimCreep.memory.curTask = "movingToRoom";
+      global.store.creeps[claimCreep.name].curTask = "movingToRoom";
       Log(
         LogSeverity.WARNING,
         "claimCreep",
-        `${claimCreep.name} has attempted to claim ${claimCreep.memory
-          .room!}, but needs to move intp ${claimCreep.memory
+        `${claimCreep.name} has attempted to claim ${global.store.creeps[claimCreep.name]
+          .room!}, but needs to move intp ${global.store.creeps[claimCreep.name]
           .room!}. Setting task to "movingToRoom".`
       );
       return ERR_NOT_IN_RANGE;

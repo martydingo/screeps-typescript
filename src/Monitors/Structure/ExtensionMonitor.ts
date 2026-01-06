@@ -11,18 +11,19 @@ export interface ExtensionMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class ExtensionMonitor {
+  @profileClass("ExtensionMonitor")
   public static run(extension: StructureExtension) {
-    if (!extension.room.memory.structures!.extensions) {
-      extension.room.memory.structures!.extensions = {};
+    if (!global.store.rooms[extension.room.name].structures!.extensions!) {
+      global.store.rooms[extension.room.name].structures!.extensions = {};
       Log(
         LogSeverity.DEBUG,
         "ExtensionMonitor",
         `extension monitor memory not found, extension monitor memory initialised.`
       );
     }
-    extension.room.memory.structures!.extensions[extension.id] = {
+    global.store.rooms[extension.room.name].structures!.extensions![extension.id] = {
       energy: {
         amount: extension.store[RESOURCE_ENERGY],
         capacity: extension.store.getCapacity(RESOURCE_ENERGY)

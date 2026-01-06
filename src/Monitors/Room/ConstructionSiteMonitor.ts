@@ -15,16 +15,17 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class ConstructionSiteMonitor {
+  @profileClass("ConstructionSiteMonitor")
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const constructionSites = room.find(FIND_CONSTRUCTION_SITES);
 
       if (constructionSites.length > 0) {
-        if (!room.memory.constructionSites) {
-          room.memory.constructionSites = {};
+        if (!global.store.rooms[room.name].constructionSites!) {
+          global.store.rooms[room.name].constructionSites = {};
           Log(
             LogSeverity.DEBUG,
             "ConstructionSiteMonitor",
@@ -33,7 +34,7 @@ export class ConstructionSiteMonitor {
         }
 
         constructionSites.forEach(constructionSite => {
-          room.memory.constructionSites![constructionSite.id] = {
+          global.store.rooms[room.name].constructionSites![constructionSite.id] = {
             progress: {
               progress: constructionSite.progress,
               total: constructionSite.progressTotal
@@ -49,11 +50,11 @@ export class ConstructionSiteMonitor {
         );
       }
     }
-    if (Memory.rooms[roomName].constructionSites) {
-      if (Object.values(Memory.rooms[roomName].constructionSites!).length > 0) {
-        Object.keys(Memory.rooms[roomName].constructionSites!).forEach(constructionSiteId => {
+    if (global.store.rooms[roomName].constructionSites) {
+      if (Object.values(global.store.rooms[roomName].constructionSites!).length > 0) {
+        Object.keys(global.store.rooms[roomName].constructionSites!).forEach(constructionSiteId => {
           if (Game.getObjectById(constructionSiteId as Id<ConstructionSite>) === null) {
-            delete Memory.rooms[roomName].constructionSites![constructionSiteId];
+            delete global.store.rooms[roomName].constructionSites![constructionSiteId];
             Log(
               LogSeverity.DEBUG,
               "ConstructionSiteMonitor",

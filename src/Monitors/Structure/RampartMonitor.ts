@@ -12,14 +12,15 @@ export interface RampartMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class RampartMonitor {
+  @profileClass("RampartMonitor")
   public static run(rampart: StructureRampart) {
-    if (!rampart.room.memory.structures!.ramparts) {
-      rampart.room.memory.structures!.ramparts = {};
+    if (!global.store.rooms[rampart.room.name].structures!.ramparts!) {
+      global.store.rooms[rampart.room.name].structures!.ramparts = {};
       Log(LogSeverity.DEBUG, "RampartMonitor", `Rampart monitor memory not found, Rampart monitor memory initialised.`);
     }
-    rampart.room.memory.structures!.ramparts[rampart.id] = {
+    global.store.rooms[rampart.room.name].structures!.ramparts![rampart.id] = {
       hits: {
         current: rampart.hits,
         total: rampart.hitsMax

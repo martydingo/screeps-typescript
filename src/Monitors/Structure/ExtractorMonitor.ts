@@ -14,11 +14,12 @@ export interface ExtractorMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class ExtractorMonitor {
+  @profileClass("ExtractorMonitor")
   public static run(extractor: StructureExtractor) {
-    if (!extractor.room.memory.structures!.extractor) {
-      extractor.room.memory.structures!.extractor = {};
+    if (!global.store.rooms[extractor.room.name].structures!.extractor!) {
+      global.store.rooms[extractor.room.name].structures!.extractor = {};
       Log(
         LogSeverity.DEBUG,
         "ExtractorMonitor",
@@ -34,7 +35,7 @@ export class ExtractorMonitor {
     .map(mineralResult => mineralResult.mineral!)[0];
 
 
-    extractor.room.memory.structures!.extractor[extractor.id] = {
+    global.store.rooms[extractor.room.name].structures!.extractor![extractor.id] = {
     mineral: {
       id: mineral.id,
       type: mineral.mineralType,

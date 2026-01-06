@@ -20,8 +20,9 @@ export interface LabJob {
   type: "lab";
 }
 
-@profileClass()
+
 export class LabDaemon {
+  @profileClass("LabDaemon")
   public static run() {
     const roomsWithLabs: string[] = [];
     Object.values(Game.structures)
@@ -41,11 +42,11 @@ export class LabDaemon {
 
  @profileMethod
   private static manageLabJobs(roomName: string) {
-    const roomlabConfigs = config[Memory.env].labConfig[roomName];
+    const roomlabConfigs = config[global.store.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {
         const recipe = roomlabConfig.recipe;
-        if (!Memory.jobs[`${roomName}-${recipe}`]) {
+        if (!global.store.jobs[`${roomName}-${recipe}`]) {
           const components: string[] = [];
           Object.entries(REACTIONS).forEach(([componentA, subReaction]) => {
             Object.entries(subReaction).forEach(([, reactionResult]) => {
@@ -68,7 +69,7 @@ export class LabDaemon {
               )
               .filter(secondaryLab => secondaryLab !== null);
 
-            const labJobs = Object.entries(Memory.jobs).filter(
+            const labJobs = Object.entries(global.store.jobs).filter(
               ([, job]) => job.type === "lab"
             ) as [string, LabJob][];
             const labJobsInRoom = labJobs.filter(
@@ -128,12 +129,12 @@ export class LabDaemon {
                   type: "lab",
                   config: roomlabConfig
                 };
-                Memory.jobs[`${roomName}-${recipe}`] = labJob;
+                global.store.jobs[`${roomName}-${recipe}`] = labJob
               }
             }
           }
         } else {
-          const labJob = Memory.jobs[`${roomName}-${recipe}`] as LabJob;
+          const labJob = global.store.jobs[`${roomName}-${recipe}`] as LabJob;
           const labTasks = labJob.tasks;
 
           Object.entries(labTasks).forEach(([taskName, task]) => {
@@ -145,7 +146,7 @@ export class LabDaemon {
               } else {
                 labJob.tasks[taskName].status = "pending";
               }
-              Memory.jobs[`${roomName}-${recipe}`] = labJob;
+              global.store.jobs[`${roomName}-${recipe}`] = labJob
             }
           });
         }
@@ -154,7 +155,7 @@ export class LabDaemon {
   }
  @profileMethod
   private static manageLabCreeps(roomName: string) {
-    const labJobs = Object.entries(Memory.jobs).filter(
+    const labJobs = Object.entries(global.store.jobs).filter(
       ([, job]) => job.type === "lab"
     ) as [string, LabJob][];
     const roomLabJobs = Object.values(labJobs).filter(
@@ -189,7 +190,7 @@ export class LabDaemon {
           let labUnderCapacity = false;
           let amount = 0;
           let capacity = 0;
-          Object.values(room.memory.structures!.labs!).forEach(labMonitorMemory => {
+          Object.values(global.store.rooms[room.name].structures!.labs!).forEach(labMonitorMemory => {
             if (labMonitorMemory.resources[resourceName]) {
               amount = amount + labMonitorMemory.resources[resourceName].amount;
               capacity = labMonitorMemory.resources[resourceName].capacity;
@@ -207,10 +208,10 @@ export class LabDaemon {
         // console.log(mineralsFound && labsUnderCapacity.includes(true));
         if (mineralsFound && labsUnderCapacity.includes(true)) {
           const labCreeps = Object.values(Game.creeps).filter(
-            creep => creep.memory.type === "LabCreep"
+            creep => global.store.creeps[creep.name].type === "LabCreep"
           );
 
-          const spawnJobs = Object.values(Memory.jobs).filter(
+          const spawnJobs = Object.values(global.store.jobs).filter(
             job => job.type === "spawn"
           ) as SpawnJob[];
           const assignedJobs = Object.values(spawnJobs).filter(
@@ -223,7 +224,7 @@ export class LabDaemon {
             labCreeps.length < requestedCreeps &&
             assignedJobs.length === 0
           ) {
-            Memory.jobs[`LabCreep-${roomName}-${Game.time}`] = {
+            global.store.jobs[`LabCreep-${roomName}-${Game.time}`] = {
               type: "spawn",
               name: `LabCreep-${roomName}-${Game.time}`,
               bodyPartRatio: LabCreep.bodyPartRatio,
@@ -244,7 +245,7 @@ export class LabDaemon {
   }
  @profileMethod
   private static operateLabs(roomName: string) {
-    const roomlabConfigs = config[Memory.env].labConfig[roomName];
+    const roomlabConfigs = config[global.store.env].labConfig[roomName];
     if (roomlabConfigs) {
       Object.values(roomlabConfigs).forEach(roomlabConfig => {
         const primaryLab = Game.getObjectById(

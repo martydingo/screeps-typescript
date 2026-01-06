@@ -13,21 +13,22 @@ declare global {
   interface CreepMemory extends Partial<TransportCreepMemory> {}
 }
 
-@profileClass()
+
 export class TransportCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
+  @profileClass("TransportCreep")
   public static run() {
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "TransportCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "TransportCreep")
       .forEach(transportCreep => {
         if (
-          transportCreep.memory.curTask === "spawning" &&
+          global.store.creeps[transportCreep.name].curTask === "spawning" &&
           transportCreep.spawning === false
         ) {
-          transportCreep.memory.curTask = "fetchingResource";
+          global.store.creeps[transportCreep.name].curTask = "fetchingResource";
           Log(
             LogSeverity.DEBUG,
             "TransportCreep",
@@ -35,11 +36,11 @@ export class TransportCreep extends CreepTemplate {
           );
         }
 
-        if (transportCreep.memory.curTask === "fetchingResource") {
+        if (global.store.creeps[transportCreep.name].curTask === "fetchingResource") {
           if (
             transportCreep.store.getUsedCapacity() >= transportCreep.store.getCapacity()
           ) {
-            transportCreep.memory.curTask = "depositingResource";
+            global.store.creeps[transportCreep.name].curTask = "depositingResource";
             Log(
               LogSeverity.DEBUG,
               "TransportCreep",
@@ -48,7 +49,7 @@ export class TransportCreep extends CreepTemplate {
           }
         } else {
           if (transportCreep.store.getUsedCapacity() === 0) {
-            transportCreep.memory.curTask = "fetchingResource";
+            global.store.creeps[transportCreep.name].curTask = "fetchingResource";
             Log(
               LogSeverity.DEBUG,
               "TransportCreep",
@@ -59,16 +60,16 @@ export class TransportCreep extends CreepTemplate {
 
         if (transportCreep.spawning) return;
 
-        switch (transportCreep.memory.curTask) {
+        switch (global.store.creeps[transportCreep.name].curTask) {
           case "fetchingResource":
-            if (transportCreep.memory.origin === "loot") {
+            if (global.store.creeps[transportCreep.name].origin === "loot") {
               Log(
                 LogSeverity.DEBUG,
                 "TransportCreep",
                 `${
                   transportCreep.name
-                }'s origin is set to "loot", looting resources in ${transportCreep
-                  .memory.room!}`
+                }'s origin is set to "loot", looting resources in ${global.store
+                  .creeps[transportCreep.name].room!}`
               );
               this.lootEnergyInRoom(transportCreep);
             } else {
@@ -83,7 +84,7 @@ export class TransportCreep extends CreepTemplate {
 
  @profileMethod
   private static lootEnergyInRoom(transportCreep: Creep) {
-    const assignedRoom = transportCreep.memory.room;
+    const assignedRoom = global.store.creeps[transportCreep.name].room;
     if (assignedRoom) {
       if (transportCreep.pos.roomName === assignedRoom) {
         const lootTombstoneResult =
@@ -99,12 +100,12 @@ export class TransportCreep extends CreepTemplate {
  @profileMethod
   private static fetchResource(transportCreep: Creep) {
     const origin = Game.getObjectById(
-      transportCreep.memory.origin as Id<StructureStorage>
+      global.store.creeps[transportCreep.name].origin as Id<StructureStorage>
     );
     if (origin) {
       transportCreep.fetchResourceFromStructure(
         origin,
-        transportCreep.memory.resourceType!
+        global.store.creeps[transportCreep.name].resourceType!
       );
     }
   }
@@ -112,7 +113,7 @@ export class TransportCreep extends CreepTemplate {
  @profileMethod
   private static depositResource(transportCreep: Creep) {
     const storage = Game.getObjectById(
-      transportCreep.memory.destination as Id<StructureStorage>
+      global.store.creeps[transportCreep.name].destination as Id<StructureStorage>
     );
     if (storage) {
       const storageDistance = transportCreep.pos.getRangeTo(storage);
@@ -136,20 +137,20 @@ export class TransportCreep extends CreepTemplate {
 
       const depositResult = transportCreep.transfer(
         storage,
-        transportCreep.memory.resourceType as ResourceConstant
+        global.store.creeps[transportCreep.name].resourceType as ResourceConstant
       );
       if (depositResult === OK) {
         Log(
           LogSeverity.DEBUG,
           "SpawnCreep",
-          `${transportCreep.name} has deposited resource ${transportCreep.memory
+          `${transportCreep.name} has deposited resource ${global.store.creeps[transportCreep.name]
             .resourceType!} into storage ${storage.id} in ${storage.pos.roomName}`
         );
       } else {
         Log(
           LogSeverity.ERROR,
           "SpawnCreep",
-          `${transportCreep.name} has failed to deposit resource ${transportCreep.memory
+          `${transportCreep.name} has failed to deposit resource ${global.store.creeps[transportCreep.name]
             .resourceType!} into storage ${storage.id} in ${
             storage.pos.roomName
           } with result: ${depositResult}`

@@ -12,11 +12,12 @@ export interface StorageMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class StorageMonitor {
+  @profileClass("StorageMonitor")
   public static run(storage: StructureStorage) {
-    if (!storage.room.memory.structures!.storage) {
-      storage.room.memory.structures!.storage = {};
+    if (!global.store.rooms[storage.room.name].structures!.storage!) {
+      global.store.rooms[storage.room.name].structures!.storage = {};
       Log(
         LogSeverity.DEBUG,
         "StorageMonitor",
@@ -31,7 +32,7 @@ export class StorageMonitor {
       };
     });
 
-    storage.room.memory.structures!.storage[storage.id] = {
+    global.store.rooms[storage.room.name].structures!.storage![storage.id] = {
       resources
     };
         Log(LogSeverity.DEBUG, "StorageMonitor", `storage ${storage.id}} monitored.`);

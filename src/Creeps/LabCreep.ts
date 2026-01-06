@@ -13,19 +13,20 @@ declare global {
   interface CreepMemory extends Partial<LabCreepMemory> {}
 }
 
-@profileClass()
+
 export class LabCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
+  @profileClass("LabCreep")
   public static run() {
 
 
-    const labJobs = Object.values(Memory.jobs).filter(job => job.type === "lab") as LabJob[];
+    const labJobs = Object.values(global.store.jobs).filter(job => job.type === "lab") as LabJob[];
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "LabCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "LabCreep")
       .forEach(labCreep => {
-        const roomLabJobs = labJobs.filter(labJob => labJob.room === labCreep.memory.room!);
+        const roomLabJobs = labJobs.filter(labJob => labJob.room === global.store.creeps[labCreep.name].room!);
         const priorityLevels: Set<number> = new Set();
 
         let curTask: LabTask;
@@ -69,16 +70,16 @@ export class LabCreep extends CreepTemplate {
                 //     }
                 //   }
 
-                if (labCreep.memory.curTask === "spawning" && labCreep.spawning === false) {
-                  labCreep.memory.curTask = "fetchingResource";
+                if (global.store.creeps[labCreep.name].curTask === "spawning" && labCreep.spawning === false) {
+                  global.store.creeps[labCreep.name].curTask = "fetchingResource";
                   Log(LogSeverity.DEBUG, "LabCreep", `${labCreep.name} has spawned, task set to "fetchingResource"`);
 
                 }
                  if(labCreep.spawning) return
 
-                if (labCreep.memory.curTask === "fetchingResource") {
+                if (global.store.creeps[labCreep.name].curTask === "fetchingResource") {
                   if (labCreep.store.getUsedCapacity() > 0) {
-                    labCreep.memory.curTask = "depositingResource";
+                    global.store.creeps[labCreep.name].curTask = "depositingResource";
                     Log(
                       LogSeverity.DEBUG,
                       "LabCreep",
@@ -87,7 +88,7 @@ export class LabCreep extends CreepTemplate {
                   }
                 } else {
                   if (labCreep.store.getUsedCapacity() === 0) {
-                    labCreep.memory.curTask = "fetchingResource";
+                    global.store.creeps[labCreep.name].curTask = "fetchingResource";
                     Log(
                       LogSeverity.DEBUG,
                       "LabCreep",
@@ -96,10 +97,10 @@ export class LabCreep extends CreepTemplate {
                   }
                 }
                 if (labCreep.store.getUsedCapacity() > 0 && labCreep.store[curTask.resource] === 0) {
-                  labCreep.memory.curTask = "emptyingResource";
+                  global.store.creeps[labCreep.name].curTask = "emptyingResource";
                 }
 
-                switch (labCreep.memory.curTask) {
+                switch (global.store.creeps[labCreep.name].curTask) {
                   case "fetchingResource":
                     this.fetchResource(labCreep, curTask);
 
@@ -135,11 +136,11 @@ export class LabCreep extends CreepTemplate {
  @profileMethod
 private static fetchResource(labCreep: Creep, task: LabTask) {
     const resourceType = task.resource;
-    const room = Game.rooms[labCreep.memory.room!];
+    const room = Game.rooms[global.store.creeps[labCreep.name].room!];
     const destinationId = task.structure;
     const destination = Game.getObjectById(destinationId);
     if (destination) {
-      if (room && labCreep.pos.roomName === labCreep.memory.room!) {
+      if (room && labCreep.pos.roomName === global.store.creeps[labCreep.name].room!) {
         if (room.storage) {
           if (room.storage.store[resourceType] > 0) {
             const fetchResult = labCreep.fetchResourceFromStorage(resourceType);
@@ -188,7 +189,7 @@ private static emptyResources(labCreep: Creep, task: LabTask) {
       });
 
       if (incorrectResourceInStore === false) {
-        labCreep.memory.curTask = "fetchingResource";
+        global.store.creeps[labCreep.name].curTask = "fetchingResource";
       }
     }
   }

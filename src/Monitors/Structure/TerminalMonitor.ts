@@ -12,11 +12,12 @@ export interface TerminalMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class TerminalMonitor {
+  @profileClass("TerminalMonitor")
   public static run(terminal: StructureTerminal) {
-    if (!terminal.room.memory.structures!.terminal) {
-      terminal.room.memory.structures!.terminal = {};
+    if (!global.store.rooms[terminal.room.name].structures!.terminal!) {
+      global.store.rooms[terminal.room.name].structures!.terminal = {};
       Log(
         LogSeverity.DEBUG,
         "TerminalMonitor",
@@ -32,7 +33,7 @@ export class TerminalMonitor {
       };
     });
 
-    terminal.room.memory.structures!.terminal[terminal.id] = {
+    global.store.rooms[terminal.room.name].structures!.terminal![terminal.id] = {
       resources
     };
 

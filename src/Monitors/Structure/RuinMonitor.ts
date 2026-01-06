@@ -10,14 +10,15 @@ export interface RuinMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class RuinMonitor {
+  @profileClass("RuinMonitor")
   public static run(ruin: Ruin) {
-    if (!ruin.room!.memory.structures!.ruins) {
-      ruin.room!.memory.structures!.ruins = {};
+    if (!global.store.rooms[ruin.pos.roomName].structures!.ruins) {
+      global.store.rooms[ruin.pos.roomName].structures!.ruins = {};
       Log(LogSeverity.DEBUG, "RoadMonitor", `road monitor memory not found, road monitor memory initialised.`);
     }
-    ruin.room!.memory.structures!.ruins[ruin.id] = {
+    global.store.rooms[ruin.pos.roomName].structures!.ruins![ruin.id] = {
       energy: {
         amount: ruin.store[RESOURCE_ENERGY]
       },

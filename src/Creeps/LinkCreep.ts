@@ -11,36 +11,37 @@ declare global {
   interface CreepMemory extends Partial<LinkCreepMemory> {}
 }
 
-@profileClass()
+
 export class LinkCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
+  @profileClass("LinkCreep")
   public static run() {
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "LinkCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "LinkCreep")
       .forEach(linkCreep => {
-        if (linkCreep.memory.curTask === "spawning" && linkCreep.spawning === false) {
-          linkCreep.memory.curTask = "fetchingEnergy";
+        if (global.store.creeps[linkCreep.name].curTask === "spawning" && linkCreep.spawning === false) {
+          global.store.creeps[linkCreep.name].curTask = "fetchingEnergy";
           Log(LogSeverity.DEBUG, "LinkCreep", `${linkCreep.name} has spawned, task set to "fetchingEnergy"`);
 
         }
          if(linkCreep.spawning) return
 
-        if (linkCreep.memory.curTask === "fetchingEnergy") {
+        if (global.store.creeps[linkCreep.name].curTask === "fetchingEnergy") {
           if (linkCreep.store.getUsedCapacity() >= linkCreep.store.getCapacity()) {
-            linkCreep.memory.curTask = "depositingEnergy";
+            global.store.creeps[linkCreep.name].curTask = "depositingEnergy";
             Log(LogSeverity.DEBUG, "LinkCreep", `${linkCreep.name}'s store is full, task set to "depositingEnergy"`);
           }
         } else {
           if (linkCreep.store.getUsedCapacity() === 0) {
-            linkCreep.memory.curTask = "fetchingEnergy";
+            global.store.creeps[linkCreep.name].curTask = "fetchingEnergy";
             Log(LogSeverity.DEBUG, "LinkCreep", `${linkCreep.name}'s store is empty, task set to "fetchingEnergy"`);
           }
         }
 
-        switch (linkCreep.memory.curTask) {
+        switch (global.store.creeps[linkCreep.name].curTask) {
           case "fetchingEnergy":
             this.fetchEnergy(linkCreep)
             break;
@@ -52,7 +53,7 @@ export class LinkCreep extends CreepTemplate {
 
   @profileMethod
 private static fetchEnergy(linkCreep: Creep) {
-    const linkAnchor = Game.flags[`link-anchor-${linkCreep.memory.assignedLink as string}`];
+    const linkAnchor = Game.flags[`link-anchor-${global.store.creeps[linkCreep.name].assignedLink as string}`];
     if (linkAnchor) {
       if (linkCreep.pos.getRangeTo(linkAnchor) > 0) {
         const moveResult = linkCreep.moveTo(linkAnchor.pos);
@@ -78,9 +79,9 @@ private static fetchEnergy(linkCreep: Creep) {
   @profileMethod
 private static depositEnergy(linkCreep: Creep) {
     const linkIds: Id<StructureLink>[] = []
-    const room = Game.rooms[linkCreep.memory.room!]
+    const room = Game.rooms[global.store.creeps[linkCreep.name].room!]
     if (room) {
-      const structureMemory = room.memory.structures
+      const structureMemory = global.store.rooms[room.name].structures
       if (structureMemory) {
         const linksMemory = structureMemory.links
         if (linksMemory) {

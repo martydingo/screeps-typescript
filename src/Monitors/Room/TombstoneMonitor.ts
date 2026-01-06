@@ -14,16 +14,17 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class TombstoneMonitor {
+  @profileClass("TombstoneMonitor")
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
       const tombstones = room.find(FIND_TOMBSTONES);
 
       if (tombstones.length > 0) {
-        if (!room.memory.tombstones) {
-          room.memory.tombstones = {};
+        if (!global.store.rooms[room.name].tombstones!) {
+          global.store.rooms[room.name].tombstones = {};
           Log(
             LogSeverity.DEBUG,
             "TombstoneMonitor",
@@ -43,9 +44,9 @@ export class TombstoneMonitor {
         });
         Log(LogSeverity.DEBUG, "TombstoneMonitor", `${roomName} - ${tombstones.length} tombstones monitored.`);
 
-        Object.keys(Memory.rooms[roomName].tombstones!).forEach(tombstoneId => {
+        Object.keys(global.store.rooms[roomName].tombstones!).forEach(tombstoneId => {
           if (Game.getObjectById(tombstoneId as Id<Tombstone>) === null) {
-            delete Memory.rooms[roomName].tombstones![tombstoneId];
+            delete global.store.rooms[roomName].tombstones![tombstoneId];
             Log(
               LogSeverity.DEBUG,
               "TombstoneMonitor",

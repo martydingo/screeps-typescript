@@ -16,11 +16,12 @@ export interface ContainerMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class ContainerMonitor {
+    @profileClass("ContainerMonitor")
     public static run(container: StructureContainer) {
-    if (!container.room.memory.structures!.containers) {
-      container.room.memory.structures!.containers = {};
+    if (!global.store.rooms[container.room.name].structures!.containers!) {
+      global.store.rooms[container.room.name].structures!.containers = {};
       Log(
         LogSeverity.DEBUG,
         "ContainerMonitor",
@@ -36,13 +37,15 @@ export class ContainerMonitor {
       };
     });
 
-    container.room.memory.structures!.containers[container.id] = {
+    global.store.rooms[container.room.name].structures!.containers![container.id] = {
         resources,
         hits: {
             hits: container.hits,
             hitsMax: container.hitsMax
         }
     };
+
+
     Log(LogSeverity.DEBUG, "ContainerMonitor", `container ${container.id}} monitored.`);
   }
 }

@@ -26,15 +26,16 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class ControllerMonitor {
+  @profileClass("ControllerMonitor")
   public static run(roomName: string) {
     if (Game.rooms[roomName]) {
       const room = Game.rooms[roomName];
 
       if (room.controller) {
-        if (!room.memory.controller) {
-          room.memory.controller = {};
+        if (!global.store.rooms[room.name].controller!) {
+          global.store.rooms[room.name].controller = {};
           Log(
             LogSeverity.DEBUG,
             "ControllerMonitor",
@@ -80,7 +81,7 @@ export class ControllerMonitor {
             cooldown: room.controller.safeModeCooldown
           };
         }
-        room.memory.controller[room.controller.id] = payload as ControllerMemory;
+        global.store.rooms[room.name].controller![room.controller.id] = payload as ControllerMemory;
         Log(
           LogSeverity.DEBUG,
           "ControllerMonitor",

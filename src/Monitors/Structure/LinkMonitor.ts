@@ -13,15 +13,16 @@ export interface LinkMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class LinkMonitor {
+  @profileClass("LinkMonitor")
   public static run(link: StructureLink) {
-    if (!link.room.memory.structures!.links) {
-      link.room.memory.structures!.links = {};
+    if (!global.store.rooms[link.room.name].structures!.links!) {
+      global.store.rooms[link.room.name].structures!.links = {};
       Log(LogSeverity.DEBUG, "LinkMonitor", `link monitor memory not found, link monitor memory initialised.`);
     }
-    if (!link.room.memory.structures!.links[link.id]) {
-      link.room.memory.structures!.links[link.id] = {
+    if (!global.store.rooms[link.room.name].structures!.links![link.id]!) {
+      global.store.rooms[link.room.name].structures!.links![link.id] = {
         energy: {
           amount: link.store[RESOURCE_ENERGY],
           capacity: link.store.getCapacity(RESOURCE_ENERGY)
@@ -31,7 +32,7 @@ export class LinkMonitor {
         linkType: "unknown"
       };
     } else {
-      link.room.memory.structures!.links[link.id].energy = {
+      global.store.rooms[link.room.name].structures!.links![link.id].energy = {
         amount: link.store[RESOURCE_ENERGY],
         capacity: link.store.getCapacity(RESOURCE_ENERGY)
       };

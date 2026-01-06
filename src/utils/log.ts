@@ -25,7 +25,7 @@ const LogColors = {
 };
 
 export function Log(serverity: LogSeverity, module: string, message: string) {
-  if (serverity <= config[Memory.env].logLevel) {
+  if (serverity <= config[global.store.env].logLevel) {
     console.log(`<font color="${LogColors[serverity]}" severity="${serverity} module=${module}">${module} - ${message}</font>`);
   }
 }

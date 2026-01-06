@@ -12,12 +12,13 @@ declare global {
     distances: { [key: string]: number };
   }
 }
-@profileClass()
+
 export class SpawnMonitor {
+  @profileClass("SpawnMonitor")
   public static run() {
     {
-      if (!Memory.spawns) {
-        Memory.spawns = {};
+      if (!global.store.spawns) {
+        global.store.spawns = {}
         Log(LogSeverity.DEBUG, "SpawnMonitor", `spawn monitor memory not found, spawn monitor memory initialised.`);
       }
 
@@ -30,15 +31,15 @@ export class SpawnMonitor {
           },
           spawning: (spawn.spawning !== null && true) || false,
           room: spawn.room.name,
-          distances: spawn.memory.distances || {}
+          distances: global.store.spawns[spawn.name].distances || {}
         };
 
-        Memory.spawns[spawn.name] = payload;
+        global.store.spawns[spawn.name] = payload
         Log(LogSeverity.DEBUG, "SpawnMonitor", `spawn ${spawn.id} monitored.`);
 
       });
 
-      Log(LogSeverity.DEBUG, "SpawnMonitor", `${Object.values(Memory.spawns).length} spawns monitored.`);
+      Log(LogSeverity.DEBUG, "SpawnMonitor", `${Object.values(global.store.spawns).length} spawns monitored.`);
     }
   }
 }

@@ -60,6 +60,8 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
+    "rollup-plugin-dts": "^6.3.0",
+    "rollup-plugin-flat-dts": "^2.9.0",
     "source-map": "~0.6.1"
   },
   "trustedDependencies": [

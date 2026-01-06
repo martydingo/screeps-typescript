@@ -21,8 +21,9 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class SpawnDaemon {
+  @profileClass("SpawnDaemon")
   public static run() {
     this.manageSpawnCreepJobs();
 
@@ -30,13 +31,13 @@ export class SpawnDaemon {
       LogSeverity.DEBUG,
       "SpawnDaemon",
       `There are ${
-        Object.entries(Memory.jobs).filter(
+        Object.entries(global.store.jobs).filter(
           ([, job]) => job.type === "spawn" && job.status === "pending"
         ).length
       } pending spawn jobs`
     );
     const priorityLevels = new Set();
-    const spawnJobs: [string, SpawnJob][] = Object.entries(Memory.jobs).filter(
+    const spawnJobs: [string, SpawnJob][] = Object.entries(global.store.jobs).filter(
       ([, job]) => job.type === "spawn"
     ) as [string, SpawnJob][];
 
@@ -134,15 +135,15 @@ export class SpawnDaemon {
 
             const spawnCost = this.discernCost(bodyParts);
             if (
-              spawn.room.memory.energy!.amount >= spawnCost &&
-              spawnCost <= spawn.room.memory.energy!.capacity
+              global.store.rooms[spawn.room.name].energy!.amount >= spawnCost &&
+              spawnCost <= global.store.rooms[spawn.room.name].energy!.capacity
             ) {
               const spawnResult = spawn.spawnCreep(bodyParts, spawnJob.name, {
                 memory: spawnJob.params.memory
               });
 
               if (spawnResult === OK) {
-                delete Memory.jobs[spawnJobId];
+                delete global.store.jobs[spawnJobId];
               }
             }
           }
@@ -150,7 +151,7 @@ export class SpawnDaemon {
       });
     });
 
-    // const spawnJobs = Object.entries(Memory.jobs)
+    // const spawnJobs = Object.entries(global.store.jobs)
     //   .filter(([, job]) => job.type === "spawn" && job.status === "pending")
     //   .sort(([, spawnJobA], [, spawnJobB]) => spawnJobA.priority - spawnJobB.priority);
   }
@@ -160,8 +161,8 @@ export class SpawnDaemon {
     spawn: StructureSpawn,
     desiredBodyParts: BodyPartConstant[]
   ): boolean {
-    if (!Memory.spawnHeld) {
-      Memory.spawnHeld = {};
+    if (!global.store.spawnHeld) {
+      global.store.spawnHeld = {}
       Log(
         LogSeverity.DEBUG,
         "SpawnDaemon",
@@ -170,11 +171,11 @@ export class SpawnDaemon {
     }
     const spawnCreeps = Object.values(Game.creeps).filter(
       creep =>
-        creep.memory.room === spawn.pos.roomName && creep.memory.type === "SpawnCreep"
+        global.store.creeps[creep.name].room === spawn.pos.roomName && global.store.creeps[creep.name].type === "SpawnCreep"
     );
 
     if (spawnCreeps.length === 0) {
-      delete Memory.spawnHeld[spawn.room.name];
+      delete global.store.spawnHeld[spawn.room.name];
       Log(
         LogSeverity.DEBUG,
         "SpawnDaemon",
@@ -184,7 +185,7 @@ export class SpawnDaemon {
     } else {
       const bodyPartCost = this.discernCost(desiredBodyParts);
       if (bodyPartCost <= spawn.room.energyAvailable) {
-        delete Memory.spawnHeld[spawn.room.name];
+        delete global.store.spawnHeld[spawn.room.name];
         Log(
           LogSeverity.DEBUG,
           "SpawnDaemon",
@@ -193,7 +194,7 @@ export class SpawnDaemon {
         return true;
       } else {
         if (spawn.room.energyAvailable === spawn.room.energyCapacityAvailable) {
-          delete Memory.spawnHeld[spawn.room.name];
+          delete global.store.spawnHeld[spawn.room.name];
           Log(
             LogSeverity.DEBUG,
             "SpawnDaemon",
@@ -201,8 +202,8 @@ export class SpawnDaemon {
           );
           return true;
         } else {
-          if (!Memory.spawnHeld[spawn.room.name]) {
-            Memory.spawnHeld[spawn.room.name] = Game.time;
+          if (!global.store.spawnHeld[spawn.room.name]) {
+            global.store.spawnHeld[spawn.room.name] = Game.time
             Log(
               LogSeverity.DEBUG,
               "SpawnDaemon",
@@ -212,17 +213,17 @@ export class SpawnDaemon {
             );
             return false;
           } else {
-            if (Game.time - Memory.spawnHeld[spawn.room.name] >= 450) {
+            if (Game.time - global.store.spawnHeld[spawn.room.name] >= 450) {
               Log(
                 LogSeverity.DEBUG,
                 "SpawnDaemon",
                 `Spawn energy in room ${
                   spawn.room.name
                 } is still under capacity, but it has been longer then 300 ticks since ${
-                  Memory.spawnHeld[spawn.pos.roomName]
+                  global.store.spawnHeld[spawn.pos.roomName]
                 } (cur: ${Game.time}), proceeding with spawn`
               );
-              delete Memory.spawnHeld[spawn.room.name];
+              delete global.store.spawnHeld[spawn.room.name];
               return true;
             } else {
               Log(
@@ -231,7 +232,7 @@ export class SpawnDaemon {
                 `Spawn energy in room ${
                   spawn.room.name
                 } is still under capacity, and it has not yet been longer then 300 ticks since ${
-                  Memory.spawnHeld[spawn.pos.roomName]
+                  global.store.spawnHeld[spawn.pos.roomName]
                 } (cur: ${Game.time}), delaying spawn`
               );
               return false;
@@ -245,22 +246,22 @@ export class SpawnDaemon {
   @profileMethod
   private static findClosestSpawn(roomName: string) {
     Object.values(Game.spawns).forEach(spawn => {
-      if (!spawn.memory.distances) {
-        spawn.memory.distances = {};
+      if (!global.store.spawns[spawn.name].distances) {
+        global.store.spawns[spawn.name].distances = {};
       }
 
-      if (!spawn.memory.distances[roomName]) {
+      if (!global.store.spawns[spawn.name].distances[roomName]) {
         const distance = Object.values(
           Game.map.findRoute(roomName, spawn.room.name)
         ).length;
-        spawn.memory.distances[roomName] = distance;
+        global.store.spawns[spawn.name].distances[roomName] = distance;
       }
     });
     const spawnDistanceMatrix = Object.values(Game.spawns)
       .map(spawn => {
         return {
           spawn,
-          distance: spawn.memory.distances[roomName]
+          distance: global.store.spawns[spawn.name].distances[roomName]
         };
       })
       .sort(
@@ -269,7 +270,7 @@ export class SpawnDaemon {
       );
 
     Object.values(spawnDistanceMatrix).forEach(spawnDistanceEntry => {
-      spawnDistanceEntry.spawn.memory.distances[roomName] = spawnDistanceEntry.distance;
+      global.store.spawns[spawnDistanceEntry.spawn.name].distances[roomName] = spawnDistanceEntry.distance;
     });
 
     return spawnDistanceMatrix.reverse().pop()?.spawn;
@@ -282,9 +283,9 @@ export class SpawnDaemon {
       .forEach(roomName => {
         const room = Game.rooms[roomName];
         const assignedCreeps = Object.values(Game.creeps).filter(
-          creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
+          creep => global.store.creeps[creep.name].room === roomName && global.store.creeps[creep.name].type === "SpawnCreep"
         );
-        const spawnJobs = Object.values(Memory.jobs).filter(
+        const spawnJobs = Object.values(global.store.jobs).filter(
           job => job.type === "spawn"
         ) as SpawnJob[];
 
@@ -294,13 +295,13 @@ export class SpawnDaemon {
             job.params.memory.type === "SpawnCreep"
         );
 
-        // const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+        // const spawnJobs = Object.values(global.store.jobs).filter(job => job.type === "spawn") as SpawnJob[];
         // const assignedJobs = spawnJobs.filter(
         //   job => job.params.memory.room === roomName && job.params.memory.type === "SpawnCreep"
         // );
         let requestedCreeps = 1;
 
-        // const spawnHeldTime = Memory.spawnHeld[roomName];
+        // const spawnHeldTime = global.store.spawnHeld[roomName];
         // if (spawnHeldTime) {
         //   if (spawnHeldTime < Game.time - 150) {
         //     requestedCreeps = 2;
@@ -308,7 +309,7 @@ export class SpawnDaemon {
         // }
 
         let anyTowerLow = false;
-        const structuresMemory = room.memory.structures;
+        const structuresMemory = global.store.rooms[room.name].structures;
         if (structuresMemory) {
           const towersMemory = structuresMemory.towers;
           if (towersMemory) {
@@ -331,7 +332,7 @@ export class SpawnDaemon {
             "SpawnDaemon",
             `Number of spawn creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
           );
-          Memory.jobs[`SpawnCreep-${roomName}-${Game.time}`] = {
+          global.store.jobs[`SpawnCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `SpawnCreep-${roomName}-${Game.time}`,
             bodyPartRatio: SpawnCreep.bodyPartRatio,
@@ -371,7 +372,7 @@ export class SpawnDaemon {
       }
 
       if (energyInRoom === false) {
-        const roomMemory = Memory.rooms[roomName];
+        const roomMemory = global.store.rooms[roomName];
         if (roomMemory) {
           const resourceMemory = roomMemory.resources;
           if (resourceMemory) {
@@ -393,7 +394,7 @@ export class SpawnDaemon {
     }
 
     let anyTowerLow = false;
-    const structuresMemory = room.memory.structures;
+    const structuresMemory = global.store.rooms[room.name].structures;
     if (structuresMemory) {
       const towersMemory = structuresMemory.towers;
       if (towersMemory) {
@@ -405,7 +406,7 @@ export class SpawnDaemon {
       }
     }
     const spawnCreepCount = Object.values(Game.creeps).filter(
-      creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
+      creep => global.store.creeps[creep.name].room === roomName && global.store.creeps[creep.name].type === "SpawnCreep"
     ).length;
     if (spawnCreepCount > 0) {
       if (energyInRoom === false) {

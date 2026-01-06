@@ -18,11 +18,12 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class Daemons {
+  @profileClass("Daemons")
   public static run() {
-      if (!Memory.jobs) {
-        Memory.jobs = {};
+      if (!global.store.jobs) {
+        global.store.jobs = {}
         Log(
           LogSeverity.DEBUG,
           "Daemons",

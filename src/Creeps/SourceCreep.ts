@@ -12,27 +12,28 @@ declare global {
   interface CreepMemory extends Partial<SourceCreepMemory> {}
 }
 
-@profileClass()
+
 export class SourceCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 2 };
   public static maxBodyParts = { work: 6, carry: 1, move: 8 };
 
+  @profileClass("SourceCreep")
   public static run() {
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "SourceCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "SourceCreep")
       .forEach(sourceCreep => {
-        if (sourceCreep.memory.curTask === "spawning" && sourceCreep.spawning === false) {
-          sourceCreep.memory.curTask = "miningSource";
+        if (global.store.creeps[sourceCreep.name].curTask === "spawning" && sourceCreep.spawning === false) {
+          global.store.creeps[sourceCreep.name].curTask = "miningSource";
           Log(LogSeverity.DEBUG, "SourceCreep", `${sourceCreep.name} has spawned, task set to "fetchingEnergy"`);
 
         }
          if(sourceCreep.spawning) return
 
-        if (sourceCreep.memory.curTask === "miningSource") {
+        if (global.store.creeps[sourceCreep.name].curTask === "miningSource") {
           let shouldMine = false;
-          const assignedSource = sourceCreep.memory.assignedSource;
+          const assignedSource = global.store.creeps[sourceCreep.name].assignedSource;
           if (Game.flags[`source-anchor-${assignedSource as string}`]) {
             const anchorPoint = Game.flags[`source-anchor-${assignedSource as string}`];
             if (sourceCreep.pos.getRangeTo(anchorPoint.pos) > 0) {
@@ -57,11 +58,11 @@ export class SourceCreep extends CreepTemplate {
             shouldMine = true;
           }
           if (shouldMine === true) {
-            const mineResult = sourceCreep.mineSource(sourceCreep.memory.assignedSource!);
+            const mineResult = sourceCreep.mineSource(global.store.creeps[sourceCreep.name].assignedSource!);
             if (mineResult === ERR_INVALID_TARGET) {
-              const room = Game.rooms[sourceCreep.memory.room!]
+              const room = Game.rooms[global.store.creeps[sourceCreep.name].room!]
               if (!room) {
-                sourceCreep.moveToUnknownRoom(sourceCreep.memory.room!);
+                sourceCreep.moveToUnknownRoom(global.store.creeps[sourceCreep.name].room!);
               }
             }
             if (sourceCreep.store[RESOURCE_ENERGY] > 0) {

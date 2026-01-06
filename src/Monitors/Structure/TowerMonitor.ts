@@ -15,14 +15,15 @@ export interface TowerMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class TowerMonitor {
+  @profileClass("TowerMonitor")
   public static run(tower: StructureTower) {
-    if (!tower.room.memory.structures!.towers) {
-      tower.room.memory.structures!.towers = {};
+    if (!global.store.rooms[tower.room.name].structures!.towers!) {
+      global.store.rooms[tower.room.name].structures!.towers = {};
       Log(LogSeverity.DEBUG, "TowerMonitor", `tower monitor memory not found, tower monitor memory initialised.`);
     }
-    tower.room.memory.structures!.towers[tower.id] = {
+    global.store.rooms[tower.room.name].structures!.towers![tower.id] = {
       hits: {
         current: tower.hits,
         total: tower.hitsMax

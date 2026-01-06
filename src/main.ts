@@ -2,9 +2,10 @@ import { Daemons } from "Daemons/Daemons";
 import { GlobalMonitor } from "Monitors/Global/GlobalMonitor";
 import { Monitors } from "Monitors/Monitors";
 import { ErrorMapper } from "utils/ErrorMapper";
-import { profileClass, profileMethod } from "utils/Profiler";
+import { ProfilerMemory, profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
+import { MemStore } from "utils/Store/MemStore";
 
 declare global {
   /*
@@ -16,8 +17,11 @@ declare global {
     Interfaces matching on name from @types/screeps will be merged. This is how you can extend the 'built-in' interfaces from @types/screeps.
   */
 
+  // eslint-disable-next-line no-var
+
   // Memory extension samples
   interface Memory {
+    profiler: ProfilerMemory;
     uuid: number;
     log: any;
     env: "prod" | "dev";
@@ -26,18 +30,37 @@ declare global {
 // Syntax for adding proprties to `global` (ex "global.log")
 declare const global: {
   log: any;
+  store: Memory;
 };
 
 // When compiling TS to JS and bundling with rollup, the line numbers and file names in error messages change
 // This utility uses source maps to get the line numbers and file names of the original, TS source code
 
-export const loop = ErrorMapper.wrapLoop(
-  () => {
+export const loop = ErrorMapper.wrapLoop(() => {
+  global.store = Memory
+  if (!global.store) {
+    global.store = Memory
+    console.log("x")
+    // const memoryTemplate = {
+    //   profiler: {},
+    //   pathCache: {},
+    //   heatMaps: {},
+    //   creep: {},
+    //   spawnHeld: {},
+    //   jobs: {},
+    //   global: {},
+    // };
+    // Object.keys(memoryTemplate).forEach((memoryKey) => {
+    //   if (!global.store[memoryKey]) {
+    //     global.store[memoryKey] = Memory[memoryKey] || {}
+    //   }
+    // })
+  }
+
   Log(LogSeverity.INFORMATIONAL, "main", `Current game tick is ${Game.time}.`);
 
-
   if (Game.cpu.generatePixel) {
-    Memory.env = "prod";
+    global.store.env = "prod";
     // console.log(
     //   Game.market
     //     .getAllOrders(order => order.resourceType === PIXEL && order.type === ORDER_SELL)
@@ -53,20 +76,20 @@ export const loop = ErrorMapper.wrapLoop(
       );
     }
   } else {
-    Memory.env = "dev";
+    global.store.env = "dev";
   }
-  Log(LogSeverity.DEBUG, "main", `Environment defined as ${Memory.env}.`);
+  Log(LogSeverity.DEBUG, "main", `Environment defined as ${global.store.env}.`);
 
   Log(LogSeverity.DEBUG, "main", `Clearing creep memory.`);
-  for (const name in Memory.creeps) {
-    Log(LogSeverity.DEBUG, "main", `Checking ${name} in Memory.creeps.`);
+  for (const name in global.store.creeps) {
+    Log(LogSeverity.DEBUG, "main", `Checking ${name} in global.store.creeps.`);
     if (!(name in Game.creeps)) {
       Log(
         LogSeverity.DEBUG,
         "main",
-        `Deleting old creep memory ${name} in Memory.creeps.`
+        `Deleting old creep memory ${name} in global.store.creeps.`
       );
-      delete Memory.creeps[name];
+      delete global.store.creeps[name];
     }
   }
 
@@ -81,4 +104,6 @@ export const loop = ErrorMapper.wrapLoop(
 
   GlobalMonitor.run();
   Log(LogSeverity.DEBUG, "Monitors", `Global monitor initialized.`);
+
+  MemStore.setMemory(global.store);
 });

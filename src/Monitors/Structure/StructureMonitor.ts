@@ -35,10 +35,11 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class StructureMonitor {
+  @profileClass("StructureMonitor")
   public static run() {
-    Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
+    Object.entries(global.store.rooms).forEach(([roomName, roomMemory]) => {
       if (roomMemory.structures) {
         Object.entries(roomMemory.structures).forEach(
           ([structureType, structureMemory]) => {
@@ -59,8 +60,8 @@ export class StructureMonitor {
     // console.log(`Game.structures poll start: ${Game.cpu.getUsed()}`);
     Object.values(Game.structures).forEach(structure => {
       if (structure.room.controller?.my) {
-        if (!structure.room.memory.structures) {
-          structure.room.memory.structures = {};
+        if (!global.store.rooms[structure.room.name].structures!) {
+          global.store.rooms[structure.room.name].structures = {};
           Log(
             LogSeverity.DEBUG,
             "StructureMonitor",
@@ -113,7 +114,7 @@ export class StructureMonitor {
     );
 
     // console.log(`room.find poll start: ${Game.cpu.getUsed()}`);
-    // const interval = config[Memory.env].lowCpuMode === true && 4 || 1
+    // const interval = config[global.store.env].lowCpuMode === true && 4 || 1
     const interval = 10
     if (Game.time % interval === 0) {
       Object.values(Game.rooms).forEach(room => {

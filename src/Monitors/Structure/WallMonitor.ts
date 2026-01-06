@@ -11,14 +11,15 @@ export interface WallMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class WallMonitor {
+  @profileClass("WallMonitor")
   public static run(wall: StructureWall) {
-    if (!wall.room.memory.structures!.walls) {
-      wall.room.memory.structures!.walls = {};
+    if (!global.store.rooms[wall.room.name].structures!.walls!) {
+      global.store.rooms[wall.room.name].structures!.walls = {};
       Log(LogSeverity.DEBUG, "WallMonitor", `Wall monitor memory not found, Wall monitor memory initialised.`);
     }
-    wall.room.memory.structures!.walls[wall.id] = {
+    global.store.rooms[wall.room.name].structures!.walls![wall.id] = {
       hits: {
         current: wall.hits,
         total: wall.hitsMax

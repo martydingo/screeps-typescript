@@ -15,16 +15,17 @@ declare global {
   interface CreepMemory extends Partial<SpawnCreepMemory> {}
 }
 
-@profileClass()
+
 export class SpawnCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 0, carry: 1, move: 1 };
 
+  @profileClass("SpawnCreep")
   public static run() {
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "SpawnCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "SpawnCreep")
       .forEach(spawnCreep => {
-        if (spawnCreep.memory.curTask === "spawning" && spawnCreep.spawning === false) {
-          spawnCreep.memory.curTask = "fetchingEnergy";
+        if (global.store.creeps[spawnCreep.name].curTask === "spawning" && spawnCreep.spawning === false) {
+          global.store.creeps[spawnCreep.name].curTask = "fetchingEnergy";
           Log(
             LogSeverity.DEBUG,
             "SpawnCreep",
@@ -32,12 +33,12 @@ export class SpawnCreep extends CreepTemplate {
           );
         }
         if (spawnCreep.spawning) return;
-        if (spawnCreep.memory.curTask === "fetchingEnergy") {
+        if (global.store.creeps[spawnCreep.name].curTask === "fetchingEnergy") {
           if (
             spawnCreep.store[RESOURCE_ENERGY] >=
             spawnCreep.store.getCapacity(RESOURCE_ENERGY)
           ) {
-            spawnCreep.memory.curTask = "feedingSpawns";
+            global.store.creeps[spawnCreep.name].curTask = "feedingSpawns";
             Log(
               LogSeverity.DEBUG,
               "SpawnCreep",
@@ -46,7 +47,7 @@ export class SpawnCreep extends CreepTemplate {
           }
         } else {
           if (spawnCreep.store[RESOURCE_ENERGY] === 0) {
-            spawnCreep.memory.curTask = "fetchingEnergy";
+            global.store.creeps[spawnCreep.name].curTask = "fetchingEnergy";
             Log(
               LogSeverity.DEBUG,
               "SpawnCreep",
@@ -55,7 +56,7 @@ export class SpawnCreep extends CreepTemplate {
           }
         }
 
-        switch (spawnCreep.memory.curTask) {
+        switch (global.store.creeps[spawnCreep.name].curTask) {
           case "fetchingEnergy":
             spawnCreep.fetchEnergy();
             break;
@@ -73,25 +74,25 @@ export class SpawnCreep extends CreepTemplate {
 
   @profileMethod
   private static discernInfrastructureToFeed(spawnCreep: Creep) {
-    if (!spawnCreep.memory.assignedInfrastructure) {
+    if (!global.store.creeps[spawnCreep.name].assignedInfrastructure) {
       const curAssignedIds = Object.values(Game.creeps)
         .filter(
           creep =>
-            creep.memory.type === "spawnCreep" &&
-            creep.memory.assignedRoom === spawnCreep.memory.assignedRoom &&
-            creep.memory.assignedInfrastructure
+            global.store.creeps[creep.name].type === "spawnCreep" &&
+            global.store.creeps[creep.name].assignedRoom === global.store.creeps[spawnCreep.name].assignedRoom &&
+            global.store.creeps[creep.name].assignedInfrastructure
         )
-        .map(otherSpawnCreep => otherSpawnCreep.memory.assignedInfrastructure!);
+        .map(otherSpawnCreep => global.store.creeps[otherSpawnCreep.name].assignedInfrastructure!);
 
       const spawnsToFeed = Object.values(Game.spawns).filter(
         spawn =>
-          spawn.room.name === spawnCreep.memory.assignedRoom &&
+          spawn.room.name === global.store.creeps[spawnCreep.name].assignedRoom &&
           spawn.store[RESOURCE_ENERGY] < spawn.store.getCapacity(RESOURCE_ENERGY) &&
           !curAssignedIds.includes(spawn.id)
       );
       let extensionsToFeed: StructureExtension[] = [];
       let towersToFeed: StructureTower[] = [];
-      const structureData = Memory.rooms[spawnCreep.memory.assignedRoom!].structures;
+      const structureData = global.store.rooms[global.store.creeps[spawnCreep.name].assignedRoom!].structures;
       if (structureData) {
         if (structureData.extensions) {
           extensionsToFeed = Object.keys(structureData.extensions)
@@ -146,20 +147,20 @@ export class SpawnCreep extends CreepTemplate {
       }
 
       if (spawnsToFeed.length > 0) {
-        spawnCreep.memory.assignedInfrastructure = spawnsToFeed[0].id;
+        global.store.creeps[spawnCreep.name].assignedInfrastructure = spawnsToFeed[0].id;
       } else if (extensionsToFeed.length > 0) {
-        spawnCreep.memory.assignedInfrastructure = extensionsToFeed[0].id;
+        global.store.creeps[spawnCreep.name].assignedInfrastructure = extensionsToFeed[0].id;
       } else if (towersToFeed.length > 0) {
-        spawnCreep.memory.assignedInfrastructure = towersToFeed[0].id;
+        global.store.creeps[spawnCreep.name].assignedInfrastructure = towersToFeed[0].id;
       }
     }
   }
   @profileMethod
   private static feedInfrastructure(spawnCreep: Creep) {
-    const infrastructureId = spawnCreep.memory.assignedInfrastructure;
+    const infrastructureId = global.store.creeps[spawnCreep.name].assignedInfrastructure;
     if (infrastructureId) {
       const infrastructure = Game.getObjectById(
-        spawnCreep.memory.assignedInfrastructure as
+        global.store.creeps[spawnCreep.name].assignedInfrastructure as
           | Id<StructureSpawn>
           | Id<StructureExtension>
           | Id<StructureTower>
@@ -185,7 +186,7 @@ export class SpawnCreep extends CreepTemplate {
         }
         const transferResult = spawnCreep.transfer(infrastructure, RESOURCE_ENERGY);
         if (transferResult === OK) {
-          delete spawnCreep.memory.assignedInfrastructure;
+          delete global.store.creeps[spawnCreep.name].assignedInfrastructure;
           Log(
             LogSeverity.DEBUG,
             "SpawnCreep",
@@ -193,7 +194,7 @@ export class SpawnCreep extends CreepTemplate {
           );
           return transferResult;
         } else if (transferResult === ERR_FULL) {
-          delete spawnCreep.memory.assignedInfrastructure;
+          delete global.store.creeps[spawnCreep.name].assignedInfrastructure;
           Log(
             LogSeverity.WARNING,
             "SpawnCreep",

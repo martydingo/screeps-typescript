@@ -4,10 +4,11 @@ import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class SourceDaemon {
+  @profileClass("SourceDaemon")
   public static run() {
-    Object.keys(Memory.rooms).forEach(roomName => {
+    Object.keys(global.store.rooms).forEach(roomName => {
       let shouldMine = false;
       const room = Game.rooms[roomName];
       if (room) {
@@ -17,7 +18,7 @@ export class SourceDaemon {
           if (roomControlled === true) {
             shouldMine = true;
           } else {
-            if (config[Memory.env].roomsToMine.includes(roomName)) {
+            if (config[global.store.env].roomsToMine.includes(roomName)) {
               const reservation = controller.reservation;
               if (reservation) {
                 if (reservation.ticksToEnd > 0) {
@@ -29,30 +30,30 @@ export class SourceDaemon {
             }
           }
         } else {
-          if (config[Memory.env].roomsToMine.includes(roomName)) {
+          if (config[global.store.env].roomsToMine.includes(roomName)) {
             shouldMine = true;
           }
         }
-        const hostiles = room.memory.hostiles;
+        const hostiles = global.store.rooms[room.name].hostiles;
         if (hostiles) {
           if (Object.keys(hostiles).length > 0) {
             shouldMine = false;
           }
         }
       } else {
-        if (config[Memory.env].roomsToMine.includes(roomName)) {
+        if (config[global.store.env].roomsToMine.includes(roomName)) {
           shouldMine = true;
         }
       }
 
       if (shouldMine === true) {
         Log(LogSeverity.DEBUG, "SourceDaemon", `Mining sources in ${roomName}`);
-        Object.keys(Memory.rooms[roomName].sources!).forEach(sourceId => {
-          const spawnJobs = Object.values(Memory.jobs).filter(
+        Object.keys(global.store.rooms[roomName].sources!).forEach(sourceId => {
+          const spawnJobs = Object.values(global.store.jobs).filter(
             job => job.type === "spawn"
           ) as SpawnJob[];
           const assignedCreeps = Object.values(Game.creeps).filter(
-            creep => creep.memory.assignedSource === sourceId
+            creep => global.store.creeps[creep.name].assignedSource === sourceId
           );
           const assignedJobs = spawnJobs.filter(
             job => job.params.memory.assignedSource === sourceId
@@ -64,7 +65,7 @@ export class SourceDaemon {
               "SourceDaemon",
               `Number of source creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
             );
-            Memory.jobs[`SourceCreep-${sourceId}-${Game.time}`] = {
+            global.store.jobs[`SourceCreep-${sourceId}-${Game.time}`] = {
               type: "spawn",
               name: `SourceCreep-${sourceId}-${Game.time}`,
               //   bodyParts: SourceCreep.bodyParts[roomLevel],
@@ -107,7 +108,7 @@ export class SourceDaemon {
       }
 
       if (energyInRoom === false) {
-        const roomMemory = Memory.rooms[roomName];
+        const roomMemory = global.store.rooms[roomName];
         if (roomMemory) {
           const resourceMemory = roomMemory.resources;
           if (resourceMemory) {
@@ -129,7 +130,7 @@ export class SourceDaemon {
     }
 
     const spawnCreepCount = Object.values(Game.creeps).filter(
-      creep => creep.memory.room === roomName && creep.memory.type === "SpawnCreep"
+      creep => global.store.creeps[creep.name].room === roomName && global.store.creeps[creep.name].type === "SpawnCreep"
     ).length;
     if (spawnCreepCount === 0) {
       if (energyInRoom === true) {

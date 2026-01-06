@@ -3,8 +3,9 @@ import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class LinkDaemon {
+  @profileClass("LinkDaemon")
   public static run() {
     Object.keys(Game.rooms).forEach(roomName => {
       this.discernLinkTypes(roomName);
@@ -16,10 +17,10 @@ export class LinkDaemon {
 
   @profileMethod
 private static discernLinkTypes(roomName: string) {
-    if (Memory.rooms[roomName].structures) {
-      if (Memory.rooms[roomName].structures!.links) {
+    if (global.store.rooms[roomName].structures) {
+      if (global.store.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", `Links detected in ${roomName}`);
-        const roomLinkIds = Object.entries(Memory.rooms[roomName].structures!.links!)
+        const roomLinkIds = Object.entries(global.store.rooms[roomName].structures!.links!)
           .filter(([, roomLinkMemory]) => roomLinkMemory.linkType === "unknown")
           .map(([roomLinkId]) => roomLinkId);
 
@@ -35,12 +36,12 @@ private static discernLinkTypes(roomName: string) {
             }
 
             if (storageLink) {
-              Memory.rooms[roomName].structures!.links![roomLinkId].linkType =
+              global.store.rooms[roomName].structures!.links![roomLinkId].linkType =
                 "storage";
             } else {
               let sourceLink = false;
 
-              const roomSources = Object.keys(Memory.rooms[roomName].sources!);
+              const roomSources = Object.keys(global.store.rooms[roomName].sources!);
               roomSources.forEach(roomSourceId => {
                 const roomSource = Game.getObjectById(roomSourceId as Id<Source>);
                 if (roomSource) {
@@ -51,7 +52,7 @@ private static discernLinkTypes(roomName: string) {
               });
 
               if (sourceLink) {
-                Memory.rooms[roomName].structures!.links![roomLinkId].linkType =
+                global.store.rooms[roomName].structures!.links![roomLinkId].linkType =
                   "source";
               } else {
                 let controllerLink = false;
@@ -64,7 +65,7 @@ private static discernLinkTypes(roomName: string) {
                 }
 
                 if (controllerLink) {
-                  Memory.rooms[roomName].structures!.links![roomLinkId].linkType =
+                  global.store.rooms[roomName].structures!.links![roomLinkId].linkType =
                     "controller";
                 }
               }
@@ -72,7 +73,7 @@ private static discernLinkTypes(roomName: string) {
           }
 
           const linkType =
-            Memory.rooms[roomName].structures!.links![roomLinkId].linkType;
+            global.store.rooms[roomName].structures!.links![roomLinkId].linkType;
           if (linkType === "unknown") {
             Log(
               LogSeverity.ERROR,
@@ -93,9 +94,9 @@ private static discernLinkTypes(roomName: string) {
 
   @profileMethod
 private static discernLinkDistances(roomName: string) {
-    if (Memory.rooms[roomName].structures) {
-      if (Memory.rooms[roomName].structures!.links) {
-        const roomLinkIds = Object.keys(Memory.rooms[roomName].structures!.links!);
+    if (global.store.rooms[roomName].structures) {
+      if (global.store.rooms[roomName].structures!.links) {
+        const roomLinkIds = Object.keys(global.store.rooms[roomName].structures!.links!);
         roomLinkIds.forEach(roomLinkId => {
           const roomLink = Game.getObjectById(roomLinkId as Id<StructureLink>);
           if (roomLink) {
@@ -104,7 +105,7 @@ private static discernLinkDistances(roomName: string) {
             );
             otherRoomLinkIds.forEach(otherRoomLinkId => {
               if (
-                !Memory.rooms[roomName].structures!.links![roomLinkId].distances[
+                !global.store.rooms[roomName].structures!.links![roomLinkId].distances[
                   otherRoomLinkId
                 ]
               ) {
@@ -113,14 +114,14 @@ private static discernLinkDistances(roomName: string) {
                 );
                 if (otherRoomLink) {
                   if (
-                    Memory.rooms[roomName].structures!.links![otherRoomLinkId]
+                    global.store.rooms[roomName].structures!.links![otherRoomLinkId]
                       .linkType !== "unknown"
                   ) {
-                    Memory.rooms[roomName].structures!.links![roomLinkId].distances[
+                    global.store.rooms[roomName].structures!.links![roomLinkId].distances[
                       otherRoomLinkId
                     ] = {
                       distance: roomLink.pos.getRangeTo(otherRoomLink),
-                      type: Memory.rooms[roomName].structures!.links![otherRoomLinkId]
+                      type: global.store.rooms[roomName].structures!.links![otherRoomLinkId]
                         .linkType as "storage" | "source" | "controller"
                     };
                   }
@@ -135,9 +136,9 @@ private static discernLinkDistances(roomName: string) {
 
   @profileMethod
 private static manageStorageLinkCreeps(roomName: string) {
-    if (Memory.rooms[roomName].structures) {
-      if (Memory.rooms[roomName].structures!.links) {
-        const storageLinkIds = Object.entries(Memory.rooms[roomName].structures!.links!)
+    if (global.store.rooms[roomName].structures) {
+      if (global.store.rooms[roomName].structures!.links) {
+        const storageLinkIds = Object.entries(global.store.rooms[roomName].structures!.links!)
           .filter(([, linkMemory]) => linkMemory.linkType === "storage")
           .map(([storageLinkKey]) => storageLinkKey)
           .sort((storageLinkKeyA, storageLinkKeyB) =>
@@ -147,7 +148,7 @@ private static manageStorageLinkCreeps(roomName: string) {
         const storageLinkId = storageLinkIds.pop();
 
         const controllerLinkId = Object.entries(
-          Memory.rooms[roomName].structures!.links!
+          global.store.rooms[roomName].structures!.links!
         )
           .filter(([, linkMemory]) => linkMemory.linkType === "controller")
           .map(([controllerLinkKey]) => controllerLinkKey)
@@ -157,7 +158,7 @@ private static manageStorageLinkCreeps(roomName: string) {
 
         if (storageLinkId && controllerLinkId && storage) {
           const controllerLinkDistance =
-            Memory.rooms[roomName].structures!.links![storageLinkId].distances[
+            global.store.rooms[roomName].structures!.links![storageLinkId].distances[
               controllerLinkId
             ].distance;
           const requiredBodyPartCount = Math.ceil(
@@ -171,10 +172,10 @@ private static manageStorageLinkCreeps(roomName: string) {
 
           const assignedCreeps = Object.values(Game.creeps).filter(
             creep =>
-              creep.memory.room === roomName &&
-              creep.memory.assignedLink === storageLinkId
+              global.store.creeps[creep.name].room === roomName &&
+              global.store.creeps[creep.name].assignedLink === storageLinkId
           );
-          const spawnJobs = Object.values(Memory.jobs).filter(
+          const spawnJobs = Object.values(global.store.jobs).filter(
             job => job.type === "spawn"
           ) as SpawnJob[];
 
@@ -190,7 +191,7 @@ private static manageStorageLinkCreeps(roomName: string) {
               "ResourceDaemon",
               `Number of link creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
             );
-            Memory.jobs[`LinkCreep-${roomName}-${Game.time}`] = {
+            global.store.jobs[`LinkCreep-${roomName}-${Game.time}`] = {
               type: "spawn",
               name: `LinkCreep-${roomName}-${Game.time}`,
               bodyPartRatio: LinkCreep.bodyPartRatio,
@@ -219,10 +220,10 @@ private static manageStorageLinkCreeps(roomName: string) {
 
   @profileMethod
 private static operateLinks(roomName: string) {
-    if (Memory.rooms[roomName].structures) {
-      if (Memory.rooms[roomName].structures!.links) {
+    if (global.store.rooms[roomName].structures) {
+      if (global.store.rooms[roomName].structures!.links) {
         Log(LogSeverity.DEBUG, "LinkDaemon", ``);
-        const roomLinkIds = Object.keys(Memory.rooms[roomName].structures!.links!);
+        const roomLinkIds = Object.keys(global.store.rooms[roomName].structures!.links!);
         roomLinkIds.forEach(roomLinkId => {
           const roomLink = Game.getObjectById(roomLinkId as Id<StructureLink>);
           if (roomLink) {
@@ -231,10 +232,10 @@ private static operateLinks(roomName: string) {
               roomLink.store[RESOURCE_ENERGY] === roomLink.store.getCapacity(RESOURCE_ENERGY)
             ) {
               const roomLinkType =
-                Memory.rooms[roomName].structures!.links![roomLinkId].linkType;
+                global.store.rooms[roomName].structures!.links![roomLinkId].linkType;
               if (roomLinkType === "storage") {
                 const controllerLinkId = Object.entries(
-                  Memory.rooms[roomName].structures!.links!
+                  global.store.rooms[roomName].structures!.links!
                 )
                   .filter(([, linkMemory]) => linkMemory.linkType === "controller")
                   .map(([controllerLinkKey]) => controllerLinkKey)

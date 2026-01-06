@@ -19,12 +19,13 @@ declare global {
   }
 }
 
-@profileClass()
+
 export class RoomMonitor {
+  @profileClass("RoomMonitor")
   public static run() {
     let rooms: string[] = [];
-    if (!Memory.rooms) {
-      Memory.rooms = {};
+    if (!global.store.rooms) {
+      global.store.rooms = {}
       Log(
         LogSeverity.DEBUG,
         "RoomMonitor",
@@ -32,12 +33,12 @@ export class RoomMonitor {
       );
     }
 
-    rooms = [...Object.keys(Game.rooms), ...config[Memory.env].roomsToMine];
+    rooms = [...Object.keys(Game.rooms), ...config[global.store.env].roomsToMine];
     Log(LogSeverity.DEBUG, "RoomMonitor", `Rooms to be monitored: ${rooms.join(" ")}`);
 
     rooms.forEach(roomName => {
-      if (!Memory.rooms[roomName]) {
-        Memory.rooms[roomName] = {};
+      if (!global.store.rooms[roomName]) {
+        global.store.rooms[roomName] = {}
         Log(
           LogSeverity.DEBUG,
           "RoomMonitor",
@@ -52,7 +53,7 @@ export class RoomMonitor {
   @profileMethod
   private static monitorRoom(roomName: string) {
     if (Game.rooms[roomName]) {
-      Memory.rooms[roomName].energy = {
+      global.store.rooms[roomName].energy = {
         amount: Game.rooms[roomName].energyAvailable,
         capacity: Game.rooms[roomName].energyCapacityAvailable
       };

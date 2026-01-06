@@ -42,7 +42,7 @@ export const Pathfinding = {
     structureMonitorType: StructureMonitorTypes,
     range: number
   ): Structure<StructureConstant> | null => {
-    const roomMemory = Memory.rooms[originPos.roomName];
+    const roomMemory = global.store.rooms[originPos.roomName];
     if (roomMemory) {
       const structureMonitorMemory = roomMemory.structures;
       if (structureMonitorMemory) {
@@ -86,32 +86,32 @@ export const Pathfinding = {
   ) => {
     const serializedPath = Room.serializePath(path);
     if (serializedPath !== "") {
-      if (!Memory.pathCache) {
-        Memory.pathCache = {};
+      if (!global.store.pathCache) {
+        global.store.pathCache = {}
       }
 
-      if (!Memory.pathCache[origin.roomName]) {
-        Memory.pathCache[origin.roomName] = {
+      if (!global.store.pathCache[origin.roomName]) {
+        global.store.pathCache[origin.roomName] = {
           exits: {}
         };
       }
-      if (!Memory.pathCache[origin.roomName].exits[destinationRoom]) {
-        Memory.pathCache[origin.roomName].exits[destinationRoom] = {};
+      if (!global.store.pathCache[origin.roomName].exits[destinationRoom]) {
+        global.store.pathCache[origin.roomName].exits[destinationRoom] = {}
       }
 
       if (
-        !Memory.pathCache[origin.roomName].exits[destinationRoom][
+        !global.store.pathCache[origin.roomName].exits[destinationRoom][
           `${origin.x}-${origin.y}`
         ]
       ) {
-        Memory.pathCache[origin.roomName].exits[destinationRoom][
+        global.store.pathCache[origin.roomName].exits[destinationRoom][
           `${origin.x}-${origin.y}`
         ] = serializedPath;
       }
     }
 
-    // if (!Memory.pathCache[origin.roomName][`${destination.x}-${destination.y}`]) {
-    //   Memory.pathCache[origin.roomName][`${destination.x}-${destination.y}`].exits = {
+    // if (!global.store.pathCache[origin.roomName][`${destination.x}-${destination.y}`]) {
+    //   global.store.pathCache[origin.roomName][`${destination.x}-${destination.y}`].exits = {
     //     path: Room.serializePath(path)
     //   };
     // }

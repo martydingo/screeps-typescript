@@ -4,8 +4,9 @@ import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class ResourceDaemon {
+  @profileClass("ResourceDaemon")
   public static run() {
     this.manageLocalLootTransportCreepJobs();
     this.manageMiningLootTransportCreepJobs();
@@ -13,7 +14,7 @@ export class ResourceDaemon {
   }
   @profileMethod
   private static manageLocalLootTransportCreepJobs() {
-    Object.entries(Memory.rooms).forEach(([roomName, roomMemory]) => {
+    Object.entries(global.store.rooms).forEach(([roomName, roomMemory]) => {
       const roomResources = roomMemory.resources;
       if (roomResources) {
         if (Object.keys(roomResources).length > 0) {
@@ -32,9 +33,9 @@ export class ResourceDaemon {
                 );
                 const assignedCreeps = Object.values(Game.creeps).filter(
                   creep =>
-                    creep.memory.room === room.name && creep.memory.origin === "loot"
+                    global.store.creeps[creep.name].room === room.name && global.store.creeps[creep.name].origin === "loot"
                 );
-                const spawnJobs = Object.values(Memory.jobs).filter(
+                const spawnJobs = Object.values(global.store.jobs).filter(
                   job => job.type === "spawn"
                 ) as SpawnJob[];
 
@@ -53,7 +54,7 @@ export class ResourceDaemon {
                     "ResourceDaemon",
                     `Number of transport creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
                   );
-                  Memory.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
+                  global.store.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
                     type: "spawn",
                     name: `TransportCreep-${roomName}-${Game.time}`,
                     bodyPartRatio: TransportCreep.bodyPartRatio,
@@ -86,8 +87,8 @@ export class ResourceDaemon {
 
   @profileMethod
   private static manageMiningLootTransportCreepJobs() {
-    config[Memory.env].roomsToMine.forEach(roomName => {
-      const roomMemory = Memory.rooms[roomName];
+    config[global.store.env].roomsToMine.forEach(roomName => {
+      const roomMemory = global.store.rooms[roomName];
       if (roomMemory) {
         let hostilesInRoom = false;
         const hostiles = roomMemory.hostiles;
@@ -137,11 +138,11 @@ export class ResourceDaemon {
                 );
                 const assignedCreeps = Object.values(Game.creeps).filter(
                   creep =>
-                    creep.memory.room === roomName &&
-                    creep.memory.origin === "loot" &&
-                    creep.memory.destination === closestStorage.storage.id
+                    global.store.creeps[creep.name].room === roomName &&
+                    global.store.creeps[creep.name].origin === "loot" &&
+                    global.store.creeps[creep.name].destination === closestStorage.storage.id
                 );
-                const spawnJobs = Object.values(Memory.jobs).filter(
+                const spawnJobs = Object.values(global.store.jobs).filter(
                   job => job.type === "spawn"
                 ) as SpawnJob[];
 
@@ -161,7 +162,7 @@ export class ResourceDaemon {
                     "ResourceDaemon",
                     `Number of transport creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
                   );
-                  Memory.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
+                  global.store.jobs[`TransportCreep-${roomName}-${Game.time}`] = {
                     type: "spawn",
                     name: `TransportCreep-${roomName}-${Game.time}`,
                     bodyPartRatio: TransportCreep.bodyPartRatio,
@@ -232,12 +233,12 @@ export class ResourceDaemon {
               if (nearbyStorageEntry.distance <= 2) {
                 const assignedCreeps = Object.values(Game.creeps).filter(
                   creep =>
-                    creep.memory.room === storageEntry.storage.pos.roomName &&
-                    creep.memory.origin === storageEntry.storage.id &&
-                    creep.memory.destination === nearbyStorageEntry.storage.id
+                    global.store.creeps[creep.name].room === storageEntry.storage.pos.roomName &&
+                    global.store.creeps[creep.name].origin === storageEntry.storage.id &&
+                    global.store.creeps[creep.name].destination === nearbyStorageEntry.storage.id
                 );
 
-                const spawnJobs = Object.values(Memory.jobs).filter(
+                const spawnJobs = Object.values(global.store.jobs).filter(
                   job => job.type === "spawn"
                 ) as SpawnJob[];
 
@@ -257,7 +258,7 @@ export class ResourceDaemon {
                     "ResourceDaemon",
                     `Number of transport creeps in $${storageEntry.storage.pos.roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
                   );
-                  Memory.jobs[
+                  global.store.jobs[
                     `TransportCreep-${storageEntry.storage.pos.roomName}-${nearbyStorageEntry.storage.id}-${Game.time}`
                   ] = {
                     type: "spawn",

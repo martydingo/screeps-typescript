@@ -4,8 +4,9 @@ import { Log, LogSeverity } from "utils/log";
 import { Pathfinding } from "utils/Pathfinding";
 import { profileClass, profileMethod } from "utils/Profiler";
 
-@profileClass()
+
 export class ExtractorDaemon {
+  @profileClass("ExtractorDaemon")
   public static run() {
     const extractors = Object.values(Game.structures)
       .filter(structure => structure.structureType === "extractor")
@@ -21,9 +22,9 @@ private static manageExtractorCreeps(extractor: StructureExtractor) {
     const room = extractor.room;
 
     const assignedCreeps = Object.values(Game.creeps).filter(
-      creep => creep.memory.room === room.name && creep.memory.assignedExtractor === extractor.id
+      creep => global.store.creeps[creep.name].room === room.name && global.store.creeps[creep.name].assignedExtractor === extractor.id
     );
-    const spawnJobs = Object.values(Memory.jobs).filter(job => job.type === "spawn") as SpawnJob[];
+    const spawnJobs = Object.values(global.store.jobs).filter(job => job.type === "spawn") as SpawnJob[];
 
     const assignedJobs = spawnJobs.filter(
       job => job.params.memory.room === room.name && job.params.memory.assignedExtractor === extractor.id
@@ -38,7 +39,7 @@ private static manageExtractorCreeps(extractor: StructureExtractor) {
               "ResourceDaemon",
               `Number of transport creeps in $${extractor.pos.roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
             );
-            Memory.jobs[`ExtractorCreep-${extractor.pos.roomName}-${Game.time}`] = {
+            global.store.jobs[`ExtractorCreep-${extractor.pos.roomName}-${Game.time}`] = {
               type: "spawn",
               name: `ExtractorCreep-${extractor.pos.roomName}-${Game.time}`,
               bodyPartRatio: ExtractorCreep.bodyPartRatio,

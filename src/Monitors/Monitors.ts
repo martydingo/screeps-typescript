@@ -4,8 +4,9 @@ import { StructureMonitor } from "./Structure/StructureMonitor"
 import {  profileClass } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class Monitors {
+    @profileClass("Monitors")
     public static run(
     ) {
         RoomMonitor.run()

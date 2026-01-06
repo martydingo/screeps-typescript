@@ -11,19 +11,19 @@ declare global {
   interface CreepMemory extends Partial<BuildCreepMemory> {}
 }
 
-@profileClass()
+
 export class BuildCreep extends CreepTemplate {
   public static bodyPartRatio = { work: 2, carry: 1, move: 1 };
-  public constructor() {
-    super()
+  @profileClass("BuildCreep")
+  public static run(){
 
 
     Object.values(Game.creeps)
-      .filter(creep => creep.memory.type === "BuildCreep")
+      .filter(creep => global.store.creeps[creep.name].type === "BuildCreep")
       .forEach(buildCreep => {
         Log(LogSeverity.DEBUG, "BuildCreep", `Operating ${buildCreep.name}`);
-        if (buildCreep.memory.curTask === "spawning" && buildCreep.spawning === false) {
-          buildCreep.memory.curTask = "fetchingEnergy";
+        if (global.store.creeps[buildCreep.name].curTask === "spawning" && buildCreep.spawning === false) {
+          global.store.creeps[buildCreep.name].curTask = "fetchingEnergy";
           Log(
             LogSeverity.DEBUG,
             "BuildCreep",
@@ -32,12 +32,12 @@ export class BuildCreep extends CreepTemplate {
         }
         if (buildCreep.spawning) return;
 
-        if (buildCreep.memory.curTask === "fetchingEnergy") {
+        if (global.store.creeps[buildCreep.name].curTask === "fetchingEnergy") {
           if (
             buildCreep.store[RESOURCE_ENERGY] >=
             buildCreep.store.getCapacity(RESOURCE_ENERGY)
           ) {
-            buildCreep.memory.curTask = "constructingSite";
+            global.store.creeps[buildCreep.name].curTask = "constructingSite";
             Log(
               LogSeverity.DEBUG,
               "BuildCreep",
@@ -46,7 +46,7 @@ export class BuildCreep extends CreepTemplate {
           }
         } else {
           if (buildCreep.store[RESOURCE_ENERGY] === 0) {
-            buildCreep.memory.curTask = "fetchingEnergy";
+            global.store.creeps[buildCreep.name].curTask = "fetchingEnergy";
             Log(
               LogSeverity.DEBUG,
               "BuildCreep",
@@ -55,12 +55,12 @@ export class BuildCreep extends CreepTemplate {
           }
         }
 
-        switch (buildCreep.memory.curTask) {
+        switch (global.store.creeps[buildCreep.name].curTask) {
           case "fetchingEnergy":
             buildCreep.fetchEnergy();
             break;
           case "constructingSite":
-            this.constructSite(buildCreep);
+            BuildCreep.constructSite(buildCreep);
             break;
         }
       });
@@ -69,7 +69,7 @@ export class BuildCreep extends CreepTemplate {
  @profileMethod
   private static constructSite(buildCreep: Creep) {
     const constructionSiteMatrix =
-      Memory.rooms[buildCreep.memory.assignedRoom!].constructionSites;
+      global.store.rooms[global.store.creeps[buildCreep.name].assignedRoom!].constructionSites;
     if (constructionSiteMatrix) {
       if (Object.keys(constructionSiteMatrix).length > 0) {
         const constructionSiteDistanceMatrix = Object.entries(

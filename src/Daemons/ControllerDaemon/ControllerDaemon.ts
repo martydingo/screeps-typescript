@@ -6,8 +6,9 @@ import { SpawnJob } from "Daemons/SpawnDaemon/SpawnDaemon";
 import { profileClass, profileMethod } from "utils/Profiler";
 import { Log, LogSeverity } from "utils/log";
 
-@profileClass()
+
 export class ControllerDaemon {
+  @profileClass("ControllerDaemon")
   public static run() {
     ControllerDaemon.manageUpgradeCreeps();
     ControllerDaemon.manageReserveCreeps();
@@ -16,18 +17,18 @@ export class ControllerDaemon {
 
   @profileMethod
   private static manageUpgradeCreeps() {
-    Object.keys(Memory.rooms).forEach(roomName => {
-      if (Memory.rooms[roomName].controller) {
-        Object.keys(Memory.rooms[roomName].controller!).forEach(controllerId => {
+    Object.keys(global.store.rooms).forEach(roomName => {
+      if (global.store.rooms[roomName].controller) {
+        Object.keys(global.store.rooms[roomName].controller!).forEach(controllerId => {
           const controller = Game.getObjectById(
             controllerId as Id<StructureController>
           );
           if (controller) {
             if (controller.my) {
               const assignedCreeps = Object.values(Game.creeps).filter(
-                creep => creep.memory.assignedController === controllerId
+                creep => global.store.creeps[creep.name].assignedController === controllerId
               );
-              const spawnJobs = Object.values(Memory.jobs).filter(
+              const spawnJobs = Object.values(global.store.jobs).filter(
                 job => job.type === "spawn"
               ) as SpawnJob[];
 
@@ -48,7 +49,7 @@ export class ControllerDaemon {
                   `Number of controller creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
                 );
 
-                Memory.jobs[`ControllerCreep-${controllerId}-${Game.time}`] = {
+                global.store.jobs[`ControllerCreep-${controllerId}-${Game.time}`] = {
                   type: "spawn",
                   name: `ControllerCreep-${controllerId}-${Game.time}`,
                   bodyPartRatio: ControllerCreep.bodyPartRatio,
@@ -77,7 +78,7 @@ export class ControllerDaemon {
   }
   @profileMethod
   private static manageClaimCreeps() {
-    const roomsToClaim = config[Memory.env].roomsToClaim;
+    const roomsToClaim = config[global.store.env].roomsToClaim;
     roomsToClaim.forEach(roomName => {
       let claimRoom = false;
       const room = Game.rooms[roomName];
@@ -93,9 +94,9 @@ export class ControllerDaemon {
 
       if (claimRoom === true) {
         const assignedCreeps = Object.values(Game.creeps).filter(
-          creep => creep.memory.type === "ClaimCreep" && creep.memory.room === roomName
+          creep => global.store.creeps[creep.name].type === "ClaimCreep" && global.store.creeps[creep.name].room === roomName
         );
-        const spawnJobs = Object.values(Memory.jobs).filter(
+        const spawnJobs = Object.values(global.store.jobs).filter(
           job => job.type === "spawn"
         ) as SpawnJob[];
 
@@ -111,7 +112,7 @@ export class ControllerDaemon {
             "ControllerDaemon",
             `Number of claim creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
           );
-          Memory.jobs[`ClaimCreep-${roomName}-${Game.time}`] = {
+          global.store.jobs[`ClaimCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `ClaimCreep-${roomName}-${Game.time}`,
             bodyPartRatio: ClaimCreep.bodyPartRatio,
@@ -137,13 +138,13 @@ export class ControllerDaemon {
   }
   @profileMethod
   private static manageReserveCreeps() {
-    const roomsToMine = config[Memory.env].roomsToMine;
+    const roomsToMine = config[global.store.env].roomsToMine;
     roomsToMine.forEach(roomName => {
       let reserveRoom = false;
       const room = Game.rooms[roomName];
       if (room) {
         const hostilesInRoom = false;
-        const hostiles = room.memory.hostiles;
+        const hostiles = global.store.rooms[room.name].hostiles;
         if (hostiles) {
           if (Object.keys(hostiles).length > 0) {
             reserveRoom = false;
@@ -156,7 +157,7 @@ export class ControllerDaemon {
                 reserveRoom = true;
               } else {
                 if (
-                  room.controller.reservation.username === config[Memory.env].username
+                  room.controller.reservation.username === config[global.store.env].username
                 ) {
                   if (room.controller.reservation.ticksToEnd < 1000) {
                     reserveRoom = true;
@@ -174,9 +175,9 @@ export class ControllerDaemon {
       if (reserveRoom === true) {
         const assignedCreeps = Object.values(Game.creeps).filter(
           creep =>
-            creep.memory.type === "ReserveCreep" && creep.memory.room === roomName
+            global.store.creeps[creep.name].type === "ReserveCreep" && global.store.creeps[creep.name].room === roomName
         );
-        const spawnJobs = Object.values(Memory.jobs).filter(
+        const spawnJobs = Object.values(global.store.jobs).filter(
           job => job.type === "spawn"
         ) as SpawnJob[];
 
@@ -193,7 +194,7 @@ export class ControllerDaemon {
             "ControllerDaemon",
             `Number of reserve creeps in $${roomName} (${assignedCreeps.length}) is under the number requested (${requestedCreeps}), processing spawn job`
           );
-          Memory.jobs[`ReserveCreep-${roomName}-${Game.time}`] = {
+          global.store.jobs[`ReserveCreep-${roomName}-${Game.time}`] = {
             type: "spawn",
             name: `ReserveCreep-${roomName}-${Game.time}`,
             bodyPartRatio: ReserveCreep.bodyPartRatio,

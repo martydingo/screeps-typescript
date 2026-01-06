@@ -12,11 +12,12 @@ export interface LabMonitorMemory {
   };
 }
 
-@profileClass()
+
 export class LabMonitor {
+  @profileClass("LabMonitor")
   public static run(lab: StructureLab) {
-    if (!lab.room.memory.structures!.labs) {
-      lab.room.memory.structures!.labs = {};
+    if (!global.store.rooms[lab.room.name].structures!.labs!) {
+      global.store.rooms[lab.room.name].structures!.labs = {};
       Log(LogSeverity.DEBUG, "LabMonitor", `lab monitor memory not found, lab monitor memory initialised.`);
     }
 
@@ -28,7 +29,7 @@ export class LabMonitor {
       };
     });
 
-    lab.room.memory.structures!.labs[lab.id] = {
+    global.store.rooms[lab.room.name].structures!.labs![lab.id] = {
       resources
     };
 
